@@ -30,11 +30,15 @@ async function generateImageWithNovita(prompt: string, negativePrompt: string): 
     const absoluteNegative = [
         'man', 'male', 'boy', 'men', 'masculine', 'beard', 'facial hair', 'mustache',
         'guy', 'dude', 'gentleman', 'masc', 'male face', 'male body',
-        'multiple people', 'group', 'crowd', 'two people',
+        'multiple people', 'group', 'crowd', 'two people', 'several women', 'many people',
+        'split image', 'collage', 'multiple faces', 'multiple characters',
         'animal', 'creature', 'monster',
         'blurry', 'low quality', 'distorted', 'ugly', 'deformed',
         'watermark', 'text', 'signature'
     ].join(', ');
+
+    console.log('🚀 Starting SINGLE character image generation...');
+    console.log('📝 Combined prompt length:', prompt.length, 'characters');
 
     const response = await fetch('https://api.novita.ai/v3/async/txt2img', {
         method: 'POST',
@@ -53,7 +57,9 @@ async function generateImageWithNovita(prompt: string, negativePrompt: string): 
                 negative_prompt: absoluteNegative,
                 width: 512,
                 height: 768,
+                // CRITICAL: Generate ONLY ONE image with ALL characteristics combined
                 image_num: 1,
+                batch_size: 1,
                 sampler_name: 'DPM++ 2M Karras',
                 guidance_scale: 7.5,
                 steps: 30,
@@ -64,11 +70,14 @@ async function generateImageWithNovita(prompt: string, negativePrompt: string): 
 
     if (!response.ok) {
         const error = await response.text();
+        console.error('❌ Novita API error:', error);
         throw new Error(`Novita API error: ${error}`);
     }
 
     const data = await response.json();
     const taskId = data.task_id;
+
+    console.log('🎨 Task started. ID:', taskId);
 
     // Poll for completion
     let attempts = 0;
@@ -85,19 +94,33 @@ async function generateImageWithNovita(prompt: string, negativePrompt: string): 
         });
 
         if (!progressResponse.ok) {
-            throw new Error('Failed to check generation progress');
+            console.warn(`⚠️ Progress check failed, attempt ${attempts}/${maxAttempts}`);
+            continue;
         }
 
         const progressData = await progressResponse.json();
 
         if (progressData.task.status === 'TASK_STATUS_SUCCEED') {
+            // CRITICAL: Only return the FIRST (and should be ONLY) image
             const imageUrl = progressData.images[0]?.image_url;
             if (!imageUrl) {
                 throw new Error('No image URL in response');
             }
+            console.log('✅ SINGLE character image generated successfully!');
+            console.log('🖼️ Image URL:', imageUrl);
+            console.log('📊 Images in response:', progressData.images?.length || 0);
+            
+            if (progressData.images?.length > 1) {
+                console.warn(`⚠️ WARNING: Got ${progressData.images.length} images, expected 1. Using first only.`);
+            }
+            
             return imageUrl;
         } else if (progressData.task.status === 'TASK_STATUS_FAILED') {
             throw new Error('Image generation failed');
+        }
+        
+        if (attempts % 5 === 0) {
+            console.log(`⏳ Still generating... (${attempts * 2}s elapsed)`);
         }
     }
 
@@ -105,49 +128,75 @@ async function generateImageWithNovita(prompt: string, negativePrompt: string): 
 }
 
 function buildPromptFromCustomization(customization: CustomizationData): { prompt: string; negativePrompt: string } {
+    // CRITICAL: This function combines ALL selected characteristics into ONE unified prompt
+    // to generate a SINGLE character image with ALL features combined
+    
     // FORCE FEMALE ONLY - NO EXCEPTIONS
-    const femaleOnly = 'woman, female, lady, girl, beautiful woman, solo woman, single woman only';
+    const femaleOnly = 'ONE beautiful woman, single female character, solo portrait, lone woman';
     
     const styleDescriptor = customization.style === 'anime' 
-        ? 'anime girl, anime woman, female anime character' 
-        : 'beautiful woman, photorealistic woman, female model';
+        ? 'anime girl, anime woman, female anime character, anime art style' 
+        : 'photorealistic woman, professional female portrait, realistic photography';
 
     const ageDescriptor = customization.age ? `${customization.age} year old woman` : 'young woman';
-    const bodyDescriptor = customization.body ? `${customization.body} woman` : '';
-    const ethnicityDescriptor = customization.ethnicity ? `${customization.ethnicity} woman` : '';
+    const bodyDescriptor = customization.body ? `${customization.body} body type woman` : '';
+    const ethnicityDescriptor = customization.ethnicity ? `${customization.ethnicity} ethnicity woman` : '';
     
-    const hairDescriptor = [
-        customization.hair_style && `${customization.hair_style.toLowerCase()} hair`,
-        customization.hair_length && `${customization.hair_length.toLowerCase()} hair`,
-        customization.hair_color && `${customization.hair_color.toLowerCase()} hair`,
-    ].filter(Boolean).join(', ');
+    // Combine ALL hair attributes into one description
+    const hairParts = [
+        customization.hair_color && customization.hair_length && customization.hair_style
+            ? `${customization.hair_color.toLowerCase()} ${customization.hair_length.toLowerCase()} ${customization.hair_style.toLowerCase()} hairstyle`
+            : customization.hair_style && customization.hair_color
+            ? `${customization.hair_color.toLowerCase()} ${customization.hair_style.toLowerCase()} hair`
+            : customization.hair_color && customization.hair_length
+            ? `${customization.hair_color.toLowerCase()} ${customization.hair_length.toLowerCase()} hair`
+            : [
+                customization.hair_style && `${customization.hair_style.toLowerCase()} hair`,
+                customization.hair_length && `${customization.hair_length.toLowerCase()} hair`,
+                customization.hair_color && `${customization.hair_color.toLowerCase()} hair`,
+            ].filter(Boolean).join(', ')
+    ];
 
-    const faceDescriptor = [
-        customization.eye_color && `${customization.eye_color.toLowerCase()} eyes`,
-        customization.eye_shape && `${customization.eye_shape.toLowerCase()} eyes`,
+    // Combine ALL face features into one description
+    const faceParts = [
+        customization.eye_color && customization.eye_shape
+            ? `${customization.eye_shape.toLowerCase()} shaped ${customization.eye_color.toLowerCase()} eyes`
+            : [
+                customization.eye_color && `${customization.eye_color.toLowerCase()} eyes`,
+                customization.eye_shape && `${customization.eye_shape.toLowerCase()} eyes`,
+            ].filter(Boolean).join(', '),
         customization.lip_shape && `${customization.lip_shape.toLowerCase()} lips`,
-        customization.face_shape && `${customization.face_shape.toLowerCase()} face`,
+        customization.face_shape && `${customization.face_shape.toLowerCase()} face shape`,
     ].filter(Boolean).join(', ');
 
-    const bodyDetailsDescriptor = [
+    // Combine ALL body details
+    const bodyDetailsParts = [
         customization.bust && `${customization.bust.toLowerCase()} bust`,
         customization.hips && `${customization.hips.toLowerCase()} hips`,
     ].filter(Boolean).join(', ');
 
+    // Combine everything into ONE comprehensive prompt
     const allDescriptors = [
         femaleOnly,
         styleDescriptor,
         ageDescriptor,
         bodyDescriptor,
         ethnicityDescriptor,
-        hairDescriptor,
-        faceDescriptor,
-        bodyDetailsDescriptor,
+        hairParts,
+        faceParts,
+        bodyDetailsParts,
+        'high quality',
+        'detailed features',
+        'beautiful lighting',
+        'centered portrait',
+        'professional composition',
     ].filter(Boolean);
 
-    const prompt = allDescriptors.join(', ') + ', high quality, detailed, beautiful, portrait';
+    const prompt = allDescriptors.join(', ');
 
     const negativePrompt = ''; // Will be filled by generateImageWithNovita
+
+    console.log('🎯 COMBINED PROMPT FOR SINGLE CHARACTER:', prompt);
 
     return { prompt, negativePrompt };
 }
