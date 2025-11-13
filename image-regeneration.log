@@ -1,0 +1,673 @@
+nohup: ignoring input
+🚀 Starting attribute image generation...
+
+📊 Total images to generate: 246
+
+⏱️  Estimated time: 103 minutes
+
+
+============================================================
+📂 Category: AGE
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: age-18-19-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 18-1...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 65.84 KB
+  📁 File path: attribute-images/age-18-19-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-realistic.jpg
+
+📊 Progress: 1/246 (1 ✅, 0 ❌)
+
+📸 Processing: age-20s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 20s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 67.64 KB
+  📁 File path: attribute-images/age-20s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-realistic.jpg
+
+📊 Progress: 2/246 (2 ✅, 0 ❌)
+
+📸 Processing: age-30s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 30s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 67.29 KB
+  📁 File path: attribute-images/age-30s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-realistic.jpg
+
+📊 Progress: 3/246 (3 ✅, 0 ❌)
+
+📸 Processing: age-40s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 40s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 74.45 KB
+  📁 File path: attribute-images/age-40s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-realistic.jpg
+
+📊 Progress: 4/246 (4 ✅, 0 ❌)
+
+📸 Processing: age-50s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 50s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 75.07 KB
+  📁 File path: attribute-images/age-50s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-realistic.jpg
+
+📊 Progress: 5/246 (5 ✅, 0 ❌)
+
+📸 Processing: age-60s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 60s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 72.84 KB
+  📁 File path: attribute-images/age-60s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-realistic.jpg
+
+📊 Progress: 6/246 (6 ✅, 0 ❌)
+
+📸 Processing: age-70+-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 70+ ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 108.53 KB
+  📁 File path: attribute-images/age-70--realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-70--realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-70--realistic.jpg
+
+📊 Progress: 7/246 (7 ✅, 0 ❌)
+
+🎨 Style: anime
+
+📸 Processing: age-18-19-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 18-1...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 129.40 KB
+  📁 File path: attribute-images/age-18-19-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-anime.jpg
+
+📊 Progress: 8/246 (8 ✅, 0 ❌)
+
+📸 Processing: age-20s-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 20s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 123.72 KB
+  📁 File path: attribute-images/age-20s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-anime.jpg
+
+📊 Progress: 9/246 (9 ✅, 0 ❌)
+
+📸 Processing: age-30s-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 30s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 124.40 KB
+  📁 File path: attribute-images/age-30s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-anime.jpg
+
+📊 Progress: 10/246 (10 ✅, 0 ❌)
+
+📸 Processing: age-40s-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 40s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 134.43 KB
+  📁 File path: attribute-images/age-40s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-anime.jpg
+
+📊 Progress: 11/246 (11 ✅, 0 ❌)
+
+📸 Processing: age-50s-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 50s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 143.33 KB
+  📁 File path: attribute-images/age-50s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-anime.jpg
+
+📊 Progress: 12/246 (12 ✅, 0 ❌)
+
+📸 Processing: age-60s-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 60s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 102.86 KB
+  📁 File path: attribute-images/age-60s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-anime.jpg
+
+📊 Progress: 13/246 (13 ✅, 0 ❌)
+
+📸 Processing: age-70+-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 70+ ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 106.60 KB
+  📁 File path: attribute-images/age-70--anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-70--anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-70--anime.jpg
+
+📊 Progress: 14/246 (14 ✅, 0 ❌)
+
+============================================================
+📂 Category: BODY
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: body-Muscular-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Musc...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 58.54 KB
+  📁 File path: attribute-images/body-muscular-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-muscular-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-muscular-realistic.jpg
+
+📊 Progress: 15/246 (15 ✅, 0 ❌)
+
+📸 Processing: body-Athletic-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Athl...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 80.10 KB
+  📁 File path: attribute-images/body-athletic-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-athletic-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-athletic-realistic.jpg
+
+📊 Progress: 16/246 (16 ✅, 0 ❌)
+
+📸 Processing: body-Slim-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Slim...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 62.86 KB
+  📁 File path: attribute-images/body-slim-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-slim-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-slim-realistic.jpg
+
+📊 Progress: 17/246 (17 ✅, 0 ❌)
+
+📸 Processing: body-Chubby-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Chub...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 62.75 KB
+  📁 File path: attribute-images/body-chubby-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-chubby-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-chubby-realistic.jpg
+
+📊 Progress: 18/246 (18 ✅, 0 ❌)
+
+📸 Processing: body-Cub-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Cub ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 59.57 KB
+  📁 File path: attribute-images/body-cub-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-cub-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-cub-realistic.jpg
+
+📊 Progress: 19/246 (19 ✅, 0 ❌)
+
+📸 Processing: body-Average-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Aver...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 53.54 KB
+  📁 File path: attribute-images/body-average-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-average-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-average-realistic.jpg
+
+📊 Progress: 20/246 (20 ✅, 0 ❌)
+
+📸 Processing: body-Curvy-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Curv...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 64.03 KB
+  📁 File path: attribute-images/body-curvy-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-curvy-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-curvy-realistic.jpg
+
+📊 Progress: 21/246 (21 ✅, 0 ❌)
+
+🎨 Style: anime
+
+📸 Processing: body-Muscular-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Musc...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 85.53 KB
+  📁 File path: attribute-images/body-muscular-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-muscular-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-muscular-anime.jpg
+
+📊 Progress: 22/246 (22 ✅, 0 ❌)
+
+📸 Processing: body-Athletic-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Athl...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 86.01 KB
+  📁 File path: attribute-images/body-athletic-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-athletic-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-athletic-anime.jpg
+
+📊 Progress: 23/246 (23 ✅, 0 ❌)
+
+📸 Processing: body-Slim-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Slim...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 115.58 KB
+  📁 File path: attribute-images/body-slim-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-slim-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-slim-anime.jpg
+
+📊 Progress: 24/246 (24 ✅, 0 ❌)
+
+📸 Processing: body-Chubby-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Chub...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 78.16 KB
+  📁 File path: attribute-images/body-chubby-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-chubby-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-chubby-anime.jpg
+
+📊 Progress: 25/246 (25 ✅, 0 ❌)
+
+📸 Processing: body-Cub-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Cub ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 75.44 KB
+  📁 File path: attribute-images/body-cub-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-cub-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-cub-anime.jpg
+
+📊 Progress: 26/246 (26 ✅, 0 ❌)
+
+📸 Processing: body-Average-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Aver...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 103.73 KB
+  📁 File path: attribute-images/body-average-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-average-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-average-anime.jpg
+
+📊 Progress: 27/246 (27 ✅, 0 ❌)
+
+📸 Processing: body-Curvy-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Curv...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 70.58 KB
+  📁 File path: attribute-images/body-curvy-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-curvy-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-curvy-anime.jpg
+
+📊 Progress: 28/246 (28 ✅, 0 ❌)
+
+============================================================
+📂 Category: ETHNICITY
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: ethnicity-Caucasian-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Cauc...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 73.22 KB
+  📁 File path: attribute-images/ethnicity-caucasian-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-caucasian-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-caucasian-realistic.jpg
+
+📊 Progress: 29/246 (29 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Asian-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Asia...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 80.61 KB
+  📁 File path: attribute-images/ethnicity-asian-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-asian-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-asian-realistic.jpg
+
+📊 Progress: 30/246 (30 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Arab-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Arab...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 133.78 KB
+  📁 File path: attribute-images/ethnicity-arab-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-arab-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-arab-realistic.jpg
+
+📊 Progress: 31/246 (31 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Indian-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Indi...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 108.61 KB
+  📁 File path: attribute-images/ethnicity-indian-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-indian-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-indian-realistic.jpg
+
+📊 Progress: 32/246 (32 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Latina-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Lati...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 84.00 KB
+  📁 File path: attribute-images/ethnicity-latina-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-latina-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-latina-realistic.jpg
+
+📊 Progress: 33/246 (33 ✅, 0 ❌)
+
+📸 Processing: ethnicity-African-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Afri...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 101.51 KB
+  📁 File path: attribute-images/ethnicity-african-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-african-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-african-realistic.jpg
+
+📊 Progress: 34/246 (34 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Mixed-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Mixe...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 80.00 KB
+  📁 File path: attribute-images/ethnicity-mixed-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-mixed-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-mixed-realistic.jpg
+
+📊 Progress: 35/246 (35 ✅, 0 ❌)
+
+🎨 Style: anime
+
+📸 Processing: ethnicity-Caucasian-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Cauc...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 104.33 KB
+  📁 File path: attribute-images/ethnicity-caucasian-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-caucasian-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-caucasian-anime.jpg
+
+📊 Progress: 36/246 (36 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Asian-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Asia...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 102.63 KB
+  📁 File path: attribute-images/ethnicity-asian-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-asian-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-asian-anime.jpg
+
+📊 Progress: 37/246 (37 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Arab-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Arab...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 113.08 KB
+  📁 File path: attribute-images/ethnicity-arab-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-arab-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-arab-anime.jpg
+
+📊 Progress: 38/246 (38 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Indian-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Indi...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 124.77 KB
+  📁 File path: attribute-images/ethnicity-indian-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-indian-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-indian-anime.jpg
+
+📊 Progress: 39/246 (39 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Latina-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Lati...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 119.48 KB
+  📁 File path: attribute-images/ethnicity-latina-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-latina-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-latina-anime.jpg
+
+📊 Progress: 40/246 (40 ✅, 0 ❌)
+
+📸 Processing: ethnicity-African-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Afri...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 125.55 KB
+  📁 File path: attribute-images/ethnicity-african-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-african-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-african-anime.jpg
+
+📊 Progress: 41/246 (41 ✅, 0 ❌)
+
+📸 Processing: ethnicity-Mixed-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Mixe...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 128.32 KB
+  📁 File path: attribute-images/ethnicity-mixed-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-mixed-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/ethnicity-mixed-anime.jpg
+
+📊 Progress: 42/246 (42 ✅, 0 ❌)
+
+============================================================
+📂 Category: HAIR_STYLE
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: hair_style-Straight-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Stra...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 75.65 KB
+  📁 File path: attribute-images/hair_style-straight-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-straight-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-straight-realistic.jpg
+
+📊 Progress: 43/246 (43 ✅, 0 ❌)
+
+📸 Processing: hair_style-Wavy-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Wavy...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 100.56 KB
+  📁 File path: attribute-images/hair_style-wavy-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-wavy-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-wavy-realistic.jpg
+
+📊 Progress: 44/246 (44 ✅, 0 ❌)
+
+📸 Processing: hair_style-Curly-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Curl...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 117.98 KB
+  📁 File path: attribute-images/hair_style-curly-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-curly-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-curly-realistic.jpg
+
+📊 Progress: 45/246 (45 ✅, 0 ❌)
+
+📸 Processing: hair_style-Coily-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Coil...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 71.10 KB
+  📁 File path: attribute-images/hair_style-coily-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-coily-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-coily-realistic.jpg
+
+📊 Progress: 46/246 (46 ✅, 0 ❌)
+
+📸 Processing: hair_style-Braided-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Brai...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 83.63 KB
+  📁 File path: attribute-images/hair_style-braided-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-braided-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-braided-realistic.jpg
+
+📊 Progress: 47/246 (47 ✅, 0 ❌)
+
+📸 Processing: hair_style-Bun-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Bun ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 81.22 KB
+  📁 File path: attribute-images/hair_style-bun-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-bun-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-bun-realistic.jpg
+
+📊 Progress: 48/246 (48 ✅, 0 ❌)
+
+📸 Processing: hair_style-Ponytail-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Pony...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 79.21 KB
+  📁 File path: attribute-images/hair_style-ponytail-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-ponytail-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-ponytail-realistic.jpg
+
+📊 Progress: 49/246 (49 ✅, 0 ❌)
+
+📸 Processing: hair_style-Bob-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Bob ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 86.14 KB
+  📁 File path: attribute-images/hair_style-bob-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-bob-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-bob-realistic.jpg
+
+📊 Progress: 50/246 (50 ✅, 0 ❌)
+
+🎨 Style: anime
+
+📸 Processing: hair_style-Straight-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Stra...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 118.80 KB
+  📁 File path: attribute-images/hair_style-straight-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-straight-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-straight-anime.jpg
+
+📊 Progress: 51/246 (51 ✅, 0 ❌)
+
+📸 Processing: hair_style-Wavy-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Wavy...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 122.39 KB
+  📁 File path: attribute-images/hair_style-wavy-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-wavy-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/hair_style-wavy-anime.jpg
+
+📊 Progress: 52/246 (52 ✅, 0 ❌)
+
+📸 Processing: hair_style-Curly-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Curl...
+  ❌ Failed: request to https://api.novita.ai/v3/async/txt2img failed, reason: 
+
+📊 Progress: 53/246 (52 ✅, 1 ❌)
+
+📸 Processing: hair_style-Coily-anime
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, Coil...
+  ✅ Generated successfully

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Images - Simple View</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .controls {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #333;
+            color: #fff;
+            font-size: 14px;
+        }
+        button {
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .image-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .image-item {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .image-item img {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #444;
+        }
+        .image-info {
+            flex: 1;
+        }
+        .image-info h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+        .info-row {
+            padding: 5px 0;
+            border-bottom: 1px solid #333;
+        }
+        .info-label {
+            color: #888;
+            display: inline-block;
+            width: 120px;
+        }
+        .url-link {
+            color: #60a5fa;
+            text-decoration: none;
+            word-break: break-all;
+            font-size: 12px;
+        }
+        .url-link:hover {
+            text-decoration: underline;
+        }
+        .copy-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .status {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Cloudinary Character Images</h1>
+        <p id="totalCount">Loading...</p>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="search" placeholder="Search by ID or URL..." style="width: 300px;">
+        <select id="formatFilter">
+            <option value="">All Formats</option>
+            <option value="webp">WebP</option>
+            <option value="jpg">JPG</option>
+            <option value="png">PNG</option>
+            <option value="avif">AVIF</option>
+        </select>
+        <select id="limitSelect">
+            <option value="20">Show 20</option>
+            <option value="50">Show 50</option>
+            <option value="100">Show 100</option>
+            <option value="999">Show All</option>
+        </select>
+        <button onclick="applyFilters()">Apply Filters</button>
+    </div>
+
+    <div class="status" id="status">Loading images...</div>
+
+    <div class="image-list" id="imageList"></div>
+
+    <script>
+        let allImages = [];
+        let displayedImages = [];
+
+        // Load images
+        fetch('cloudinary-ai-characters-list.json')
+            .then(res => res.json())
+            .then(data => {
+                allImages = data;
+                document.getElementById('totalCount').textContent = `Total: ${allImages.length} images`;
+                applyFilters();
+            })
+            .catch(err => {
+                document.getElementById('status').innerHTML = 
+                    '<span style="color: #ef4444;">Error loading images. Make sure JSON file exists.</span>';
+            });
+
+        function applyFilters() {
+            const search = document.getElementById('search').value.toLowerCase();
+            const format = document.getElementById('formatFilter').value;
+            const limit = parseInt(document.getElementById('limitSelect').value);
+
+            displayedImages = allImages.filter(img => {
+                const matchesSearch = !search || 
+                    img.public_id.toLowerCase().includes(search) ||
+                    img.secure_url.toLowerCase().includes(search);
+                const matchesFormat = !format || img.format === format;
+                return matchesSearch && matchesFormat;
+            });
+
+            const toShow = displayedImages.slice(0, limit);
+            
+            document.getElementById('status').textContent = 
+                `Showing ${toShow.length} of ${displayedImages.length} images`;
+
+            renderImages(toShow);
+        }
+
+        function renderImages(images) {
+            const list = document.getElementById('imageList');
+            
+            if (images.length === 0) {
+                list.innerHTML = '<div class="status">No images found</div>';
+                return;
+            }
+
+            list.innerHTML = images.map((img, idx) => `
+                <div class="image-item">
+                    <img src="${img.secure_url}" alt="${img.public_id}" 
+                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23333%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23666%22%3EImage not loading%3C/text%3E%3C/svg%3E';">
+                    <div class="image-info">
+                        <h3>#${idx + 1} - ${img.public_id.replace('ai-characters/', '')}</h3>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Created:</span>
+                            <span>${new Date(img.created_at).toLocaleString()}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Format:</span>
+                            <span>${img.format.toUpperCase()}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Dimensions:</span>
+                            <span>${img.width} x ${img.height}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Size:</span>
+                            <span>${(img.bytes / 1024).toFixed(2)} KB</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">URL:</span>
+                            <a href="${img.secure_url}" target="_blank" class="url-link">${img.secure_url}</a>
+                            <button class="copy-btn" onclick="copyUrl('${img.secure_url}')">Copy URL</button>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Public ID:</span>
+                            <span style="font-family: monospace; font-size: 12px;">${img.public_id}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copied to clipboard!');
+            });
+        }
+
+        // Enter key to search
+        document.getElementById('search').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') applyFilters();
+        });
+    </script>
+</body>
+</html>

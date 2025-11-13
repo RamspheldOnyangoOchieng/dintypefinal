@@ -1,0 +1,1603 @@
+nohup: ignoring input
+🚀 Starting attribute image generation...
+
+📊 Total images to generate: 246
+
+⏱️  Estimated time: 103 minutes
+
+
+============================================================
+📂 Category: AGE
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: age-18-19-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 1/246 (0 ✅, 1 ❌)
+
+📸 Processing: age-20s-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 2/246 (0 ✅, 2 ❌)
+
+📸 Processing: age-30s-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 3/246 (0 ✅, 3 ❌)
+
+📸 Processing: age-40s-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 4/246 (0 ✅, 4 ❌)
+
+📸 Processing: age-50s-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 5/246 (0 ✅, 5 ❌)
+
+📸 Processing: age-60s-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 6/246 (0 ✅, 6 ❌)
+
+📸 Processing: age-70+-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 7/246 (0 ✅, 7 ❌)
+
+🎨 Style: anime
+
+📸 Processing: age-18-19-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 8/246 (0 ✅, 8 ❌)
+
+📸 Processing: age-20s-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 9/246 (0 ✅, 9 ❌)
+
+📸 Processing: age-30s-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 10/246 (0 ✅, 10 ❌)
+
+📸 Processing: age-40s-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 11/246 (0 ✅, 11 ❌)
+
+📸 Processing: age-50s-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 12/246 (0 ✅, 12 ❌)
+
+📸 Processing: age-60s-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 13/246 (0 ✅, 13 ❌)
+
+📸 Processing: age-70+-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 14/246 (0 ✅, 14 ❌)
+
+============================================================
+📂 Category: BODY
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: body-Muscular-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 15/246 (0 ✅, 15 ❌)
+
+📸 Processing: body-Athletic-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 16/246 (0 ✅, 16 ❌)
+
+📸 Processing: body-Slim-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 17/246 (0 ✅, 17 ❌)
+
+📸 Processing: body-Chubby-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 18/246 (0 ✅, 18 ❌)
+
+📸 Processing: body-Cub-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 19/246 (0 ✅, 19 ❌)
+
+📸 Processing: body-Average-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 20/246 (0 ✅, 20 ❌)
+
+📸 Processing: body-Curvy-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 21/246 (0 ✅, 21 ❌)
+
+🎨 Style: anime
+
+📸 Processing: body-Muscular-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 22/246 (0 ✅, 22 ❌)
+
+📸 Processing: body-Athletic-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 23/246 (0 ✅, 23 ❌)
+
+📸 Processing: body-Slim-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 24/246 (0 ✅, 24 ❌)
+
+📸 Processing: body-Chubby-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 25/246 (0 ✅, 25 ❌)
+
+📸 Processing: body-Cub-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 26/246 (0 ✅, 26 ❌)
+
+📸 Processing: body-Average-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 27/246 (0 ✅, 27 ❌)
+
+📸 Processing: body-Curvy-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 28/246 (0 ✅, 28 ❌)
+
+============================================================
+📂 Category: ETHNICITY
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: ethnicity-Caucasian-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 29/246 (0 ✅, 29 ❌)
+
+📸 Processing: ethnicity-Asian-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 30/246 (0 ✅, 30 ❌)
+
+📸 Processing: ethnicity-Arab-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 31/246 (0 ✅, 31 ❌)
+
+📸 Processing: ethnicity-Indian-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 32/246 (0 ✅, 32 ❌)
+
+📸 Processing: ethnicity-Latina-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 33/246 (0 ✅, 33 ❌)
+
+📸 Processing: ethnicity-African-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 34/246 (0 ✅, 34 ❌)
+
+📸 Processing: ethnicity-Mixed-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 35/246 (0 ✅, 35 ❌)
+
+🎨 Style: anime
+
+📸 Processing: ethnicity-Caucasian-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 36/246 (0 ✅, 36 ❌)
+
+📸 Processing: ethnicity-Asian-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 37/246 (0 ✅, 37 ❌)
+
+📸 Processing: ethnicity-Arab-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 38/246 (0 ✅, 38 ❌)
+
+📸 Processing: ethnicity-Indian-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 39/246 (0 ✅, 39 ❌)
+
+📸 Processing: ethnicity-Latina-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 40/246 (0 ✅, 40 ❌)
+
+📸 Processing: ethnicity-African-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 41/246 (0 ✅, 41 ❌)
+
+📸 Processing: ethnicity-Mixed-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 42/246 (0 ✅, 42 ❌)
+
+============================================================
+📂 Category: HAIR_STYLE
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: hair_style-Straight-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 43/246 (0 ✅, 43 ❌)
+
+📸 Processing: hair_style-Wavy-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 44/246 (0 ✅, 44 ❌)
+
+📸 Processing: hair_style-Curly-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 45/246 (0 ✅, 45 ❌)
+
+📸 Processing: hair_style-Coily-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 46/246 (0 ✅, 46 ❌)
+
+📸 Processing: hair_style-Braided-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 47/246 (0 ✅, 47 ❌)
+
+📸 Processing: hair_style-Bun-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 48/246 (0 ✅, 48 ❌)
+
+📸 Processing: hair_style-Ponytail-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 49/246 (0 ✅, 49 ❌)
+
+📸 Processing: hair_style-Bob-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 50/246 (0 ✅, 50 ❌)
+
+🎨 Style: anime
+
+📸 Processing: hair_style-Straight-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 51/246 (0 ✅, 51 ❌)
+
+📸 Processing: hair_style-Wavy-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 52/246 (0 ✅, 52 ❌)
+
+📸 Processing: hair_style-Curly-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 53/246 (0 ✅, 53 ❌)
+
+📸 Processing: hair_style-Coily-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 54/246 (0 ✅, 54 ❌)
+
+📸 Processing: hair_style-Braided-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 55/246 (0 ✅, 55 ❌)
+
+📸 Processing: hair_style-Bun-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 56/246 (0 ✅, 56 ❌)
+
+📸 Processing: hair_style-Ponytail-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 57/246 (0 ✅, 57 ❌)
+
+📸 Processing: hair_style-Bob-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 58/246 (0 ✅, 58 ❌)
+
+============================================================
+📂 Category: HAIR_LENGTH
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: hair_length-Bald-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 59/246 (0 ✅, 59 ❌)
+
+📸 Processing: hair_length-Buzz Cut-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 60/246 (0 ✅, 60 ❌)
+
+📸 Processing: hair_length-Short-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 61/246 (0 ✅, 61 ❌)
+
+📸 Processing: hair_length-Shoulder-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 62/246 (0 ✅, 62 ❌)
+
+📸 Processing: hair_length-Mid-Back-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 63/246 (0 ✅, 63 ❌)
+
+📸 Processing: hair_length-Waist-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 64/246 (0 ✅, 64 ❌)
+
+📸 Processing: hair_length-Hip-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 65/246 (0 ✅, 65 ❌)
+
+📸 Processing: hair_length-Floor-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 66/246 (0 ✅, 66 ❌)
+
+🎨 Style: anime
+
+📸 Processing: hair_length-Bald-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 67/246 (0 ✅, 67 ❌)
+
+📸 Processing: hair_length-Buzz Cut-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 68/246 (0 ✅, 68 ❌)
+
+📸 Processing: hair_length-Short-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 69/246 (0 ✅, 69 ❌)
+
+📸 Processing: hair_length-Shoulder-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 70/246 (0 ✅, 70 ❌)
+
+📸 Processing: hair_length-Mid-Back-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 71/246 (0 ✅, 71 ❌)
+
+📸 Processing: hair_length-Waist-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 72/246 (0 ✅, 72 ❌)
+
+📸 Processing: hair_length-Hip-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 73/246 (0 ✅, 73 ❌)
+
+📸 Processing: hair_length-Floor-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 74/246 (0 ✅, 74 ❌)
+
+============================================================
+📂 Category: HAIR_COLOR
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: hair_color-Black-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 75/246 (0 ✅, 75 ❌)
+
+📸 Processing: hair_color-Dark Brown-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 76/246 (0 ✅, 76 ❌)
+
+📸 Processing: hair_color-Brown-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 77/246 (0 ✅, 77 ❌)
+
+📸 Processing: hair_color-Light Brown-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 78/246 (0 ✅, 78 ❌)
+
+📸 Processing: hair_color-Blonde-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 79/246 (0 ✅, 79 ❌)
+
+📸 Processing: hair_color-Platinum-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 80/246 (0 ✅, 80 ❌)
+
+📸 Processing: hair_color-Red-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 81/246 (0 ✅, 81 ❌)
+
+📸 Processing: hair_color-Auburn-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 82/246 (0 ✅, 82 ❌)
+
+📸 Processing: hair_color-Gray-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 83/246 (0 ✅, 83 ❌)
+
+📸 Processing: hair_color-White-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 84/246 (0 ✅, 84 ❌)
+
+🎨 Style: anime
+
+📸 Processing: hair_color-Black-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 85/246 (0 ✅, 85 ❌)
+
+📸 Processing: hair_color-Dark Brown-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 86/246 (0 ✅, 86 ❌)
+
+📸 Processing: hair_color-Brown-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 87/246 (0 ✅, 87 ❌)
+
+📸 Processing: hair_color-Light Brown-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 88/246 (0 ✅, 88 ❌)
+
+📸 Processing: hair_color-Blonde-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 89/246 (0 ✅, 89 ❌)
+
+📸 Processing: hair_color-Platinum-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 90/246 (0 ✅, 90 ❌)
+
+📸 Processing: hair_color-Red-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 91/246 (0 ✅, 91 ❌)
+
+📸 Processing: hair_color-Auburn-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 92/246 (0 ✅, 92 ❌)
+
+📸 Processing: hair_color-Gray-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 93/246 (0 ✅, 93 ❌)
+
+📸 Processing: hair_color-White-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 94/246 (0 ✅, 94 ❌)
+
+============================================================
+📂 Category: EYE_COLOR
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: eye_color-Brown-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 95/246 (0 ✅, 95 ❌)
+
+📸 Processing: eye_color-Dark Brown-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 96/246 (0 ✅, 96 ❌)
+
+📸 Processing: eye_color-Amber-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 97/246 (0 ✅, 97 ❌)
+
+📸 Processing: eye_color-Hazel-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 98/246 (0 ✅, 98 ❌)
+
+📸 Processing: eye_color-Green-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 99/246 (0 ✅, 99 ❌)
+
+📸 Processing: eye_color-Blue-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 100/246 (0 ✅, 100 ❌)
+
+📸 Processing: eye_color-Light Blue-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 101/246 (0 ✅, 101 ❌)
+
+📸 Processing: eye_color-Gray-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 102/246 (0 ✅, 102 ❌)
+
+📸 Processing: eye_color-Violet-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 103/246 (0 ✅, 103 ❌)
+
+📸 Processing: eye_color-Heterochromia-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 104/246 (0 ✅, 104 ❌)
+
+🎨 Style: anime
+
+📸 Processing: eye_color-Brown-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 105/246 (0 ✅, 105 ❌)
+
+📸 Processing: eye_color-Dark Brown-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 106/246 (0 ✅, 106 ❌)
+
+📸 Processing: eye_color-Amber-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 107/246 (0 ✅, 107 ❌)
+
+📸 Processing: eye_color-Hazel-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 108/246 (0 ✅, 108 ❌)
+
+📸 Processing: eye_color-Green-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 109/246 (0 ✅, 109 ❌)
+
+📸 Processing: eye_color-Blue-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 110/246 (0 ✅, 110 ❌)
+
+📸 Processing: eye_color-Light Blue-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 111/246 (0 ✅, 111 ❌)
+
+📸 Processing: eye_color-Gray-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 112/246 (0 ✅, 112 ❌)
+
+📸 Processing: eye_color-Violet-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 113/246 (0 ✅, 113 ❌)
+
+📸 Processing: eye_color-Heterochromia-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 114/246 (0 ✅, 114 ❌)
+
+============================================================
+📂 Category: EYE_SHAPE
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: eye_shape-Almond-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 115/246 (0 ✅, 115 ❌)
+
+📸 Processing: eye_shape-Round-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 116/246 (0 ✅, 116 ❌)
+
+📸 Processing: eye_shape-Hooded-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 117/246 (0 ✅, 117 ❌)
+
+📸 Processing: eye_shape-Monolid-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 118/246 (0 ✅, 118 ❌)
+
+📸 Processing: eye_shape-Upturned-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 119/246 (0 ✅, 119 ❌)
+
+📸 Processing: eye_shape-Downturned-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 120/246 (0 ✅, 120 ❌)
+
+📸 Processing: eye_shape-Close-Set-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 121/246 (0 ✅, 121 ❌)
+
+📸 Processing: eye_shape-Wide-Set-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 122/246 (0 ✅, 122 ❌)
+
+📸 Processing: eye_shape-Deep-Set-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 123/246 (0 ✅, 123 ❌)
+
+📸 Processing: eye_shape-Prominent-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 124/246 (0 ✅, 124 ❌)
+
+🎨 Style: anime
+
+📸 Processing: eye_shape-Almond-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 125/246 (0 ✅, 125 ❌)
+
+📸 Processing: eye_shape-Round-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 126/246 (0 ✅, 126 ❌)
+
+📸 Processing: eye_shape-Hooded-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 127/246 (0 ✅, 127 ❌)
+
+📸 Processing: eye_shape-Monolid-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 128/246 (0 ✅, 128 ❌)
+
+📸 Processing: eye_shape-Upturned-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 129/246 (0 ✅, 129 ❌)
+
+📸 Processing: eye_shape-Downturned-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 130/246 (0 ✅, 130 ❌)
+
+📸 Processing: eye_shape-Close-Set-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 131/246 (0 ✅, 131 ❌)
+
+📸 Processing: eye_shape-Wide-Set-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 132/246 (0 ✅, 132 ❌)
+
+📸 Processing: eye_shape-Deep-Set-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 133/246 (0 ✅, 133 ❌)
+
+📸 Processing: eye_shape-Prominent-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 134/246 (0 ✅, 134 ❌)
+
+============================================================
+📂 Category: LIP_SHAPE
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: lip_shape-Full-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 135/246 (0 ✅, 135 ❌)
+
+📸 Processing: lip_shape-Thin-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 136/246 (0 ✅, 136 ❌)
+
+📸 Processing: lip_shape-Heart-Shaped-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 137/246 (0 ✅, 137 ❌)
+
+📸 Processing: lip_shape-Bow-Shaped-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 138/246 (0 ✅, 138 ❌)
+
+📸 Processing: lip_shape-Round-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 139/246 (0 ✅, 139 ❌)
+
+📸 Processing: lip_shape-Wide-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 140/246 (0 ✅, 140 ❌)
+
+📸 Processing: lip_shape-Heavy Bottom-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 141/246 (0 ✅, 141 ❌)
+
+📸 Processing: lip_shape-Heavy Top-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 142/246 (0 ✅, 142 ❌)
+
+📸 Processing: lip_shape-Downturned-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 143/246 (0 ✅, 143 ❌)
+
+📸 Processing: lip_shape-Upturned-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 144/246 (0 ✅, 144 ❌)
+
+🎨 Style: anime
+
+📸 Processing: lip_shape-Full-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 145/246 (0 ✅, 145 ❌)
+
+📸 Processing: lip_shape-Thin-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 146/246 (0 ✅, 146 ❌)
+
+📸 Processing: lip_shape-Heart-Shaped-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 147/246 (0 ✅, 147 ❌)
+
+📸 Processing: lip_shape-Bow-Shaped-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 148/246 (0 ✅, 148 ❌)
+
+📸 Processing: lip_shape-Round-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 149/246 (0 ✅, 149 ❌)
+
+📸 Processing: lip_shape-Wide-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 150/246 (0 ✅, 150 ❌)
+
+📸 Processing: lip_shape-Heavy Bottom-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 151/246 (0 ✅, 151 ❌)
+
+📸 Processing: lip_shape-Heavy Top-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 152/246 (0 ✅, 152 ❌)
+
+📸 Processing: lip_shape-Downturned-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 153/246 (0 ✅, 153 ❌)
+
+📸 Processing: lip_shape-Upturned-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 154/246 (0 ✅, 154 ❌)
+
+============================================================
+📂 Category: PERSONALITY
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: personality-Caregiver-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 155/246 (0 ✅, 155 ❌)
+
+📸 Processing: personality-Sage-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 156/246 (0 ✅, 156 ❌)
+
+📸 Processing: personality-Innocent-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 157/246 (0 ✅, 157 ❌)
+
+📸 Processing: personality-Jester-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 158/246 (0 ✅, 158 ❌)
+
+📸 Processing: personality-Temptress-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 159/246 (0 ✅, 159 ❌)
+
+📸 Processing: personality-Dominant-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 160/246 (0 ✅, 160 ❌)
+
+📸 Processing: personality-Submissive-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 161/246 (0 ✅, 161 ❌)
+
+📸 Processing: personality-Lover-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 162/246 (0 ✅, 162 ❌)
+
+📸 Processing: personality-Nympho-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 163/246 (0 ✅, 163 ❌)
+
+📸 Processing: personality-Mean-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 164/246 (0 ✅, 164 ❌)
+
+📸 Processing: personality-Confidant-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 165/246 (0 ✅, 165 ❌)
+
+📸 Processing: personality-Experimenter-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 166/246 (0 ✅, 166 ❌)
+
+🎨 Style: anime
+
+📸 Processing: personality-Caregiver-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 167/246 (0 ✅, 167 ❌)
+
+📸 Processing: personality-Sage-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 168/246 (0 ✅, 168 ❌)
+
+📸 Processing: personality-Innocent-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 169/246 (0 ✅, 169 ❌)
+
+📸 Processing: personality-Jester-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 170/246 (0 ✅, 170 ❌)
+
+📸 Processing: personality-Temptress-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 171/246 (0 ✅, 171 ❌)
+
+📸 Processing: personality-Dominant-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 172/246 (0 ✅, 172 ❌)
+
+📸 Processing: personality-Submissive-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 173/246 (0 ✅, 173 ❌)
+
+📸 Processing: personality-Lover-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 174/246 (0 ✅, 174 ❌)
+
+📸 Processing: personality-Nympho-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 175/246 (0 ✅, 175 ❌)
+
+📸 Processing: personality-Mean-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 176/246 (0 ✅, 176 ❌)
+
+📸 Processing: personality-Confidant-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 177/246 (0 ✅, 177 ❌)
+
+📸 Processing: personality-Experimenter-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 178/246 (0 ✅, 178 ❌)
+
+============================================================
+📂 Category: RELATIONSHIP
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: relationship-Stranger-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 179/246 (0 ✅, 179 ❌)
+
+📸 Processing: relationship-School-Mate-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 180/246 (0 ✅, 180 ❌)
+
+📸 Processing: relationship-Colleague-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 181/246 (0 ✅, 181 ❌)
+
+📸 Processing: relationship-Mentor-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 182/246 (0 ✅, 182 ❌)
+
+📸 Processing: relationship-Girlfriend-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 183/246 (0 ✅, 183 ❌)
+
+📸 Processing: relationship-Sex-Friend-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 184/246 (0 ✅, 184 ❌)
+
+📸 Processing: relationship-Wife-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 185/246 (0 ✅, 185 ❌)
+
+📸 Processing: relationship-Mistress-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 186/246 (0 ✅, 186 ❌)
+
+📸 Processing: relationship-Friend-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 187/246 (0 ✅, 187 ❌)
+
+📸 Processing: relationship-Best-Friend-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 188/246 (0 ✅, 188 ❌)
+
+📸 Processing: relationship-Step-Sister-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 189/246 (0 ✅, 189 ❌)
+
+📸 Processing: relationship-Step-Mom-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 190/246 (0 ✅, 190 ❌)
+
+🎨 Style: anime
+
+📸 Processing: relationship-Stranger-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 191/246 (0 ✅, 191 ❌)
+
+📸 Processing: relationship-School-Mate-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 192/246 (0 ✅, 192 ❌)
+
+📸 Processing: relationship-Colleague-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 193/246 (0 ✅, 193 ❌)
+
+📸 Processing: relationship-Mentor-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 194/246 (0 ✅, 194 ❌)
+
+📸 Processing: relationship-Girlfriend-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 195/246 (0 ✅, 195 ❌)
+
+📸 Processing: relationship-Sex-Friend-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 196/246 (0 ✅, 196 ❌)
+
+📸 Processing: relationship-Wife-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 197/246 (0 ✅, 197 ❌)
+
+📸 Processing: relationship-Mistress-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 198/246 (0 ✅, 198 ❌)
+
+📸 Processing: relationship-Friend-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 199/246 (0 ✅, 199 ❌)
+
+📸 Processing: relationship-Best-Friend-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 200/246 (0 ✅, 200 ❌)
+
+📸 Processing: relationship-Step-Sister-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 201/246 (0 ✅, 201 ❌)
+
+📸 Processing: relationship-Step-Mom-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 202/246 (0 ✅, 202 ❌)
+
+============================================================
+📂 Category: FACE_SHAPE
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: face_shape-Oval-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 203/246 (0 ✅, 203 ❌)
+
+📸 Processing: face_shape-Round-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 204/246 (0 ✅, 204 ❌)
+
+📸 Processing: face_shape-Square-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 205/246 (0 ✅, 205 ❌)
+
+📸 Processing: face_shape-Heart-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 206/246 (0 ✅, 206 ❌)
+
+📸 Processing: face_shape-Diamond-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 207/246 (0 ✅, 207 ❌)
+
+📸 Processing: face_shape-Triangle-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 208/246 (0 ✅, 208 ❌)
+
+📸 Processing: face_shape-Oblong-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 209/246 (0 ✅, 209 ❌)
+
+📸 Processing: face_shape-Rectangle-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 210/246 (0 ✅, 210 ❌)
+
+📸 Processing: face_shape-Pear-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 211/246 (0 ✅, 211 ❌)
+
+📸 Processing: face_shape-Long-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 212/246 (0 ✅, 212 ❌)
+
+🎨 Style: anime
+
+📸 Processing: face_shape-Oval-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 213/246 (0 ✅, 213 ❌)
+
+📸 Processing: face_shape-Round-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 214/246 (0 ✅, 214 ❌)
+
+📸 Processing: face_shape-Square-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 215/246 (0 ✅, 215 ❌)
+
+📸 Processing: face_shape-Heart-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 216/246 (0 ✅, 216 ❌)
+
+📸 Processing: face_shape-Diamond-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 217/246 (0 ✅, 217 ❌)
+
+📸 Processing: face_shape-Triangle-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 218/246 (0 ✅, 218 ❌)
+
+📸 Processing: face_shape-Oblong-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 219/246 (0 ✅, 219 ❌)
+
+📸 Processing: face_shape-Rectangle-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 220/246 (0 ✅, 220 ❌)
+
+📸 Processing: face_shape-Pear-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 221/246 (0 ✅, 221 ❌)
+
+📸 Processing: face_shape-Long-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 222/246 (0 ✅, 222 ❌)
+
+============================================================
+📂 Category: HIPS
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: hips-Narrow-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 223/246 (0 ✅, 223 ❌)
+
+📸 Processing: hips-Moderate-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 224/246 (0 ✅, 224 ❌)
+
+📸 Processing: hips-Wide-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 225/246 (0 ✅, 225 ❌)
+
+📸 Processing: hips-Pear-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 226/246 (0 ✅, 226 ❌)
+
+📸 Processing: hips-Hip Dips-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 227/246 (0 ✅, 227 ❌)
+
+📸 Processing: hips-Round Hips-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 228/246 (0 ✅, 228 ❌)
+
+🎨 Style: anime
+
+📸 Processing: hips-Narrow-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 229/246 (0 ✅, 229 ❌)
+
+📸 Processing: hips-Moderate-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 230/246 (0 ✅, 230 ❌)
+
+📸 Processing: hips-Wide-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 231/246 (0 ✅, 231 ❌)
+
+📸 Processing: hips-Pear-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 232/246 (0 ✅, 232 ❌)
+
+📸 Processing: hips-Hip Dips-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 233/246 (0 ✅, 233 ❌)
+
+📸 Processing: hips-Round Hips-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 234/246 (0 ✅, 234 ❌)
+
+============================================================
+📂 Category: BUST
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: bust-Petite-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 235/246 (0 ✅, 235 ❌)
+
+📸 Processing: bust-Small-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 236/246 (0 ✅, 236 ❌)
+
+📸 Processing: bust-Medium-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 237/246 (0 ✅, 237 ❌)
+
+📸 Processing: bust-Full-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 238/246 (0 ✅, 238 ❌)
+
+📸 Processing: bust-Large-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 239/246 (0 ✅, 239 ❌)
+
+📸 Processing: bust-Very Large-realistic
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 240/246 (0 ✅, 240 ❌)
+
+🎨 Style: anime
+
+📸 Processing: bust-Petite-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 241/246 (0 ✅, 241 ❌)
+
+📸 Processing: bust-Small-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 242/246 (0 ✅, 242 ❌)
+
+📸 Processing: bust-Medium-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 243/246 (0 ✅, 243 ❌)
+
+📸 Processing: bust-Full-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 244/246 (0 ✅, 244 ❌)
+
+📸 Processing: bust-Large-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 245/246 (0 ✅, 245 ❌)
+
+📸 Processing: bust-Very Large-anime
+  🎨 Generating: beautiful young woman, female model, feminine face, female features, girl, lady,...
+  ❌ Failed: Novita API error: {"code":400, "reason":"INVALID_REQUEST_BODY", "message":"invalid request body", "metadata":{"details":"checkpoint model `realisticVisionV60B1_v51VAE_102308.safetensors` not allowed"}}
+
+📊 Progress: 246/246 (0 ✅, 246 ❌)
+
+============================================================
+🎉 GENERATION COMPLETE!
+============================================================
+✅ Success: 0/246
+❌ Failed: 246/246
+⏱️  Duration: 6 minutes
+============================================================

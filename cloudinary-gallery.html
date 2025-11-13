@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudinary Character Images Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .stat {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        .filters {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        input, select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-size: 0.875rem;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .card-image {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            background: #334155;
+        }
+        .card-content {
+            padding: 15px;
+        }
+        .card-date {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            margin-bottom: 8px;
+        }
+        .card-url {
+            font-size: 0.75rem;
+            color: #60a5fa;
+            word-break: break-all;
+            margin-top: 8px;
+        }
+        .card-info {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        .badge {
+            background: #334155;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        .modal-image {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+        }
+        .modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Cloudinary Character Images</h1>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="totalImages">295</div>
+                    <div class="stat-label">Total Images</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">74.5 MB</div>
+                    <div class="stat-label">Total Size</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="filteredCount">295</div>
+                    <div class="stat-label">Showing</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Search</label>
+                <input type="text" id="searchInput" placeholder="Search by ID or URL...">
+            </div>
+            <div class="filter-group">
+                <label>Format</label>
+                <select id="formatFilter">
+                    <option value="">All Formats</option>
+                    <option value="webp">WebP</option>
+                    <option value="jpg">JPG</option>
+                    <option value="png">PNG</option>
+                    <option value="avif">AVIF</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Sort By</label>
+                <select id="sortBy">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="largest">Largest First</option>
+                    <option value="smallest">Smallest First</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="gallery" id="gallery">
+            <div class="loading">Loading images...</div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕ Close</button>
+            <img class="modal-image" id="modalImage" src="" alt="">
+        </div>
+    </div>
+
+    <script>
+        let images = [];
+        let filteredImages = [];
+
+        // Load images from JSON
+        fetch('cloudinary-ai-characters-list.json')
+            .then(res => res.json())
+            .then(data => {
+                images = data;
+                filteredImages = [...images];
+                renderGallery();
+                setupFilters();
+            })
+            .catch(err => {
+                document.getElementById('gallery').innerHTML = 
+                    '<div class="loading">Error loading images. Make sure cloudinary-ai-characters-list.json exists.</div>';
+            });
+
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
+            
+            if (filteredImages.length === 0) {
+                gallery.innerHTML = '<div class="loading">No images found</div>';
+                return;
+            }
+
+            gallery.innerHTML = filteredImages.map((img, index) => `
+                <div class="card" onclick="openModal('${img.secure_url}')">
+                    <img class="card-image" 
+                         src="${img.secure_url}" 
+                         alt="${img.public_id}" 
+                         crossorigin="anonymous"
+                         onerror="this.style.background='#334155';this.alt='Failed to load: ${img.public_id}';">
+                    <div class="card-content">
+                        <div class="card-date">${new Date(img.created_at).toLocaleDateString()}</div>
+                        <div class="card-info">
+                            <span class="badge">${img.format}</span>
+                            <span>${img.width}x${img.height}</span>
+                            <span>${(img.bytes / 1024).toFixed(1)} KB</span>
+                        </div>
+                        <div class="card-url">${img.public_id}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('filteredCount').textContent = filteredImages.length;
+        }
+
+        function setupFilters() {
+            const searchInput = document.getElementById('searchInput');
+            const formatFilter = document.getElementById('formatFilter');
+            const sortBy = document.getElementById('sortBy');
+
+            function applyFilters() {
+                filteredImages = [...images];
+
+                // Search filter
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm) {
+                    filteredImages = filteredImages.filter(img => 
+                        img.public_id.toLowerCase().includes(searchTerm) ||
+                        img.secure_url.toLowerCase().includes(searchTerm)
+                    );
+                }
+
+                // Format filter
+                if (formatFilter.value) {
+                    filteredImages = filteredImages.filter(img => 
+                        img.format === formatFilter.value
+                    );
+                }
+
+                // Sort
+                const sortValue = sortBy.value;
+                filteredImages.sort((a, b) => {
+                    switch(sortValue) {
+                        case 'newest':
+                            return new Date(b.created_at) - new Date(a.created_at);
+                        case 'oldest':
+                            return new Date(a.created_at) - new Date(b.created_at);
+                        case 'largest':
+                            return b.bytes - a.bytes;
+                        case 'smallest':
+                            return a.bytes - b.bytes;
+                        default:
+                            return 0;
+                    }
+                });
+
+                renderGallery();
+            }
+
+            searchInput.addEventListener('input', applyFilters);
+            formatFilter.addEventListener('change', applyFilters);
+            sortBy.addEventListener('change', applyFilters);
+        }
+
+        function openModal(url) {
+            document.getElementById('modalImage').src = url;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Close modal on background click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+    </script>
+</body>
+</html>

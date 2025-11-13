@@ -1,0 +1,33 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Start Next.js App",
+			"command": "pnpm dev",
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"args": []
+		},
+		{
+			"label": "Start Next.js App",
+			"type": "shell",
+			"command": "pnpm dev",
+			"isBackground": true,
+			"group": "build"
+		},
+		{
+			"label": "Start Next.js App (npm)",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	]
+}

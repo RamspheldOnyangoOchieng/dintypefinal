@@ -1,0 +1,92 @@
+nohup: ignoring input
+🚀 Starting attribute image generation...
+
+📊 Total images to generate: 246
+
+⏱️  Estimated time: 103 minutes
+
+
+============================================================
+📂 Category: AGE
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: age-18-19-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 18-1...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 66.81 KB
+  📁 File path: attribute-images/age-18-19-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-realistic.jpg
+
+📊 Progress: 1/246 (1 ✅, 0 ❌)
+
+📸 Processing: age-20s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 20s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 71.39 KB
+  📁 File path: attribute-images/age-20s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-realistic.jpg
+
+📊 Progress: 2/246 (2 ✅, 0 ❌)
+
+📸 Processing: age-30s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 30s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 79.84 KB
+  📁 File path: attribute-images/age-30s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-realistic.jpg
+
+📊 Progress: 3/246 (3 ✅, 0 ❌)
+
+📸 Processing: age-40s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 40s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 85.68 KB
+  📁 File path: attribute-images/age-40s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-realistic.jpg
+
+📊 Progress: 4/246 (4 ✅, 0 ❌)
+
+📸 Processing: age-50s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 50s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 63.24 KB
+  📁 File path: attribute-images/age-50s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-realistic.jpg
+
+📊 Progress: 5/246 (5 ✅, 0 ❌)
+
+📸 Processing: age-60s-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 60s ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 68.28 KB
+  📁 File path: attribute-images/age-60s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-realistic.jpg
+
+📊 Progress: 6/246 (6 ✅, 0 ❌)
+
+📸 Processing: age-70+-realistic
+  🎨 Generating: single beautiful woman, solo female, one person only, beautiful young lady, 70+ ...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 70.94 KB
+  📁 File path: attribute-images/age-70--realistic.jpg

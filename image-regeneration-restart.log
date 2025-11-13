@@ -1,0 +1,354 @@
+nohup: ignoring input
+🚀 Starting attribute image generation...
+
+📊 Total images to generate: 246
+
+⏱️  Estimated time: 103 minutes
+
+
+============================================================
+📂 Category: AGE
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: age-18-19-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 132.69 KB
+  📁 File path: attribute-images/age-18-19-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-realistic.jpg
+
+📊 Progress: 1/246 (1 ✅, 0 ❌)
+
+📸 Processing: age-20s-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 138.56 KB
+  📁 File path: attribute-images/age-20s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-realistic.jpg
+
+📊 Progress: 2/246 (2 ✅, 0 ❌)
+
+📸 Processing: age-30s-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 137.39 KB
+  📁 File path: attribute-images/age-30s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-realistic.jpg
+
+📊 Progress: 3/246 (3 ✅, 0 ❌)
+
+📸 Processing: age-40s-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 171.09 KB
+  📁 File path: attribute-images/age-40s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-realistic.jpg
+
+📊 Progress: 4/246 (4 ✅, 0 ❌)
+
+📸 Processing: age-50s-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 146.70 KB
+  📁 File path: attribute-images/age-50s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-realistic.jpg
+
+📊 Progress: 5/246 (5 ✅, 0 ❌)
+
+📸 Processing: age-60s-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 162.64 KB
+  📁 File path: attribute-images/age-60s-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-realistic.jpg
+
+📊 Progress: 6/246 (6 ✅, 0 ❌)
+
+📸 Processing: age-70+-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 119.86 KB
+  📁 File path: attribute-images/age-70--realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-70--realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-70--realistic.jpg
+
+📊 Progress: 7/246 (7 ✅, 0 ❌)
+
+🎨 Style: anime
+
+📸 Processing: age-18-19-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 156.92 KB
+  📁 File path: attribute-images/age-18-19-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-18-19-anime.jpg
+
+📊 Progress: 8/246 (8 ✅, 0 ❌)
+
+📸 Processing: age-20s-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 164.52 KB
+  📁 File path: attribute-images/age-20s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-20s-anime.jpg
+
+📊 Progress: 9/246 (9 ✅, 0 ❌)
+
+📸 Processing: age-30s-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 149.16 KB
+  📁 File path: attribute-images/age-30s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-30s-anime.jpg
+
+📊 Progress: 10/246 (10 ✅, 0 ❌)
+
+📸 Processing: age-40s-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 142.98 KB
+  📁 File path: attribute-images/age-40s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-40s-anime.jpg
+
+📊 Progress: 11/246 (11 ✅, 0 ❌)
+
+📸 Processing: age-50s-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 147.84 KB
+  📁 File path: attribute-images/age-50s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-50s-anime.jpg
+
+📊 Progress: 12/246 (12 ✅, 0 ❌)
+
+📸 Processing: age-60s-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 144.58 KB
+  📁 File path: attribute-images/age-60s-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-60s-anime.jpg
+
+📊 Progress: 13/246 (13 ✅, 0 ❌)
+
+📸 Processing: age-70+-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 201.70 KB
+  📁 File path: attribute-images/age-70--anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-70--anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/age-70--anime.jpg
+
+📊 Progress: 14/246 (14 ✅, 0 ❌)
+
+============================================================
+📂 Category: BODY
+============================================================
+
+🎨 Style: realistic
+
+📸 Processing: body-Muscular-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 150.53 KB
+  📁 File path: attribute-images/body-muscular-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-muscular-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-muscular-realistic.jpg
+
+📊 Progress: 15/246 (15 ✅, 0 ❌)
+
+📸 Processing: body-Athletic-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 173.10 KB
+  📁 File path: attribute-images/body-athletic-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-athletic-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-athletic-realistic.jpg
+
+📊 Progress: 16/246 (16 ✅, 0 ❌)
+
+📸 Processing: body-Slim-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 147.26 KB
+  📁 File path: attribute-images/body-slim-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-slim-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-slim-realistic.jpg
+
+📊 Progress: 17/246 (17 ✅, 0 ❌)
+
+📸 Processing: body-Chubby-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 160.65 KB
+  📁 File path: attribute-images/body-chubby-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-chubby-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-chubby-realistic.jpg
+
+📊 Progress: 18/246 (18 ✅, 0 ❌)
+
+📸 Processing: body-Cub-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 128.56 KB
+  📁 File path: attribute-images/body-cub-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-cub-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-cub-realistic.jpg
+
+📊 Progress: 19/246 (19 ✅, 0 ❌)
+
+📸 Processing: body-Average-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 206.66 KB
+  📁 File path: attribute-images/body-average-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-average-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-average-realistic.jpg
+
+📊 Progress: 20/246 (20 ✅, 0 ❌)
+
+📸 Processing: body-Curvy-realistic
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 151.32 KB
+  📁 File path: attribute-images/body-curvy-realistic.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-curvy-realistic.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-curvy-realistic.jpg
+
+📊 Progress: 21/246 (21 ✅, 0 ❌)
+
+🎨 Style: anime
+
+📸 Processing: body-Muscular-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 156.68 KB
+  📁 File path: attribute-images/body-muscular-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-muscular-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-muscular-anime.jpg
+
+📊 Progress: 22/246 (22 ✅, 0 ❌)
+
+📸 Processing: body-Athletic-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 156.94 KB
+  📁 File path: attribute-images/body-athletic-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-athletic-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-athletic-anime.jpg
+
+📊 Progress: 23/246 (23 ✅, 0 ❌)
+
+📸 Processing: body-Slim-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 262.23 KB
+  📁 File path: attribute-images/body-slim-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-slim-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-slim-anime.jpg
+
+📊 Progress: 24/246 (24 ✅, 0 ❌)
+
+📸 Processing: body-Chubby-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 201.72 KB
+  📁 File path: attribute-images/body-chubby-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-chubby-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-chubby-anime.jpg
+
+📊 Progress: 25/246 (25 ✅, 0 ❌)
+
+📸 Processing: body-Cub-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 126.26 KB
+  📁 File path: attribute-images/body-cub-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-cub-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-cub-anime.jpg
+
+📊 Progress: 26/246 (26 ✅, 0 ❌)
+
+📸 Processing: body-Average-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 147.35 KB
+  📁 File path: attribute-images/body-average-anime.jpg
+  ✅ Uploaded: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-average-anime.jpg
+  💾 Saving to database...
+  ✅ Complete: https://qfjptqdkthmejxpwbmvq.supabase.co/storage/v1/object/public/attributes/attribute-images/body-average-anime.jpg
+
+📊 Progress: 27/246 (27 ✅, 0 ❌)
+
+📸 Processing: body-Curvy-anime
+  🎨 Generating: beautiful young woman, female, lady, girl, feminine features, female face, prett...
+  ✅ Generated successfully
+  📤 Uploading to Supabase storage...
+  📦 Image size: 135.98 KB
+  📁 File path: attribute-images/body-curvy-anime.jpg

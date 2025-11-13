@@ -1,0 +1,10 @@
+[dotenv@17.2.2] injecting env (26) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[migrate] Connecting to aws-1-eu-north-1.pooler.supabase.com:5432 (pooled=true) ...
+Connected to database. Applying 66 migrations...
+[migrate] Detected pooled connection string; executing without explicit transactions.
+→ 20240318_create_debug_helpers.sql ... OK
+→ 20240321_add_is_admin_function.sql ... OK
+→ 20240321_check_stripe_keys_policies.sql ... OK
+→ 20240321_create_stripe_keys_function.sql ... OK
+→ 20240321_create_stripe_keys_table.sql ... FAILED
+relation "public.admin_users" does not exist
