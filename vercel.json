@@ -5,25 +5,6 @@
   "framework": "nextjs",
   "outputDirectory": ".next",
   "regions": ["arn1"],
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "SUPABASE_DB_URL": "@supabase_db_url",
-    "STRIPE_SECRET_KEY": "@stripe_secret_key",
-    "STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
-    "STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret",
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key_public",
-    "GROQ_API_KEY": "@groq_api_key",
-    "CLOUDINARY_CLOUD_NAME": "@cloudinary_cloud_name",
-    "CLOUDINARY_API_KEY": "@cloudinary_api_key",
-    "CLOUDINARY_API_SECRET": "@cloudinary_api_secret",
-    "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "@cloudinary_cloud_name_public",
-    "SENDGRID_API_KEY": "@sendgrid_api_key",
-    "RESEND_API_KEY": "@resend_api_key",
-    "NEXT_PUBLIC_APP_URL": "@app_url",
-    "NODE_ENV": "production"
-  },
   "headers": [
     {
       "source": "/api/(.*)",
