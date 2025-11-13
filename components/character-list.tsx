@@ -65,7 +65,7 @@ export function CharacterList({ characters }: CharacterListProps) {
     }
   }
 
-  if (charactersWithImages.length === 0) {
+  if (validCharacters.length === 0) {
     return (
       <div className="text-center py-10">
         <h3 className="text-lg font-medium mb-2">No characters found</h3>
