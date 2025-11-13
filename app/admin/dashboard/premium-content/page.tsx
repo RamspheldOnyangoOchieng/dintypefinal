@@ -17,6 +17,7 @@ export default function PremiumContentPage() {
     const supabase = createClient()
     const [content, setContent] = useState<Content[]>([])
     const [editingContent, setEditingContent] = useState<Content | null>(null)
+    const [isSeeding, setIsSeeding] = useState(false)
 
     useEffect(() => {
         fetchContent()
@@ -46,11 +47,48 @@ export default function PremiumContentPage() {
         }
     }
 
+    const handleSeedData = async () => {
+        setIsSeeding(true)
+        try {
+            const response = await fetch('/api/admin/seed-premium-content', {
+                method: 'POST',
+            })
+            const data = await response.json()
+            
+            if (data.success) {
+                toast.success(`Seeded ${data.data.length} items successfully`)
+                fetchContent()
+            } else {
+                toast.error(data.error || 'Failed to seed data')
+            }
+        } catch (error) {
+            toast.error('Error seeding data')
+        } finally {
+            setIsSeeding(false)
+        }
+    }
+
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Manage Premium Page Content</h1>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold">Manage Premium Page Content</h1>
+                {content.length === 0 && (
+                    <Button onClick={handleSeedData} disabled={isSeeding}>
+                        {isSeeding ? 'Seeding...' : 'Seed Default Content'}
+                    </Button>
+                )}
+            </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {content.length === 0 ? (
+                <Card className="p-8 text-center">
+                    <CardContent>
+                        <p className="text-muted-foreground mb-4">
+                            No premium content found. Click the button above to seed default content.
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {content.map((item) => (
                     <Card key={item.id}>
                         <CardHeader>
@@ -83,6 +121,7 @@ export default function PremiumContentPage() {
                     </Card>
                 ))}
             </div>
+            )}
         </div>
     )
 }
