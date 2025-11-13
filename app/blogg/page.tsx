@@ -84,7 +84,6 @@ export default function BloggPage() {
     })
   }
 
-export default function BloggPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b bg-background">

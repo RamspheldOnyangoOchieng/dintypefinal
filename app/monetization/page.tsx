@@ -23,12 +23,12 @@ import {
   ExternalLink
 } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
-import { UserModelAnalytics } from "@/components/user-model-analytics"
-import { WithdrawalRequestForm } from "@/components/withdrawal-request-form-new"
-import { WithdrawalHistory } from "@/components/withdrawal-history-new"
+// import { UserModelAnalytics } from "@/components/user-model-analytics"
+// import { WithdrawalRequestForm } from "@/components/withdrawal-request-form-new"
+// import { WithdrawalHistory } from "@/components/withdrawal-history-new"
 import Link from "next/link"
 import { useMemo } from "react"
-import { UserModelsDisplay } from "@/components/user-models-display"
+// import { UserModelsDisplay } from "@/components/user-models-display"
 
 function RecentActivity() {
   const [items, setItems] = useState<any[] | null>(null)
@@ -621,12 +621,16 @@ export default function MonetizationPage() {
             </CardContent>
           </Card>
 
-          <UserModelAnalytics userId={user.id} />
+          {/* <UserModelAnalytics userId={user.id} /> */}
         </TabsContent>
 
         <TabsContent value="withdrawals" className="space-y-6">
-          <WithdrawalRequestForm onSuccess={() => window.location.reload()} />
-          <WithdrawalHistory />
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>Withdrawal features coming soon</AlertDescription>
+          </Alert>
+          {/* <WithdrawalRequestForm onSuccess={() => window.location.reload()} />
+          <WithdrawalHistory /> */}
         </TabsContent>
 
         <TabsContent value="models">
@@ -639,7 +643,11 @@ export default function MonetizationPage() {
               <CardDescription>Manage your purchased models and browse new ones</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <UserModelsDisplay showOnlyPurchased className="" />
+              {/* <UserModelsDisplay showOnlyPurchased className="" /> */}
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>Model management features coming soon</AlertDescription>
+              </Alert>
               <div className="text-center py-4">
                 <div className="flex gap-3 justify-center">
                   <Link href="/premium">
