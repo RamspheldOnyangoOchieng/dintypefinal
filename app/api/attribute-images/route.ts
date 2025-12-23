@@ -7,15 +7,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAttributeImage, regenerateImage, getCategoryImages, batchGenerateImages } from '@/lib/attribute-images-service';
 
-// Disable cache during regeneration - images are being updated
-export const revalidate = 0; // No cache during regeneration
+// Cache this route for 24 hours - images don't change often
+export const revalidate = 86400; // 24 hours
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const category = searchParams.get('category');
   const value = searchParams.get('value');
-  const style = (searchParams.get('style') as 'realistic' | 'anime') || 'realistic';
-  const gender = searchParams.get('gender') || undefined;
+  const style = searchParams.get('style') as 'realistic' | 'anime' || 'realistic';
 
   try {
     // If no specific value, return all images for the category
@@ -27,16 +26,14 @@ export async function GET(request: NextRequest) {
         images: Array.from(images.values())
       });
       
-      // No cache during regeneration
-      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      response.headers.set('Pragma', 'no-cache');
-      response.headers.set('Expires', '0');
+      // Add aggressive caching headers
+      response.headers.set('Cache-Control', 'public, max-age=86400, immutable');
       return response;
     }
 
     // Get specific image
     if (category && value) {
-      const image = await getAttributeImage(category, value, style, gender);
+      const image = await getAttributeImage(category, value, style);
       
       if (!image) {
         return NextResponse.json({
@@ -60,10 +57,8 @@ export async function GET(request: NextRequest) {
         updated_at: image.updated_at
       });
       
-      // No cache during regeneration
-      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      response.headers.set('Pragma', 'no-cache');
-      response.headers.set('Expires', '0');
+      // Add aggressive caching headers for 24 hours
+      response.headers.set('Cache-Control', 'public, max-age=86400, immutable');
       return response;
     }
 
@@ -83,11 +78,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-  const { action, category, value, values, style = 'realistic', gender } = body;
+    const { action, category, value, values, style = 'realistic' } = body;
 
     // Regenerate a single image
     if (action === 'regenerate' && category && value) {
-      const image = await regenerateImage(category, value, style, gender);
+      const image = await regenerateImage(category, value, style);
       
       if (!image) {
         return NextResponse.json({
@@ -104,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     // Batch generate images
     if (action === 'batch' && category && values && Array.isArray(values)) {
-      const images = await batchGenerateImages(category, values, style, gender);
+      const images = await batchGenerateImages(category, values, style);
       
       return NextResponse.json({
         success: true,
@@ -116,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     // Generate/get single image
     if (category && value) {
-      const image = await getAttributeImage(category, value, style, gender);
+      const image = await getAttributeImage(category, value, style);
       
       if (!image) {
         return NextResponse.json({

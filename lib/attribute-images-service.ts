@@ -1,201 +1,290 @@
-import { createAdminClient } from './supabase-admin'
+/**
+ * Service for managing attribute images with caching
+ */
 
-const NOVITA_API_KEY = process.env.NOVITA_API_KEY
+import { createClient } from '@/lib/supabase/server';
+import { generateImage, buildAttributePrompt, GeneratedImage } from '@/lib/novita-api';
 
-type Style = 'realistic' | 'anime'
-
-const DEFAULT_NEGATIVE = 'man, male, boy, men, masculine, beard, facial hair, mustache, guy, dude, multiple people, group, animal, creature, nude, naked, nsfw, explicit, sexual, low quality, blurry, distorted, deformed'
-
-function buildPrompt(category: string, value: string, style: Style, gender?: string) {
-  // ALWAYS FEMALE - NO EXCEPTIONS
-  const femaleBase = 'beautiful woman, single female, solo lady, one woman only';
-  
-  const styleText = style === 'anime' 
-    ? 'anime girl, anime woman, female anime character, vibrant anime, detailed anime art'
-    : 'beautiful woman, photorealistic woman, professional portrait, female model';
-
-  // Simple category-specific descriptions
-  const categoryDesc = `${value}`;
-  
-  return `${femaleBase}, ${styleText}, ${categoryDesc}, high quality, portrait, detailed, beautiful`;
+export interface AttributeImage {
+  id: string;
+  category: string;
+  value: string;
+  style: 'realistic' | 'anime';
+  image_url: string;
+  seed?: number;
+  width?: number;
+  height?: number;
+  prompt?: string;
+  created_at: string;
+  updated_at: string;
 }
 
-async function generateWithNovita(prompt: string, negative: string): Promise<string> {
-  if (!NOVITA_API_KEY) throw new Error('NOVITA_API_KEY not configured')
+/**
+ * Get cached image for an attribute - ONLY fetch from database, no generation
+ * All attribute images should be pre-generated via scripts
+ */
+export async function getAttributeImage(
+  category: string,
+  value: string,
+  style: 'realistic' | 'anime'
+): Promise<AttributeImage | null> {
+  const supabase = await createClient();
 
-  const res = await fetch('https://api.novita.ai/v3/async/txt2img', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${NOVITA_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      extra: { response_image_type: 'jpeg', enable_nsfw_detection: false },
-      request: {
-        model_name: 'dreamshaper_8_93211.safetensors', // BEST MODEL FOR WOMEN
+  try {
+    // Fetch from database - ONLY, no generation fallback
+    const { data: cached, error: fetchError } = await supabase
+      .from('attribute_images')
+      .select('*')
+      .eq('category', category)
+      .eq('value', value)
+      .eq('style', style)
+      .single();
+
+    if (cached && !fetchError) {
+      console.log(`✅ Image found for ${category}:${value}:${style}`);
+      return cached;
+    }
+
+    if (fetchError?.code === 'PGRST116') {
+      // Not found - don't try to generate, just return null quickly
+      console.warn(`❌ Image not found in DB: ${category}:${value}:${style}`);
+      return null;
+    }
+
+    // Other database errors
+    console.error(`Database error fetching ${category}:${value}:${style}:`, fetchError);
+    return null;
+  } catch (error) {
+    console.error('Error getting attribute image:', error);
+    return null;
+  }
+}
+
+/**
+ * Generate image and save to cache
+ */
+export async function generateAndCacheImage(
+  category: string,
+  value: string,
+  style: 'realistic' | 'anime'
+): Promise<AttributeImage | null> {
+  const supabase = await createClient();
+
+  try {
+    // Build prompt based on category and value
+    const attributes: any = { style };
+    attributes[category === 'body' ? 'bodyType' : category] = value;
+    
+    const prompt = buildAttributePrompt(attributes);
+
+    // Generate image
+    const generatedImage = await generateImage({ prompt, style });
+
+    // Save to database
+    const { data, error } = await supabase
+      .from('attribute_images')
+      .insert({
+        category,
+        value,
+        style,
+        image_url: generatedImage.url,
+        seed: generatedImage.seed,
+        width: generatedImage.width,
+        height: generatedImage.height,
         prompt,
-        negative_prompt: negative,
-        width: 512,
-        height: 768,
-        image_num: 1,
-        sampler_name: 'DPM++ 2M Karras',
-        guidance_scale: 7.5,
-        steps: 30,
-        seed: -1,
-      }
-    })
-  })
+      })
+      .select()
+      .single();
 
-  if (!res.ok) {
-    const txt = await res.text()
-    throw new Error(`Novita error: ${txt}`)
+    if (error) {
+      throw error;
+    }
+
+    console.log(`Successfully generated and cached image for ${category}:${value}:${style}`);
+    return data;
+  } catch (error) {
+    console.error('Error generating and caching image:', error);
+    return null;
   }
-
-  const data = await res.json()
-  const taskId = data.task_id
-
-  // Poll for completion
-  let attempts = 0
-  while (attempts < 60) {
-    await new Promise(r => setTimeout(r, 2000))
-    const progress = await fetch(`https://api.novita.ai/v3/async/task-result?task_id=${taskId}`, {
-      headers: { 'Authorization': `Bearer ${NOVITA_API_KEY}` }
-    })
-    if (!progress.ok) {
-      attempts++
-      continue
-    }
-    const pd = await progress.json()
-    if (pd.task?.status === 'TASK_STATUS_SUCCEED') {
-      return pd.images[0].image_url
-    }
-    if (pd.task?.status === 'TASK_STATUS_FAILED') {
-      throw new Error('Image generation failed')
-    }
-    attempts++
-  }
-
-  throw new Error('Image generation timeout')
 }
 
-async function uploadToSupabaseBuffer(buffer: ArrayBuffer, fileName: string) {
-  const supabase = await createAdminClient()
-  if (!supabase) throw new Error('Failed to create Supabase admin client')
+/**
+ * Get all images for a category and style
+ */
+export async function getCategoryImages(
+  category: string,
+  style: 'realistic' | 'anime'
+): Promise<Map<string, AttributeImage>> {
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.storage.from('attributes').upload(fileName, Buffer.from(buffer), {
-    contentType: 'image/jpeg',
-    cacheControl: '86400',
-    upsert: true,
-  })
-
-  if (error) throw error
-
-  const { data: urlData } = supabase.storage.from('attributes').getPublicUrl(data.path)
-  return urlData.publicUrl
-}
-
-// Exported functions used by the attribute-images route
-export async function getAttributeImage(category: string, value: string, style: Style, gender?: string) {
-  const supabase = await createAdminClient()
-
-  // Try to find existing image in DB
-  const { data: rows, error } = await supabase
+  const { data, error } = await supabase
     .from('attribute_images')
     .select('*')
     .eq('category', category)
-    .eq('value', value)
-    .eq('style', style)
-    .limit(1)
-    .single()
+    .eq('style', style);
 
   if (error) {
-    // If not found or DB error, fall through to generation
-    console.warn('Supabase lookup error for attribute image:', error.message || error)
+    console.error('Error fetching category images:', error);
+    return new Map();
   }
 
-  if (rows && rows.image_url) {
-    return rows
+  const imageMap = new Map<string, AttributeImage>();
+  data?.forEach(img => {
+    imageMap.set(img.value, img);
+  });
+
+  return imageMap;
+}
+
+/**
+ * Batch generate images for multiple values
+ */
+export async function batchGenerateImages(
+  category: string,
+  values: string[],
+  style: 'realistic' | 'anime',
+  onProgress?: (current: number, total: number, value: string) => void
+): Promise<AttributeImage[]> {
+  const results: AttributeImage[] = [];
+
+  for (let i = 0; i < values.length; i++) {
+    const value = values[i];
+    
+    if (onProgress) {
+      onProgress(i + 1, values.length, value);
+    }
+
+    try {
+      const image = await getAttributeImage(category, value, style);
+      if (image) {
+        results.push(image);
+      }
+
+      // Add delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error(`Failed to generate image for ${value}:`, error);
+    }
   }
 
-  // Generate new image using Novita and upload
+  return results;
+}
+
+/**
+ * Regenerate an existing image
+ */
+export async function regenerateImage(
+  category: string,
+  value: string,
+  style: 'realistic' | 'anime'
+): Promise<AttributeImage | null> {
+  const supabase = await createClient();
+
   try {
-    const prompt = buildPrompt(category, value, style, gender)
-    const negative = DEFAULT_NEGATIVE
-    const imageUrl = await generateWithNovita(prompt, negative)
+    // Delete existing cached image
+    await supabase
+      .from('attribute_images')
+      .delete()
+      .eq('category', category)
+      .eq('value', value)
+      .eq('style', style);
 
-    // download
-    const resp = await fetch(imageUrl)
-    const buffer = await resp.arrayBuffer()
-
-    const fileName = `attribute-images/${category}-${value.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${style}-${Date.now()}.jpg`
-    const publicUrl = await uploadToSupabaseBuffer(buffer, fileName)
-
-    // Insert into DB
-    const { data: inserted } = await supabase.from('attribute_images').insert({
-      category,
-      value,
-      style,
-      image_url: publicUrl,
-      prompt,
-      width: 512,
-      height: 768,
-    }).select().single()
-
-    return inserted || { image_url: publicUrl, prompt }
-  } catch (err: any) {
-    console.error('Failed to generate attribute image:', err?.message || err)
-    return null
+    // Generate new image
+    return await generateAndCacheImage(category, value, style);
+  } catch (error) {
+    console.error('Error regenerating image:', error);
+    return null;
   }
 }
 
-export async function regenerateImage(category: string, value: string, style: Style, gender?: string) {
-  // Force regeneration by generating a new image and updating DB
-  const supabase = await createAdminClient()
-  try {
-    const prompt = buildPrompt(category, value, style, gender)
-    const negative = DEFAULT_NEGATIVE
-    const imageUrl = await generateWithNovita(prompt, negative)
-    const resp = await fetch(imageUrl)
-    const buffer = await resp.arrayBuffer()
-    const fileName = `attribute-images/${category}-${value.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${style}-${Date.now()}.jpg`
-    const publicUrl = await uploadToSupabaseBuffer(buffer, fileName)
+/**
+ * Get style selection images (Realistic vs Anime header images)
+ */
+export async function getStyleImages(): Promise<{
+  realistic?: string;
+  anime?: string;
+}> {
+  const supabase = await createClient();
 
-    // Update DB (insert new row)
-    const { data: inserted } = await supabase.from('attribute_images').insert({
-      category,
-      value,
-      style,
-      image_url: publicUrl,
-      prompt,
-      width: 512,
-      height: 768,
-    }).select().single()
+  const { data, error } = await supabase
+    .from('style_images')
+    .select('style, image_url');
 
-    return inserted || { image_url: publicUrl, prompt }
-  } catch (err: any) {
-    console.error('Regenerate failed:', err?.message || err)
-    return null
-  }
-}
-
-export async function getCategoryImages(category: string, style: Style) {
-  const supabase = await createAdminClient()
-  const { data, error } = await supabase.from('attribute_images').select('*').eq('category', category).eq('style', style)
   if (error) {
-    console.error('Error fetching category images:', error.message || error)
-    return new Map()
+    console.error('Error fetching style images:', error);
+    return {};
   }
-  const map = new Map()
-  (data || []).forEach((row: any) => map.set(row.value, row))
-  return map
+
+  const images: any = {};
+  data?.forEach(img => {
+    images[img.style] = img.image_url;
+  });
+
+  return images;
 }
 
-export async function batchGenerateImages(category: string, values: string[], style: Style, gender?: string) {
-  const results: any[] = []
-  for (const value of values) {
-    // Try to get existing first
-    const img = await getAttributeImage(category, value, style, gender)
-    if (img) results.push(img)
+/**
+ * Update style selection image
+ */
+export async function updateStyleImage(
+  style: 'realistic' | 'anime',
+  imageUrl: string
+): Promise<boolean> {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('style_images')
+    .update({ image_url: imageUrl })
+    .eq('style', style);
+
+  if (error) {
+    console.error('Error updating style image:', error);
+    return false;
   }
-  return results
+
+  return true;
+}
+
+/**
+ * Pre-generate all images for the create character flow
+ */
+export async function preGenerateAllImages(
+  style: 'realistic' | 'anime',
+  onProgress?: (message: string) => void
+): Promise<void> {
+  const categories = [
+    {
+      name: 'age',
+      values: ['18-22', '23-27', '28-32', '33-37', '38+']
+    },
+    {
+      name: 'body',
+      values: ['Slim', 'Athletic', 'Curvy', 'Average', 'Plus-size']
+    },
+    {
+      name: 'ethnicity',
+      values: ['European', 'East Asian', 'South Asian', 'Middle Eastern', 'African', 'Latina', 'Caribbean', 'Mixed']
+    }
+  ];
+
+  for (const category of categories) {
+    if (onProgress) {
+      onProgress(`Generating ${category.name} images for ${style} style...`);
+    }
+
+    await batchGenerateImages(
+      category.name,
+      category.values,
+      style,
+      (current, total, value) => {
+        if (onProgress) {
+          onProgress(`${category.name}: ${value} (${current}/${total})`);
+        }
+      }
+    );
+  }
+
+  if (onProgress) {
+    onProgress('All images generated successfully!');
+  }
 }
