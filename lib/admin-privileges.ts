@@ -15,37 +15,67 @@ export interface AdminPrivileges {
  * Check if a user is an admin
  */
 export async function isUserAdmin(userId: string): Promise<boolean> {
+  console.log('[isUserAdmin] Checking admin status for:', userId)
+  
   try {
     const supabase = await createClient()
     
     // Check admin_users table
-    const { data: adminUser } = await supabase
+    const { data: adminUser, error: adminError } = await supabase
       .from('admin_users')
       .select('user_id')
       .eq('user_id', userId)
       .maybeSingle()
     
-    if (adminUser) return true
+    console.log('[isUserAdmin] admin_users check:', { found: !!adminUser, error: adminError?.message })
+    if (adminUser) {
+      console.log('[isUserAdmin] ✅ Found in admin_users table')
+      return true
+    }
     
     // Check app_admins table
-    const { data: appAdmin } = await supabase
+    const { data: appAdmin, error: appAdminError } = await supabase
       .from('app_admins')
       .select('user_id')
       .eq('user_id', userId)
       .maybeSingle()
     
-    if (appAdmin) return true
+    console.log('[isUserAdmin] app_admins check:', { found: !!appAdmin, error: appAdminError?.message })
+    if (appAdmin) {
+      console.log('[isUserAdmin] ✅ Found in app_admins table')
+      return true
+    }
     
     // Check admins table
-    const { data: admin } = await supabase
+    const { data: admin, error: adminsError } = await supabase
       .from('admins')
       .select('user_id')
       .eq('user_id', userId)
       .maybeSingle()
     
-    return !!admin
+    console.log('[isUserAdmin] admins check:', { found: !!admin, error: adminsError?.message })
+    if (admin) {
+      console.log('[isUserAdmin] ✅ Found in admins table')
+      return true
+    }
+    
+    // Check profiles.is_admin
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .maybeSingle()
+    
+    console.log('[isUserAdmin] profiles check:', { is_admin: profile?.is_admin, error: profileError?.message })
+    if (profile?.is_admin) {
+      console.log('[isUserAdmin] ✅ Found is_admin=true in profiles')
+      return true
+    }
+    
+    console.log('[isUserAdmin] ❌ User is not an admin')
+    return false
   } catch (error) {
-    console.error('Error checking admin status:', error)
+    console.error('[isUserAdmin] Error checking admin status:', error)
     return false
   }
 }
@@ -63,10 +93,13 @@ export async function getAdminPrivileges(userId: string): Promise<AdminPrivilege
     maxTokens: 0
   }
   
+  console.log('[getAdminPrivileges] Getting privileges for:', userId)
+  
   try {
     const isAdmin = await isUserAdmin(userId)
     
     if (!isAdmin) {
+      console.log('[getAdminPrivileges] User is not admin, returning default privileges')
       return defaultPrivileges
     }
     
@@ -80,28 +113,35 @@ export async function getAdminPrivileges(userId: string): Promise<AdminPrivilege
       maxTokens: 999999999
     }
     
-    // Try to get custom privileges from database
-    const supabase = await createClient()
-    const { data: privileges } = await supabase
-      .from('admin_privileges')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle()
+    console.log('[getAdminPrivileges] ✅ User is admin, granting full privileges')
     
-    if (privileges) {
-      return {
-        isAdmin: true,
-        canBypassTokenLimits: privileges.can_bypass_token_limits ?? true,
-        canBypassMessageLimits: privileges.can_bypass_message_limits ?? true,
-        canBypassImageLimits: privileges.can_bypass_image_limits ?? true,
-        unlimitedTokens: privileges.unlimited_tokens ?? true,
-        maxTokens: privileges.max_tokens ?? 999999999
+    // Try to get custom privileges from database
+    try {
+      const supabase = await createClient()
+      const { data: privileges } = await supabase
+        .from('admin_privileges')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle()
+      
+      if (privileges) {
+        console.log('[getAdminPrivileges] Found custom privileges in admin_privileges table')
+        return {
+          isAdmin: true,
+          canBypassTokenLimits: privileges.can_bypass_token_limits ?? true,
+          canBypassMessageLimits: privileges.can_bypass_message_limits ?? true,
+          canBypassImageLimits: privileges.can_bypass_image_limits ?? true,
+          unlimitedTokens: privileges.unlimited_tokens ?? true,
+          maxTokens: privileges.max_tokens ?? 999999999
+        }
       }
+    } catch (privError) {
+      console.log('[getAdminPrivileges] No custom privileges found, using defaults')
     }
     
     return adminPrivileges
   } catch (error) {
-    console.error('Error getting admin privileges:', error)
+    console.error('[getAdminPrivileges] Error getting admin privileges:', error)
     return defaultPrivileges
   }
 }

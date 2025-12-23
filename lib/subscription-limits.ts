@@ -52,44 +52,70 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
 
 // Check if user can send a message
 export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
-  // ADMIN BYPASS: Admins have unlimited messages
-  const adminPrivileges = await getAdminPrivileges(userId);
-  if (adminPrivileges.canBypassMessageLimits) {
-    console.log('🔓 Admin bypass: Unlimited messages for admin user');
+  console.log('🔍 Checking message limit for user:', userId);
+
+  try {
+    // ADMIN BYPASS: Admins have unlimited messages
+    const adminPrivileges = await getAdminPrivileges(userId);
+    console.log('🔓 Admin privileges check result:', adminPrivileges);
+
+    if (adminPrivileges.isAdmin || adminPrivileges.canBypassMessageLimits) {
+      console.log('🔓 Admin bypass: Unlimited messages for admin user');
+      return { allowed: true, currentUsage: 0, limit: null };
+    }
+
+    const supabase = await createAdminClient();
+
+    const planInfo = await getUserPlanInfo(userId);
+    console.log('📋 User plan info:', planInfo);
+
+    const limit = planInfo?.restrictions?.daily_message_limit;
+
+    // If null/undefined/unlimited, allow
+    if (!limit || limit === null || limit === 'null' || limit === undefined) {
+      console.log('✅ No message limit set, allowing message');
+      return { allowed: true, currentUsage: 0, limit: null };
+    }
+
+    // Parse limit to number
+    const limitNum = parseInt(String(limit), 10);
+    if (isNaN(limitNum) || limitNum <= 0) {
+      console.log('✅ Invalid limit value, allowing message');
+      return { allowed: true, currentUsage: 0, limit: null };
+    }
+
+    // Get today's usage
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const { data: usage, error: usageError } = await supabase
+      .from('user_usage_tracking')
+      .select('usage_count')
+      .eq('user_id', userId)
+      .eq('usage_type', 'messages')
+      .gte('reset_date', today.toISOString())
+      .single();
+
+    if (usageError && usageError.code !== 'PGRST116') {
+      console.error('Error fetching usage:', usageError);
+    }
+
+    const currentUsage = usage?.usage_count || 0;
+    const allowed = currentUsage < limitNum;
+
+    console.log(`📊 Message limit check: ${currentUsage}/${limitNum} - ${allowed ? 'ALLOWED' : 'BLOCKED'}`);
+
+    return {
+      allowed,
+      currentUsage,
+      limit: limitNum,
+      message: allowed ? undefined : `Daily message limit reached (${limitNum} messages/day). Upgrade to Premium for unlimited messages.`
+    };
+  } catch (error) {
+    console.error('❌ Error in checkMessageLimit:', error);
+    // On error, allow the message to not block users
     return { allowed: true, currentUsage: 0, limit: null };
   }
-
-  const supabase = await createAdminClient();
-
-  const planInfo = await getUserPlanInfo(userId);
-  const limit = planInfo.restrictions.daily_message_limit;
-
-  // If null/unlimited, allow
-  if (limit === null || limit === 'null') {
-    return { allowed: true, currentUsage: 0, limit: null };
-  }
-
-  // Get today's usage
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const { data: usage } = await supabase
-    .from('user_usage_tracking')
-    .select('usage_count')
-    .eq('user_id', userId)
-    .eq('usage_type', 'messages')
-    .gte('reset_date', today.toISOString())
-    .single();
-
-  const currentUsage = usage?.usage_count || 0;
-  const allowed = currentUsage < parseInt(limit);
-
-  return {
-    allowed,
-    currentUsage,
-    limit: parseInt(limit),
-    message: allowed ? undefined : `Daily message limit reached (${limit} messages/day). Upgrade to Premium for unlimited messages.`
-  };
 }
 
 // Increment message usage

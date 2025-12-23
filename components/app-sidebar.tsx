@@ -16,6 +16,7 @@ import {
   Heart,
   PlusSquare,
   Users,
+  DollarSign,
 } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
 import { useAuthModal } from "@/components/auth-modal-context"
@@ -78,7 +79,7 @@ export default function AppSidebar() {
       active: pathname?.startsWith("/collections"),
     },
     {
-      icon: <Crown className="h-5 w-5 text-primary" />,
+      icon: <DollarSign className="h-5 w-5 text-green-500" />,
       label: "Premium",
       href: "/premium",
       active: pathname?.startsWith("/premium"),
