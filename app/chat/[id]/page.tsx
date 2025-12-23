@@ -75,7 +75,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSendingMessage, setIsSendingMessage] = useState(false)
   const [isClearingChat, setIsClearingChat] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
   const [apiKeyError, setApiKeyError] = useState<string | null>(null)
@@ -757,7 +757,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       // Add user message to chat
       setMessages((prev) => [...prev, newMessage])
       setInputValue("")
-      setIsLoading(true)
+      setIsSendingMessage(true)
 
       try {
         // Save user message to localStorage
@@ -771,7 +771,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           const imagePrompt = extractImagePrompt(newMessage.content)
 
           // Generate the image
-          setIsLoading(false)
+          setIsSendingMessage(false)
           await generateImage(imagePrompt)
           return
         }
@@ -861,7 +861,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         setApiKeyError("Failed to connect to the AI service. Please check your API key configuration.")
       } finally {
         if (isMounted) {
-          setIsLoading(false)
+          setIsSendingMessage(false)
         }
       }
     }
@@ -1119,7 +1119,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
-              disabled={isLoading || isGeneratingImage}
+              disabled={isSendingMessage || isGeneratingImage}
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="sentences"
@@ -1129,7 +1129,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               size="icon"
               className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] min-w-[44px] touch-manipulation"
               onClick={handleSendMessage}
-              disabled={isLoading || isGeneratingImage || !inputValue.trim()}
+              disabled={isSendingMessage || isGeneratingImage || !inputValue.trim()}
             >
               <Send className="h-4 w-4" />
             </Button>
