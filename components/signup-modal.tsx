@@ -123,8 +123,8 @@ export function SignupModal() {
     return (
         <>
             <Dialog open={isSignupModalOpen} onOpenChange={closeSignupModal}>
-                <DialogContent className="max-w-3xl p-0 bg-[#1E1E1E] border-[#252525] rounded-lg grid grid-cols-2">
-                    <div className="relative h-full w-full">
+                <DialogContent className="max-w-3xl p-0 bg-[#1E1E1E] border-[#252525] rounded-lg grid grid-cols-1 md:grid-cols-2 max-h-[90vh] overflow-y-auto">
+                    <div className="relative h-64 md:h-full w-full hidden md:block">
                         <Image
                             src="/signup-placeholder.jpeg"
                             alt="Registreringsbild"
@@ -132,7 +132,7 @@ export function SignupModal() {
                             className="object-cover rounded-l-lg"
                         />
                     </div>
-                    <div className="relative p-8">
+                    <div className="relative p-4 sm:p-6 md:p-8">
                         <DialogTitle className="sr-only">{t("auth.createAccount")}</DialogTitle>
                         <Button
                             variant="ghost"
@@ -143,8 +143,8 @@ export function SignupModal() {
                             <X className="h-4 w-4" />
                         </Button>
 
-                        <div className="text-center mb-8">
-                            <h1 className="text-2xl font-bold text-white mb-2">{t("auth.createAccount")}</h1>
+                        <div className="text-center mb-6 sm:mb-8">
+                            <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">{t("auth.createAccount")}</h1>
                         </div>
 
                         {error && (
@@ -222,8 +222,8 @@ export function SignupModal() {
                         </div>
 
                         <div className="grid grid-cols-3 gap-3">
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 className="w-full bg-white text-black hover:bg-gray-200"
                                 onClick={handleGoogleSignup}
                                 disabled={isOAuthLoading}
@@ -231,8 +231,8 @@ export function SignupModal() {
                             >
                                 Google
                             </Button>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 className="w-full bg-[#5865F2] text-white hover:bg-[#4752C4]"
                                 onClick={handleDiscordSignup}
                                 disabled={isOAuthLoading}
@@ -240,8 +240,8 @@ export function SignupModal() {
                             >
                                 Discord
                             </Button>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 className="w-full bg-black text-white border-gray-600 hover:bg-gray-900"
                                 onClick={handleTwitterSignup}
                                 disabled={isOAuthLoading}

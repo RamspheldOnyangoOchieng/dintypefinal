@@ -116,8 +116,8 @@ export function LoginModal() {
 
     return (
         <Dialog open={isLoginModalOpen} onOpenChange={closeLoginModal}>
-            <DialogContent className="max-w-3xl p-0 bg-[#1E1E1E] border-[#252525] rounded-lg grid grid-cols-2">
-                <div className="relative h-full w-full">
+            <DialogContent className="max-w-3xl p-0 bg-[#1E1E1E] border-[#252525] rounded-lg grid grid-cols-1 md:grid-cols-2 max-h-[90vh] overflow-y-auto">
+                <div className="relative h-64 md:h-full w-full hidden md:block">
                     <Image
                         src="/login-placeholder.jpeg"
                         alt="Inloggningsbild"
@@ -126,7 +126,7 @@ export function LoginModal() {
                         className="rounded-l-lg"
                     />
                 </div>
-                <div className="relative p-8">
+                <div className="relative p-4 sm:p-6 md:p-8">
                     <DialogTitle className="sr-only">{t("auth.login")}</DialogTitle>
                     <Button
                         variant="ghost"
@@ -137,8 +137,8 @@ export function LoginModal() {
                         <X className="h-4 w-4" />
                     </Button>
 
-                    <div className="text-center mb-8">
-                        <h1 className="text-2xl font-bold text-white mb-2">{t("auth.login")}</h1>
+                    <div className="text-center mb-6 sm:mb-8">
+                        <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">{t("auth.login")}</h1>
                     </div>
 
                     {error && (
@@ -183,15 +183,15 @@ export function LoginModal() {
                                 className="bg-card border-border text-foreground focus:ring-primary focus:border-primary"
                                 placeholder={t("login.passwordPlaceholder")}
                             />
-                                                                                    <div className="text-right">
-                                                                                            <Link
-                                                                                                href={{ pathname: "/reset-password", query: email ? { email } : {} }}
-                                                                                                className="text-sm text-primary hover:underline"
-                                                                                                onClick={closeLoginModal}
-                                                                                            >
-                                                                                                    {t("login.forgotPassword")}
-                                                                                            </Link>
-                                                                                    </div>
+                            <div className="text-right">
+                                <Link
+                                    href={{ pathname: "/reset-password", query: email ? { email } : {} }}
+                                    className="text-sm text-primary hover:underline"
+                                    onClick={closeLoginModal}
+                                >
+                                    {t("login.forgotPassword")}
+                                </Link>
+                            </div>
                         </div>
 
                         <div>
@@ -215,8 +215,8 @@ export function LoginModal() {
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             className="w-full bg-white text-black hover:bg-gray-200"
                             onClick={handleGoogleLogin}
                             disabled={isOAuthLoading}
@@ -224,8 +224,8 @@ export function LoginModal() {
                         >
                             Google
                         </Button>
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             className="w-full bg-[#5865F2] text-white hover:bg-[#4752C4]"
                             onClick={handleDiscordLogin}
                             disabled={isOAuthLoading}
@@ -233,8 +233,8 @@ export function LoginModal() {
                         >
                             Discord
                         </Button>
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             className="w-full bg-black text-white border-gray-600 hover:bg-gray-900"
                             onClick={handleTwitterLogin}
                             disabled={isOAuthLoading}
