@@ -2315,7 +2315,7 @@ export default function CreateCharacterPage() {
                                 </div>
 
                                 {/* Personality Grid - Ultra-small: 1 column, Small: 2 columns, Desktop: 3 columns */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-4xl mx-auto mb-4 sm:mb-6 md:mb-8">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto mb-4 sm:mb-6 md:mb-8">
 
                                     {/* Lady Personalities */}
                                     {gender === 'lady' && (
@@ -2755,7 +2755,7 @@ export default function CreateCharacterPage() {
                                 </div>
 
                                 {/* Relationship Grid - Ultra-small: 1 column, Small: 2 columns, Desktop: 3 columns */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-5xl mx-auto mb-4 sm:mb-6 md:mb-8 max-w-full overflow-x-hidden">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto mb-4 sm:mb-6 md:mb-8 max-w-full overflow-x-hidden">
                                     {/* Row 1 */}
                                     <div
                                         className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'stranger'
