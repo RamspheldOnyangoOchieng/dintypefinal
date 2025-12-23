@@ -58,10 +58,19 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   }, [params]);
   const { toggle, setIsOpen } = useSidebar();
   const router = useRouter();
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
   const { t } = useTranslations()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Check authentication and redirect if needed
+  useEffect(() => {
+    if (!user && !isLoading) {
+      // User is not authenticated, redirect to login
+      const currentPath = `/chat/${characterId}`
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+    }
+  }, [user, isLoading, characterId, router])
 
   // Debug mount
   useEffect(() => {
