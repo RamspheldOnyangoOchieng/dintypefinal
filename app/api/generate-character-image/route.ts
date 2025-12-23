@@ -38,14 +38,14 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at creating detailed, vivid image generation prompts for anime and realistic woman characters. Create a complete, descriptive prompt suitable for image generation that captures the character visually and creatively. Focus on visual details like appearance, pose, lighting, setting, and artistic style. Keep it under 200 words and make it very descriptive.'
+            content: 'You are an expert at creating detailed, vivid image generation prompts for anime and realistic woman characters. Create a complete, descriptive prompt suitable for image generation that captures the character visually and creatively. Focus on visual details like appearance, pose, lighting, setting, and artistic style. Keep it under 100 words and make it very descriptive.'
           },
           {
             role: 'user',
             content: `Create a detailed image generation prompt for this character: ${description}. The style should be ${characterDetails.style === 'anime' ? 'anime/manga art style with vibrant colors and expressive features' : 'photorealistic with natural lighting and lifelike details'}. Make it vivid and suitable for an AI image generator.`
           }
         ],
-        max_tokens: 300,
+        max_tokens: 200,
         temperature: 0.8,
         response_format: { type: 'text' }
       }),

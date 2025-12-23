@@ -48,9 +48,14 @@ export async function generateImage(params: ImageGenerationParams): Promise<Gene
   } = params;
 
   // Enhance prompt with style-specific details
-  const enhancedPrompt = style === 'realistic'
+  let enhancedPrompt = style === 'realistic'
     ? `professional portrait photography, ${prompt}, elegant, sophisticated, high fashion, studio lighting, professional makeup, tasteful, classy, high quality, detailed`
     : `anime style, ${prompt}, beautiful anime art, detailed illustration, high quality, professional digital art, clean lines, vibrant colors`;
+
+  // Truncate to 1000 characters to respect API limit of 1024
+  if (enhancedPrompt.length > 1000) {
+    enhancedPrompt = enhancedPrompt.substring(0, 1000);
+  }
 
   const requestBody = {
     extra: {
@@ -93,7 +98,7 @@ export async function generateImage(params: ImageGenerationParams): Promise<Gene
     const taskId = data.task_id;
 
     // Poll for completion
-    const result = await pollForCompletion(taskId);
+    const result = await pollForCompletion(taskId, NOVITA_API_KEY);
 
     return {
       url: result.images[0].image_url,
@@ -110,7 +115,7 @@ export async function generateImage(params: ImageGenerationParams): Promise<Gene
 /**
  * Poll Novita API for task completion
  */
-async function pollForCompletion(taskId: string, maxAttempts = 60): Promise<any> {
+async function pollForCompletion(taskId: string, apiKey: string, maxAttempts = 60): Promise<any> {
   const pollUrl = `https://api.novita.ai/v3/async/task-result?task_id=${taskId}`;
 
   for (let i = 0; i < maxAttempts; i++) {
@@ -118,7 +123,7 @@ async function pollForCompletion(taskId: string, maxAttempts = 60): Promise<any>
 
     const response = await fetch(pollUrl, {
       headers: {
-        'Authorization': `Bearer ${NOVITA_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
     });
 
