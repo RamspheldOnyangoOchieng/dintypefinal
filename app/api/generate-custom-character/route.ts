@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase-admin';
-import { createClient } from '@/lib/supabase/client';
 import { getAnonymousUserId } from '@/lib/anonymous-user';
 
 const NOVITA_API_KEY = process.env.NOVITA_API_KEY;
@@ -259,16 +258,15 @@ export async function POST(request: NextRequest) {
         console.log('🎨 Generating custom character with:', customization);
 
         // Get user ID (authenticated or anonymous)
-        const supabase = createClient();
-        const {
-            data: { session },
-        } = await supabase.auth.getSession();
+        const { createClient } = await import('@/lib/supabase-server');
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
         let userId: string;
 
-        if (session?.user?.id) {
-            console.log('[API] User is authenticated:', session.user.id);
-            userId = session.user.id;
+        if (user?.id) {
+            console.log('[API] User is authenticated:', user.id);
+            userId = user.id;
         } else {
             userId = getAnonymousUserId();
             console.log('[API] Using anonymous ID:', userId);

@@ -64,43 +64,79 @@ export async function getCurrentSession() {
 
 export async function isAdmin(userId: string) {
   try {
-    // Don't use cache initially to ensure fresh data
     console.log('[isAdmin] Checking admin status for user:', userId)
-    
-    // Query the admin_users table directly
-    const { data, error } = await supabase
+
+    // Method 1: Check admin_users table
+    const { data: adminUser, error: adminError } = await supabase
       .from("admin_users")
       .select("user_id")
       .eq("user_id", userId)
       .maybeSingle()
 
-    console.log('[isAdmin] Query result:', { data, error })
+    console.log('[isAdmin] admin_users query result:', { data: adminUser, error: adminError })
 
-    if (error) {
-      // If error is "PGRST116" (not found), user is not admin
-      if (error.code === "PGRST116") {
-        console.log('[isAdmin] User not found in admin_users - not an admin')
-        return false
+    if (adminUser) {
+      console.log('[isAdmin] ✅ User found in admin_users table')
+      cacheAdminStatus(userId, true)
+      return true
+    }
+
+    // Method 2: Check app_admins table (fallback)
+    const { data: appAdmin, error: appAdminError } = await supabase
+      .from("app_admins")
+      .select("user_id")
+      .eq("user_id", userId)
+      .maybeSingle()
+
+    console.log('[isAdmin] app_admins query result:', { data: appAdmin, error: appAdminError })
+
+    if (appAdmin) {
+      console.log('[isAdmin] ✅ User found in app_admins table')
+      cacheAdminStatus(userId, true)
+      return true
+    }
+
+    // Method 3: Check profiles.is_admin (fallback)
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", userId)
+      .maybeSingle()
+
+    console.log('[isAdmin] profiles query result:', { data: profile, error: profileError })
+
+    if (profile?.is_admin) {
+      console.log('[isAdmin] ✅ User has is_admin=true in profiles')
+      cacheAdminStatus(userId, true)
+      return true
+    }
+
+    // Method 4: Check user metadata (fallback)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.user_metadata?.role === 'admin') {
+        console.log('[isAdmin] ✅ User has admin role in metadata')
+        cacheAdminStatus(userId, true)
+        return true
       }
-      
-      console.error("[isAdmin] Error checking admin status:", error)
-      return false
+    } catch (e) {
+      console.log('[isAdmin] Could not check user metadata')
     }
 
-    // If we found a record, user is admin
-    const isAdminUser = !!data
-    console.log('[isAdmin] Result:', isAdminUser)
-    
-    // Cache the result
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem("isAdmin:" + userId, isAdminUser.toString())
-    }
-    
-    return isAdminUser
-    
+    console.log('[isAdmin] ❌ User is not an admin')
+    cacheAdminStatus(userId, false)
+    return false
+
   } catch (error) {
     console.error("[isAdmin] Exception checking admin status:", error)
     return false
+  }
+}
+
+// Helper to cache admin status
+function cacheAdminStatus(userId: string, isAdmin: boolean) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem("isAdmin:" + userId, isAdmin.toString())
   }
 }
 

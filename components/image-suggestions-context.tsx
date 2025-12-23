@@ -40,7 +40,15 @@ export function ImageSuggestionsProvider({ children }: { children: ReactNode }) 
         .select("*")
         .order("created_at", { ascending: false })
 
-      if (error) throw new Error(error.message)
+      if (error) {
+        console.error("Supabase error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        })
+        throw new Error(error.message)
+      }
 
       // Map database fields to component fields
       const mappedData =
@@ -55,8 +63,16 @@ export function ImageSuggestionsProvider({ children }: { children: ReactNode }) 
 
       setSuggestions(mappedData)
     } catch (err) {
+      console.error("Error fetching suggestions - Full error:", err)
+      if (err && typeof err === 'object') {
+        console.error("Error properties:", {
+          message: (err as any).message,
+          code: (err as any).code,
+          details: (err as any).details,
+          hint: (err as any).hint,
+        })
+      }
       setError(err instanceof Error ? err : new Error("Failed to fetch suggestions"))
-      console.error("Error fetching suggestions:", err)
     } finally {
       setIsLoading(false)
     }

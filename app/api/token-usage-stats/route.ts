@@ -2,16 +2,14 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase-server"
 
 export async function GET(request: NextRequest) {
-  const supabase = createClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const supabase = await createClient()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (userError || !user) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
 
-  const userId = session.user.id
+  const userId = user.id
   const searchParams = request.nextUrl.searchParams
   const timeframe = searchParams.get("timeframe") || "week"
 
@@ -52,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     const formattedData = usageData.map(item => ({
-  name: new Date(item.created_at).toLocaleDateString('sv-SE', { weekday: 'short' }),
+      name: new Date(item.created_at).toLocaleDateString('sv-SE', { weekday: 'short' }),
       tokens: Math.abs(item.amount),
       images: 0,
     }))

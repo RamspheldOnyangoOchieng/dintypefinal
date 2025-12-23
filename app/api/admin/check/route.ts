@@ -3,35 +3,35 @@ import { createClient } from "@/lib/supabase-server"
 
 export async function GET(request: Request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (userError || !user) {
       return NextResponse.json({ authenticated: false, isAdmin: false, error: "Not authenticated" }, { status: 401 })
     }
 
-    const { data: profile, error: profileError } = await supabase
+    // Check admin_users table first
+    const { data: adminUser } = await supabase
+      .from("admin_users")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle()
+
+    // Fallback: check profiles.is_admin
+    const { data: profile } = await supabase
       .from("profiles")
       .select("is_admin")
-      .eq("user_id", session.user.id)
-      .single()
+      .eq("id", user.id)
+      .maybeSingle()
 
-    if (profileError) {
-      console.error("Error fetching profile:", profileError)
-      return NextResponse.json(
-        { authenticated: true, isAdmin: false, error: "Error fetching profile" },
-        { status: 500 },
-      )
-    }
+    const isAdmin = !!adminUser || profile?.is_admin === true
 
     return NextResponse.json({
       authenticated: true,
-      isAdmin: profile?.is_admin || false,
-      userId: session.user.id,
-      email: session.user.email,
+      isAdmin,
+      userId: user.id,
+      email: user.email,
     })
   } catch (error) {
     console.error("Error checking admin status:", error)

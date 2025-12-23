@@ -1,8 +1,8 @@
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { userId } = await req.json()
 
     if (!userId) {
@@ -32,7 +32,6 @@ export async function POST(req: Request) {
         console.error('Error deducting token:', updateError)
         return new NextResponse(JSON.stringify({ error: updateError.message }), { status: 500 })
     }
-
 
     return new NextResponse('Token deducted successfully', { status: 200 })
 }

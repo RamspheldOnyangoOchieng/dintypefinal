@@ -3,6 +3,7 @@ import { deductTokens, refundTokens } from "@/lib/token-utils"
 import { createClient } from "@/lib/supabase-server"
 import { checkImageGenerationLimit, incrementImageUsage, getUserPlanInfo } from "@/lib/subscription-limits"
 import { checkMonthlyBudget, logApiCost } from "@/lib/budget-monitor"
+import { isUserAdmin, getAdminPrivileges } from "@/lib/admin-privileges"
 import type { Database } from "@/types/supabase"
 
 // Dynamic token costs based on model and image count
@@ -187,11 +188,18 @@ export async function POST(req: NextRequest) {
 
     // Check user plan and apply appropriate limits
     console.log(`📋 Checking user plan for ${userId.substring(0, 8)}...`)
+    
+    // ADMIN BYPASS: Check if user is admin first
+    const adminPrivileges = await getAdminPrivileges(userId)
+    if (adminPrivileges.isAdmin) {
+      console.log(`🔓 Admin bypass: Skipping plan limits for admin user ${userId.substring(0, 8)}`)
+    }
+    
     const planInfo = await getUserPlanInfo(userId)
-    console.log(`📋 User plan: ${planInfo.planType}`)
+    console.log(`📋 User plan: ${planInfo.planType}${adminPrivileges.isAdmin ? ' (ADMIN - unlimited)' : ''}`)
 
-    // For free users, check weekly image generation limit
-    if (planInfo.planType === 'free') {
+    // For free users, check weekly image generation limit (admins bypass this)
+    if (planInfo.planType === 'free' && !adminPrivileges.isAdmin) {
       console.log(`🔍 Checking weekly image generation limit for free user...`)
       const imageCheck = await checkImageGenerationLimit(userId)
       

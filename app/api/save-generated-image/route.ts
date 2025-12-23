@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase-admin"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase-server"
 import { getAnonymousUserId } from "@/lib/anonymous-user"
 
 export async function POST(request: NextRequest) {
@@ -12,16 +12,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user ID (authenticated or anonymous)
-    const supabase = createClient()
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
     let userId: string
 
-    if (session?.user?.id) {
-      console.log("[API] User is authenticated:", session.user.id)
-      userId = session.user.id
+    if (user?.id) {
+      console.log("[API] User is authenticated:", user.id)
+      userId = user.id
     } else {
       userId = getAnonymousUserId()
       console.log("[API] Using anonymous ID:", userId)

@@ -1,19 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase-server"
-import { cookies } from "next/headers"
 
 export async function GET(request: NextRequest) {
-  await cookies()
   // Try token-based authentication first
   const authHeader = request.headers.get('authorization')
   const userIdHeader = request.headers.get('x-user-id')
 
   let userId: string | null = null
 
+  // Create supabase client (await the async function)
+  const supabase = await createClient()
+
   // Method 1: Try Authorization header (JWT token)
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient()
 
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser(token)
@@ -27,10 +27,21 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Method 2: Fallback to User ID header
-  if (!userId && userIdHeader) {
-    const supabase = createClient()
+  // Method 2: Try session-based authentication
+  if (!userId) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (!authError && user) {
+        userId = user.id
+        console.log("✅ User authenticated via session for usage stats")
+      }
+    } catch (error) {
+      console.error("❌ Session authentication failed for usage stats:", error)
+    }
+  }
 
+  // Method 3: Fallback to User ID header
+  if (!userId && userIdHeader) {
     try {
       const { data: userData, error: userError } = await supabase
         .from('users_view')
@@ -50,9 +61,6 @@ export async function GET(request: NextRequest) {
   if (!userId) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
-
-  // Create supabase client for database operations
-  const supabase = createClient()
 
   try {
     // Get total images generated

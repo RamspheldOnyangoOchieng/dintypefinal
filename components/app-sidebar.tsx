@@ -43,7 +43,7 @@ export default function AppSidebar() {
   const menuItems = [
     {
       icon: <Home className="h-5 w-5" />,
-  label: t("general.home"),
+      label: t("general.home"),
       href: "/",
       active: pathname === "/",
     },
@@ -55,7 +55,7 @@ export default function AppSidebar() {
     // },
     {
       icon: <MessageSquare className="h-5 w-5" />,
-  label: t("general.chat"),
+      label: t("general.chat"),
       href: "/chat",
       active: pathname?.startsWith("/chat"),
     },
@@ -83,6 +83,13 @@ export default function AppSidebar() {
       href: "/premium",
       active: pathname?.startsWith("/premium"),
     },
+    {
+      icon: <Crown className="h-5 w-5 text-yellow-500" />,
+      label: "Admin Panel",
+      href: "/admin/dashboard",
+      active: pathname?.startsWith("/admin"),
+      adminOnly: true,
+    },
   ]
 
   const supportLinks: { icon: React.ReactNode; label: string; href: string; active: boolean }[] = [
@@ -94,14 +101,13 @@ export default function AppSidebar() {
     // },
   ]
 
-  if (user?.isAdmin) {
-    menuItems.push({
-      icon: <User className="h-5 w-5" />,
-  label: t("general.admin"),
-      href: "/admin/dashboard",
-      active: pathname?.startsWith("/admin"),
-    })
-  }
+  // Filter menu items - only show adminOnly items to admin users
+  const visibleMenuItems = menuItems.filter(item => {
+    if ('adminOnly' in item && item.adminOnly) {
+      return user?.isAdmin === true
+    }
+    return true
+  })
 
   return (
     <>
@@ -147,7 +153,7 @@ export default function AppSidebar() {
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
             <nav>
               <ul className="space-y-2">
-                {menuItems.map(item => (
+                {visibleMenuItems.map(item => (
                   <li key={item.href}>
                     <Link
                       href={item.href}

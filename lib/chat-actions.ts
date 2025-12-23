@@ -66,9 +66,14 @@ Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren k
     ]
 
     try {
-      // Get the API key for direct HTTP request - prioritize environment variables
-      let apiKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY
-      
+      // PRIORITY: Use OPENAI_API_KEY from .env first, then fallback to NOVITA
+      const openaiApiKey = process.env.OPENAI_API_KEY
+      const novitaApiKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY
+
+      // Determine which API to use
+      const useOpenAI = !!openaiApiKey
+      let apiKey = openaiApiKey || novitaApiKey
+
       // Only try database if environment variables are not available
       if (!apiKey) {
         try {
@@ -77,123 +82,73 @@ Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren k
         } catch (error) {
           console.warn("Could not fetch API key from database:", error)
         }
-      } else {
-        console.log("Using API key from environment variables")
-      }
-      console.log("Environment variables check:", {
-        NEXT_PUBLIC_NOVITA_API_KEY: process.env.NEXT_PUBLIC_NOVITA_API_KEY ? `${process.env.NEXT_PUBLIC_NOVITA_API_KEY.substring(0, 10)}...` : "Not found",
-        NOVITA_API_KEY: process.env.NOVITA_API_KEY ? `${process.env.NOVITA_API_KEY.substring(0, 10)}...` : "Not found"
-      })
-      console.log("Final API key:", apiKey ? `${apiKey.substring(0, 10)}...` : "Not found")
-      console.log("API key length:", apiKey ? apiKey.length : 0)
-      console.log("API key starts with 'sk_':", apiKey ? apiKey.startsWith('sk_') : false)
-      
-      // Test if we can access the environment variable directly
-      console.log("Direct env access test:", {
-        NOVITA_API_KEY_DIRECT: process.env.NOVITA_API_KEY ? "Found" : "Not found",
-        NEXT_PUBLIC_NOVITA_API_KEY_DIRECT: process.env.NEXT_PUBLIC_NOVITA_API_KEY ? "Found" : "Not found"
-      })
-      
-      // Test all possible environment variable names
-      console.log("All env vars test:", {
-        NOVITA_API_KEY: process.env.NOVITA_API_KEY ? `${process.env.NOVITA_API_KEY.substring(0, 10)}...` : "Not found",
-        NEXT_PUBLIC_NOVITA_API_KEY: process.env.NEXT_PUBLIC_NOVITA_API_KEY ? `${process.env.NEXT_PUBLIC_NOVITA_API_KEY.substring(0, 10)}...` : "Not found",
-        NOVITA_API_KEY_LENGTH: process.env.NOVITA_API_KEY?.length || 0,
-        NEXT_PUBLIC_NOVITA_API_KEY_LENGTH: process.env.NEXT_PUBLIC_NOVITA_API_KEY?.length || 0
-      })
-      
-      if (!apiKey) {
-        throw new Error("No API key found")
       }
 
-      // Make direct HTTP request to Novita API
-      const requestBody = {
-        messages: apiMessages,
-        model: "meta-llama/llama-3.1-8b-instruct",
-        temperature: 0.7,
-        max_tokens: 800,
+      console.log("Chat API Configuration:", {
+        usingOpenAI: useOpenAI,
+        OPENAI_API_KEY: openaiApiKey ? `${openaiApiKey.substring(0, 10)}...` : "Not found",
+        NOVITA_API_KEY: novitaApiKey ? `${novitaApiKey.substring(0, 10)}...` : "Not found",
+      })
+
+      if (!apiKey) {
+        throw new Error("No API key found - please set OPENAI_API_KEY or NOVITA_API_KEY in .env")
       }
-      
-      console.log("Making request to Novita API with headers:", {
-        Authorization: `Bearer ${apiKey.substring(0, 10)}...`,
-        "Content-Type": "application/json"
-      })
-      console.log("Request body:", JSON.stringify(requestBody, null, 2))
-      
-      // First, let's test the API key with a simple models request
-      console.log("Testing API key with models endpoint...")
-      const testResponse = await fetch("https://api.novita.ai/openai/v1/models", {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-      })
-      console.log("Models test response status:", testResponse.status)
-      if (!testResponse.ok) {
-        const testError = await testResponse.text()
-        console.error("Models test error:", testError)
+
+      let response: Response
+      let apiCostPerMillion: number
+
+      if (useOpenAI) {
+        // Use OpenAI API
+        console.log("Using OpenAI API for chat...")
+        const openaiRequestBody = {
+          model: "gpt-4o-mini", // Cost-effective and fast
+          messages: apiMessages,
+          max_tokens: 150,
+          temperature: 0.7,
+        }
+
+        response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(openaiRequestBody),
+        })
+        apiCostPerMillion = 0.15 // $0.15 per 1M input tokens for gpt-4o-mini
       } else {
-        console.log("API key test successful!")
+        // Use Novita API (fallback)
+        console.log("Using Novita API for chat...")
+        const novitaRequestBody = {
+          model: "meta-llama/llama-3.1-8b-instruct",
+          messages: apiMessages,
+          response_format: { type: "text" },
+          max_tokens: 150,
+          temperature: 0.7,
+          top_p: 1,
+          min_p: 0,
+          top_k: 50,
+          presence_penalty: 0,
+          frequency_penalty: 0.5,
+          repetition_penalty: 1.1,
+        }
+
+        response = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(novitaRequestBody),
+        })
+        apiCostPerMillion = 0.10 // $0.10 per 1M tokens for Llama 3.1 8B
       }
-      
-      // Let's also test the chat completions endpoint with a minimal request
-      console.log("Testing chat completions endpoint with minimal request...")
-      const minimalRequest = {
-        messages: [{ role: "user", content: "Hello" }],
-        model: "meta-llama/llama-3.1-8b-instruct",
-      }
-      
-      const testChatResponse = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(minimalRequest),
-      })
-      
-      console.log("Chat completions test response status:", testChatResponse.status)
-      if (!testChatResponse.ok) {
-        const testChatError = await testChatResponse.text()
-        console.error("Chat completions test error:", testChatError)
-      } else {
-        console.log("Chat completions test successful!")
-      }
-      
-      // Use the same format that works in img2img route
-      const workingRequestBody = {
-        model: "meta-llama/llama-3.1-8b-instruct",
-        messages: apiMessages,
-        response_format: { type: "text" },
-        max_tokens: 150, // Reduced from 800 to 150 for shorter responses
-        temperature: 0.7,
-        top_p: 1,
-        min_p: 0,
-        top_k: 50,
-        presence_penalty: 0,
-        frequency_penalty: 0.5, // Increased to discourage repetition and encourage brevity
-        repetition_penalty: 1.1, // Slightly increased to reduce repetition
-      }
-      
-      console.log("Using working request format:", JSON.stringify(workingRequestBody, null, 2))
-      
-      // Make the request using the working format
-      console.log("Making request to Novita API with working format...")
-      const response = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(workingRequestBody),
-      })
-      
+
       console.log("Response status:", response.status)
-      
+
       if (!response.ok) {
         const errorText = await response.text()
-        console.error("Novita API error:", response.status, errorText)
+        console.error(`${useOpenAI ? 'OpenAI' : 'Novita'} API error:`, response.status, errorText)
         throw new Error(`API request failed: ${response.status} ${errorText}`)
       }
 
@@ -202,8 +157,8 @@ Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren k
 
       // Log API cost (approximate)
       const totalTokens = completion.usage?.total_tokens || 250
-      const apiCost = (totalTokens / 1_000_000) * 0.10 // $0.10 per 1M tokens for Llama 3.1 8B
-      await logApiCost('Chat message', 5, apiCost, userId).catch(err => 
+      const apiCost = (totalTokens / 1_000_000) * apiCostPerMillion
+      await logApiCost('Chat message', 5, apiCost, userId).catch(err =>
         console.error('Failed to log API cost:', err)
       )
 

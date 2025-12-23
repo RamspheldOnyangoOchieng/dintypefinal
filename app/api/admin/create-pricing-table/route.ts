@@ -3,19 +3,21 @@ import { NextResponse } from "next/server"
 
 export async function POST() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Check if the user is authenticated and an admin
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Check if the user is an admin
-    const { data: adminData } = await supabase.from("admins").select("id").eq("user_id", user.id).single()
+    const { data: adminData } = await supabase
+      .from("admin_users")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle()
 
     if (!adminData) {
       return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 })

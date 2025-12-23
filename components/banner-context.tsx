@@ -47,7 +47,12 @@ export function BannerProvider({ children }: { children: ReactNode }) {
         .order("created_at", { ascending: false })
 
       if (error) {
-        console.error("Supabase error:", error)
+        console.error("Supabase error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        })
         throw error
       }
 
@@ -67,7 +72,15 @@ export function BannerProvider({ children }: { children: ReactNode }) {
 
       setBanners(formattedData)
     } catch (err) {
-      console.error("Error fetching banners:", err)
+      console.error("Error fetching banners - Full error:", err)
+      if (err && typeof err === 'object') {
+        console.error("Error properties:", {
+          message: (err as any).message,
+          code: (err as any).code,
+          details: (err as any).details,
+          hint: (err as any).hint,
+        })
+      }
       setError(err instanceof Error ? err : new Error("Failed to fetch banners"))
 
       // Fallback to default banners if there's an error

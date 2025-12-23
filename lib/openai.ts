@@ -12,9 +12,13 @@ export type GenerateCharacterParams = {
 
 export async function generateCharacterDescription(params: GenerateCharacterParams): Promise<string> {
   try {
-    // Get the API key for direct HTTP request - prioritize environment variables
-    let apiKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY
-    
+    // PRIORITY: Use OPENAI_API_KEY from .env first, then fallback to NOVITA
+    const openaiApiKey = process.env.OPENAI_API_KEY
+    const novitaApiKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY
+
+    const useOpenAI = !!openaiApiKey
+    let apiKey = openaiApiKey || novitaApiKey
+
     // Only try database if environment variables are not available
     if (!apiKey) {
       try {
@@ -23,9 +27,9 @@ export async function generateCharacterDescription(params: GenerateCharacterPara
         console.warn("Could not fetch API key from database:", error)
       }
     }
-    
+
     if (!apiKey) {
-      throw new Error("No API key found")
+      throw new Error("No API key found - please set OPENAI_API_KEY or NOVITA_API_KEY in .env")
     }
 
     const prompt = `
@@ -39,32 +43,52 @@ export async function generateCharacterDescription(params: GenerateCharacterPara
       The description should be 1-2 sentences long and highlight the character's most interesting qualities.
     `
 
-    // Make direct HTTP request to Novita API
-    const response = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+    const messages = [
+      {
+        role: "system",
+        content: "You are a creative assistant that specializes in creating engaging character descriptions.",
       },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: "system",
-            content: "You are a creative assistant that specializes in creating engaging character descriptions.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        model: "meta-llama/llama-3.1-8b-instruct",
-        stream: false,
-      }),
-    })
+      {
+        role: "user",
+        content: prompt,
+      },
+    ]
+
+    let response: Response
+
+    if (useOpenAI) {
+      // Use OpenAI API
+      response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages,
+          model: "gpt-4o-mini",
+          max_tokens: 200,
+        }),
+      })
+    } else {
+      // Use Novita API (fallback)
+      response = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages,
+          model: "meta-llama/llama-3.1-8b-instruct",
+          stream: false,
+        }),
+      })
+    }
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error("Novita API error:", response.status, errorText)
+      console.error(`${useOpenAI ? 'OpenAI' : 'Novita'} API error:`, response.status, errorText)
       throw new Error(`API request failed: ${response.status} ${errorText}`)
     }
 
@@ -85,9 +109,13 @@ export async function generateSystemPrompt(character: {
   hobbies: string
 }): Promise<string> {
   try {
-    // Get the API key for direct HTTP request - prioritize environment variables
-    let apiKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY
+    // PRIORITY: Use OPENAI_API_KEY from .env first, then fallback to NOVITA
+    const openaiApiKey = process.env.OPENAI_API_KEY
+    const novitaApiKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY
     
+    const useOpenAI = !!openaiApiKey
+    let apiKey = openaiApiKey || novitaApiKey
+
     // Only try database if environment variables are not available
     if (!apiKey) {
       try {
@@ -96,9 +124,9 @@ export async function generateSystemPrompt(character: {
         console.warn("Could not fetch API key from database:", error)
       }
     }
-    
+
     if (!apiKey) {
-      throw new Error("No API key found")
+      throw new Error("No API key found - please set OPENAI_API_KEY or NOVITA_API_KEY in .env")
     }
 
     const prompt = `
@@ -115,32 +143,52 @@ export async function generateSystemPrompt(character: {
       Keep it under 200 words and focus on the character's personality, speech patterns, and knowledge areas.
     `
 
-    // Make direct HTTP request to Novita API
-    const response = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+    const messages = [
+      {
+        role: "system",
+        content: "You are a creative assistant that specializes in creating system prompts for AI characters.",
       },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: "system",
-            content: "You are a creative assistant that specializes in creating system prompts for AI characters.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        model: "meta-llama/llama-3.1-8b-instruct",
-        stream: false,
-      }),
-    })
+      {
+        role: "user",
+        content: prompt,
+      },
+    ]
+
+    let response: Response
+
+    if (useOpenAI) {
+      // Use OpenAI API
+      response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages,
+          model: "gpt-4o-mini",
+          max_tokens: 300,
+        }),
+      })
+    } else {
+      // Use Novita API (fallback)
+      response = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages,
+          model: "meta-llama/llama-3.1-8b-instruct",
+          stream: false,
+        }),
+      })
+    }
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error("Novita API error:", response.status, errorText)
+      console.error(`${useOpenAI ? 'OpenAI' : 'Novita'} API error:`, response.status, errorText)
       throw new Error(`API request failed: ${response.status} ${errorText}`)
     }
 

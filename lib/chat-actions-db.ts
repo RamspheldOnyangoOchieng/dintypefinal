@@ -22,7 +22,7 @@ export async function sendChatMessageDB(
   userMessage: string,
   systemPrompt: string,
   userId: string
-): Promise<{ 
+): Promise<{
   success: boolean
   message?: Message
   error?: string
@@ -58,7 +58,7 @@ export async function sendChatMessageDB(
     if (currentUsage >= messageLimit) {
       return {
         success: false,
-        error: isPremium 
+        error: isPremium
           ? "Daily message limit reached. Please try again tomorrow."
           : "You've reached your daily message limit (100 messages). Upgrade to premium for unlimited messages!",
         limitReached: true,
@@ -114,7 +114,7 @@ export async function sendChatMessageDB(
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         isImage: true
       }
-      
+
       // Save placeholder to database
       await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/messages`, {
         method: 'POST',
@@ -170,38 +170,71 @@ Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren k
       })),
     ]
 
-    // Get API key
-    let apiKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY
-    
+    // PRIORITY: Use OPENAI_API_KEY from .env first, then fallback to NOVITA
+    const openaiApiKey = process.env.OPENAI_API_KEY
+    const novitaApiKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY
+
+    const useOpenAI = !!openaiApiKey
+    let apiKey = openaiApiKey || novitaApiKey
+
     if (!apiKey) {
       return {
         success: false,
-        error: "API key not configured"
+        error: "No API key configured - please set OPENAI_API_KEY or NOVITA_API_KEY in .env"
       }
     }
 
-    // Make request to Novita API
-    const requestBody = {
-      messages: apiMessages,
-      model: "meta-llama/llama-3.1-8b-instruct",
-      temperature: 0.7,
-      max_tokens: 800,
-    }
+    console.log("Chat DB API Configuration:", {
+      usingOpenAI: useOpenAI,
+      apiKeyPresent: !!apiKey
+    })
 
     const startTime = Date.now()
-    
-    const response = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    })
+
+    let response: Response
+    let modelUsed: string
+
+    if (useOpenAI) {
+      // Use OpenAI API
+      const openaiRequestBody = {
+        messages: apiMessages,
+        model: "gpt-4o-mini",
+        temperature: 0.7,
+        max_tokens: 150,
+      }
+
+      response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(openaiRequestBody),
+      })
+      modelUsed = "gpt-4o-mini"
+    } else {
+      // Use Novita API (fallback)
+      const novitaRequestBody = {
+        messages: apiMessages,
+        model: "meta-llama/llama-3.1-8b-instruct",
+        temperature: 0.7,
+        max_tokens: 800,
+      }
+
+      response = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(novitaRequestBody),
+      })
+      modelUsed = "meta-llama/llama-3.1-8b-instruct"
+    }
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error("Novita API error:", errorText)
+      console.error(`${useOpenAI ? 'OpenAI' : 'Novita'} API error:`, errorText)
       return {
         success: false,
         error: "Failed to generate AI response"
@@ -232,7 +265,7 @@ Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren k
         role: 'assistant',
         isImage: false,
         metadata: {
-          model: "meta-llama/llama-3.1-8b-instruct",
+          model: modelUsed,
           api_latency_ms: apiLatency,
           tokens_estimated: Math.ceil(aiResponse.length / 4) // Rough estimate
         }
@@ -247,7 +280,7 @@ Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren k
     await logApiCost(
       "chat_message",
       1, // Token cost (estimated)
-      0.0001, // API cost (estimated)
+      useOpenAI ? 0.00015 : 0.0001, // API cost (estimated - OpenAI is slightly more expensive)
       userId
     )
 
@@ -311,7 +344,7 @@ export async function clearChatHistory(characterId: string): Promise<boolean> {
     )
 
     return response.ok
-    
+
   } catch (error) {
     console.error("Error clearing chat history:", error)
     return false
