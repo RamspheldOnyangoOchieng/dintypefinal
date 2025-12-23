@@ -249,64 +249,64 @@ export default function CreateCharacterPage() {
                     'athletic': '/character creation/Butt Size/anime/butt_athletic-0ace722a99eedcd941d296049cf910caa40830f773d17f4514dbad0bb378340c.webp'
                 }
             },
-            'personality': femaleImages.personality || {
+            'personality': {
                 'realistic': {
-                    'caregiver': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/caregiver-1764316753269.jpg',
-                    'sage': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/sage-1764316773281.jpg',
-                    'innocent': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/innocent-1764316789724.jpg',
-                    'jester': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/jester-1764316823025.jpg',
-                    'temptress': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/temptress-1764316840675.jpg',
-                    'dominant': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/dominant-1764316860199.jpg',
-                    'submissive': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/submissive-1764316878216.jpg',
-                    'lover': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/lover-1764316898475.jpg',
-                    'nympho': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/nympho-1764317125738.jpg',
-                    'mean': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mean-1764317145392.jpg',
-                    'confidant': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/confidant-1764317158264.jpg',
-                    'experimenter': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/experimenter-1764317184187.jpg'
+                    'caregiver': femaleImages?.personality?.realistic?.['caregiver'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/caregiver-1764316753269.jpg',
+                    'sage': femaleImages?.personality?.realistic?.['sage'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/sage-1764316773281.jpg',
+                    'innocent': femaleImages?.personality?.realistic?.['innocent'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/innocent-1764316789724.jpg',
+                    'jester': femaleImages?.personality?.realistic?.['jester'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/jester-1764316823025.jpg',
+                    'temptress': femaleImages?.personality?.realistic?.['temptress'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/temptress-1764316840675.jpg',
+                    'dominant': femaleImages?.personality?.realistic?.['dominant'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/dominant-1764316860199.jpg',
+                    'submissive': femaleImages?.personality?.realistic?.['submissive'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/submissive-1764316878216.jpg',
+                    'lover': femaleImages?.personality?.realistic?.['lover'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/lover-1764316898475.jpg',
+                    'nympho': femaleImages?.personality?.realistic?.['nympho'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/nympho-1764317125738.jpg',
+                    'mean': femaleImages?.personality?.realistic?.['mean'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mean-1764317145392.jpg',
+                    'confidant': femaleImages?.personality?.realistic?.['confidant'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/confidant-1764317158264.jpg',
+                    'experimenter': femaleImages?.personality?.realistic?.['experimenter'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/experimenter-1764317184187.jpg'
                 },
                 'anime': {
-                    'caregiver': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/caregiver-1764316753269.jpg',
-                    'sage': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/sage-1764316773281.jpg',
-                    'innocent': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/innocent-1764316789724.jpg',
-                    'jester': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/jester-1764316823025.jpg',
-                    'temptress': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/temptress-1764316840675.jpg',
-                    'dominant': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/dominant-1764316860199.jpg',
-                    'submissive': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/submissive-1764316878216.jpg',
-                    'lover': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/lover-1764316898475.jpg',
-                    'nympho': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/nympho-1764317125738.jpg',
-                    'mean': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mean-1764317145392.jpg',
-                    'confidant': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/confidant-1764317158264.jpg',
-                    'experimenter': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/experimenter-1764317184187.jpg'
+                    'caregiver': femaleImages?.personality?.anime?.['caregiver'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/caregiver-1764316753269.jpg',
+                    'sage': femaleImages?.personality?.anime?.['sage'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/sage-1764316773281.jpg',
+                    'innocent': femaleImages?.personality?.anime?.['innocent'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/innocent-1764316789724.jpg',
+                    'jester': femaleImages?.personality?.anime?.['jester'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/jester-1764316823025.jpg',
+                    'temptress': femaleImages?.personality?.anime?.['temptress'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/temptress-1764316840675.jpg',
+                    'dominant': femaleImages?.personality?.anime?.['dominant'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/dominant-1764316860199.jpg',
+                    'submissive': femaleImages?.personality?.anime?.['submissive'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/submissive-1764316878216.jpg',
+                    'lover': femaleImages?.personality?.anime?.['lover'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/lover-1764316898475.jpg',
+                    'nympho': femaleImages?.personality?.anime?.['nympho'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/nympho-1764317125738.jpg',
+                    'mean': femaleImages?.personality?.anime?.['mean'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mean-1764317145392.jpg',
+                    'confidant': femaleImages?.personality?.anime?.['confidant'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/confidant-1764317158264.jpg',
+                    'experimenter': femaleImages?.personality?.anime?.['experimenter'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/experimenter-1764317184187.jpg'
                 }
             },
-            'relationship': femaleImages.relationship || {
+            'relationship': {
                 'realistic': {
-                    'stranger': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/stranger-1764319962013.jpg',
-                    'school-mate': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/school-mate-1764319980133.jpg',
-                    'colleague': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/colleague-1764319993801.jpg',
-                    'mentor': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mentor-1764320012791.jpg',
-                    'girlfriend': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/girlfriend-1764320025865.jpg',
-                    'sex-friend': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/sex-friend-1764320038794.jpg',
-                    'wife': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/wife-1764320069861.jpg',
-                    'mistress': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mistress-1764320091623.jpg',
-                    'friend': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/friend-1764320104714.jpg',
-                    'best-friend': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/best-friend-1764320117264.jpg',
-                    'step-sister': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/step-sister-1764320136564.jpg',
-                    'step-mom': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/step-mom-1764320158996.jpg'
+                    'stranger': femaleImages?.relationship?.realistic?.['stranger'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/stranger-1764319962013.jpg',
+                    'school-mate': femaleImages?.relationship?.realistic?.['school-mate'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/school-mate-1764319980133.jpg',
+                    'colleague': femaleImages?.relationship?.realistic?.['colleague'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/colleague-1764319993801.jpg',
+                    'mentor': femaleImages?.relationship?.realistic?.['mentor'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mentor-1764320012791.jpg',
+                    'girlfriend': femaleImages?.relationship?.realistic?.['girlfriend'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/girlfriend-1764320025865.jpg',
+                    'sex-friend': femaleImages?.relationship?.realistic?.['sex-friend'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/sex-friend-1764320038794.jpg',
+                    'wife': femaleImages?.relationship?.realistic?.['wife'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/wife-1764320069861.jpg',
+                    'mistress': femaleImages?.relationship?.realistic?.['mistress'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mistress-1764320091623.jpg',
+                    'friend': femaleImages?.relationship?.realistic?.['friend'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/friend-1764320104714.jpg',
+                    'best-friend': femaleImages?.relationship?.realistic?.['best-friend'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/best-friend-1764320117264.jpg',
+                    'step-sister': femaleImages?.relationship?.realistic?.['step-sister'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/step-sister-1764320136564.jpg',
+                    'step-mom': femaleImages?.relationship?.realistic?.['step-mom'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/step-mom-1764320158996.jpg'
                 },
                 'anime': {
-                    'stranger': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/stranger-1764319962013.jpg',
-                    'school-mate': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/school-mate-1764319980133.jpg',
-                    'colleague': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/colleague-1764319993801.jpg',
-                    'mentor': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mentor-1764320012791.jpg',
-                    'girlfriend': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/girlfriend-1764320025865.jpg',
-                    'sex-friend': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/sex-friend-1764320038794.jpg',
-                    'wife': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/wife-1764320069861.jpg',
-                    'mistress': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mistress-1764320091623.jpg',
-                    'friend': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/friend-1764320104714.jpg',
-                    'best-friend': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/best-friend-1764320117264.jpg',
-                    'step-sister': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/step-sister-1764320136564.jpg',
-                    'step-mom': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/step-mom-1764320158996.jpg'
+                    'stranger': femaleImages?.relationship?.anime?.['stranger'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/stranger-1764319962013.jpg',
+                    'school-mate': femaleImages?.relationship?.anime?.['school-mate'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/school-mate-1764319980133.jpg',
+                    'colleague': femaleImages?.relationship?.anime?.['colleague'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/colleague-1764319993801.jpg',
+                    'mentor': femaleImages?.relationship?.anime?.['mentor'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mentor-1764320012791.jpg',
+                    'girlfriend': femaleImages?.relationship?.anime?.['girlfriend'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/girlfriend-1764320025865.jpg',
+                    'sex-friend': femaleImages?.relationship?.anime?.['sex-friend'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/sex-friend-1764320038794.jpg',
+                    'wife': femaleImages?.relationship?.anime?.['wife'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/wife-1764320069861.jpg',
+                    'mistress': femaleImages?.relationship?.anime?.['mistress'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/mistress-1764320091623.jpg',
+                    'friend': femaleImages?.relationship?.anime?.['friend'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/friend-1764320104714.jpg',
+                    'best-friend': femaleImages?.relationship?.anime?.['best-friend'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/best-friend-1764320117264.jpg',
+                    'step-sister': femaleImages?.relationship?.anime?.['step-sister'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/step-sister-1764320136564.jpg',
+                    'step-mom': femaleImages?.relationship?.anime?.['step-mom'] || 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/step-mom-1764320158996.jpg'
                 }
             }
         };
