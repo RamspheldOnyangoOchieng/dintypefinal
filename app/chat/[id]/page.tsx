@@ -12,9 +12,7 @@ import {
   ChevronRight,
   Send,
   Menu,
-  ImageIcon,
   Loader2,
-  ChevronUp,
 } from "lucide-react"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
@@ -36,12 +34,6 @@ import { SupabaseDebug } from "@/components/supabase-debug"
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
 import { isAskingForImage, extractImagePrompt, imageUrlToBase64 } from "@/lib/image-utils"
 import { ImageModal } from "@/components/image-modal"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 export default function ChatPage({ params }: { params: { id: string } }) {
   const [characterId, setCharacterId] = useState<string | null>(null);
@@ -1133,25 +1125,6 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               autoCapitalize="sentences"
               spellCheck="true"
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="flex items-center gap-1 text-xs min-h-[44px] px-3 touch-manipulation"
-                >
-                  <ImageIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t("chat.ask")}</span>
-                  <ChevronUp className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => setInputValue(t("chat.showMe"))}>{t("chat.showMe")}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setInputValue(t("chat.sendMe"))}>{t("chat.sendMe")}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setInputValue(t("chat.canISee"))}>{t("chat.canISee")}</DropdownMenuItem>
-                <DropdownMenuItem>{t("chat.howToUse")}</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
             <Button
               size="icon"
               className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] min-w-[44px] touch-manipulation"
