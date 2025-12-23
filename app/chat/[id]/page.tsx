@@ -912,6 +912,25 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     }
   }
 
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    // The useEffect will handle the redirect, but we don't render anything
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-muted-foreground">Redirecting to login...</div>
+      </div>
+    );
+  }
+
   // Show loading while unwrapping params
   if (!characterId) {
     return (
