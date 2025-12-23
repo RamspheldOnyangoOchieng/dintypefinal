@@ -3,7 +3,7 @@
 import React from "react"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X, Crown } from "lucide-react"
+import { X, Crown, MessageCircle, CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 
@@ -15,116 +15,88 @@ interface PremiumUpgradeModalProps {
   imageSrc?: string
 }
 
-export function PremiumUpgradeModal({ 
-  isOpen, 
-  onClose, 
-  feature,
-  description,
-  imageSrc = "/placeholder.svg"
+export function PremiumUpgradeModal({
+  isOpen,
+  onClose,
+  feature = "Unlimited Messages",
+  description = "Chat without limits",
+  imageSrc = "/login-placeholder.jpeg"
 }: PremiumUpgradeModalProps) {
   const router = useRouter()
 
   const handleUpgrade = () => {
     onClose()
-    router.push("/premium?tab=subscriptions")
+    router.push("/premium")
   }
+
+  const benefits = [
+    "Create AI Video",
+    "Create your own AI Girls",
+    "Unlimited text messages",
+    "Remove image blur",
+    "Get 100 FREE tokens / month"
+  ]
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] p-0 gap-0 bg-background border-border overflow-hidden">
+      <DialogContent className="sm:max-w-[750px] p-0 gap-0 bg-[#0f0f0f] border-zinc-800 overflow-hidden text-white shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+          className="absolute right-4 top-4 z-50 rounded-full bg-black/50 p-1 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-black/70"
         >
-          <X className="h-4 w-4 text-muted-foreground" />
+          <X className="h-4 w-4 text-white" />
           <span className="sr-only">Close</span>
         </button>
 
-        <div className="flex flex-col md:flex-row">
+        <div className="flex flex-col md:flex-row h-full">
           {/* Left side - Image */}
-          <div className="md:w-2/5 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center p-8">
-            <div className="relative w-full max-w-[280px] aspect-[3/4] rounded-2xl overflow-hidden">
-              <Image
-                src={imageSrc}
-                alt="Premium Feature"
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
+          <div className="md:w-5/12 relative h-48 md:h-auto overflow-hidden">
+            <Image
+              src={imageSrc}
+              alt="Premium Feature"
+              fill
+              className="object-cover"
+              unoptimized
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-[#0f0f0f] opacity-90" />
           </div>
 
           {/* Right side - Content */}
-          <div className="md:w-3/5 p-8 flex flex-col">
-            <div className="flex-1">
-              <h2 className="text-2xl md:text-3xl font-bold mb-2">
-                Upgrade to Unlock
+          <div className="md:w-7/12 p-6 md:p-8 flex flex-col justify-center bg-[#0f0f0f]">
+            <div className="mb-6">
+              <h2 className="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2">
+                Upgrade to Unlock <MessageCircle className="h-5 w-5 md:h-6 md:w-6 fill-white" />
               </h2>
-              <h3 className="text-xl md:text-2xl font-bold text-primary mb-4">
-                {feature}
-              </h3>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-[#ff4b7d] mb-6">
+                Unlimited Messages
+              </h2>
 
-              <p className="text-sm text-muted-foreground mb-4">
-                This feature is available exclusively for our Premium Users.
+              <p className="text-gray-400 mb-4 text-sm">
+                With subscription you get access to:
               </p>
 
-              <p className="text-sm font-medium mb-6">
-                {description}
-              </p>
-
-              {/* Audio waveform visualization */}
-              {feature.toLowerCase().includes("voice") && (
-                <div className="flex items-center justify-center gap-1 mb-6 py-4">
-                  {[...Array(15)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-1 bg-primary rounded-full transition-all duration-300"
-                      style={{
-                        height: `${Math.random() * 40 + 10}px`,
-                        animation: `pulse ${Math.random() * 0.5 + 0.5}s ease-in-out infinite`,
-                        animationDelay: `${i * 0.1}s`
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {feature.toLowerCase().includes("image") && (
-                <div className="flex items-center justify-center gap-2 mb-6 py-4">
-                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">4</span>
+              <div className="space-y-3 mb-8">
+                {benefits.map((benefit, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="bg-[#ccff00] rounded-full p-0.5 flex-shrink-0">
+                      <CheckCircle2 className="h-3 w-3 text-black font-bold" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-200">{benefit}</span>
                   </div>
-                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">6</span>
-                  </div>
-                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">8</span>
-                  </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
 
-            <Button 
+            <Button
               onClick={handleUpgrade}
-              className="w-full py-6 text-base font-semibold"
-              size="lg"
+              className="w-full py-6 text-base font-bold bg-[#ff4b7d] hover:bg-[#ff4b7d]/90 text-white rounded-xl shadow-[0_0_20px_rgba(255,75,125,0.4)] transition-all transform hover:scale-[1.02]"
             >
-              <Crown className="mr-2 h-5 w-5" />
+              <Crown className="mr-2 h-5 w-5 fill-white" />
               Upgrade to Premium
             </Button>
           </div>
         </div>
-
-        <style jsx>{`
-          @keyframes pulse {
-            0%, 100% {
-              opacity: 0.4;
-            }
-            50% {
-              opacity: 1;
-            }
-          }
-        `}</style>
       </DialogContent>
     </Dialog>
   )

@@ -685,7 +685,12 @@ export default function CreateCharacterPage() {
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             // Redirect to My AI page
-            router.push('/my-ai');
+            // Redirect to the new character chat
+            if (data.character && data.character.id) {
+                router.push(`/chat/${data.character.id}`);
+            } else {
+                router.push('/chat');
+            }
         } catch (error) {
             console.error('Error saving character:', error);
             alert('Failed to save character. Please try again.');

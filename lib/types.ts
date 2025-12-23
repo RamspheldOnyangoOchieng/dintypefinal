@@ -3,6 +3,7 @@ export type Character = {
   name: string
   age: number
   image: string
+  images?: string[] // Array of additional profile images
   videoUrl?: string // Add this field
   description: string
   personality: string

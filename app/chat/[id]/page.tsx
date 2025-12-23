@@ -33,6 +33,7 @@ import {
   clearChatHistoryFromLocalStorage,
 } from "@/lib/local-storage-chat"
 import { SupabaseDebug } from "@/components/supabase-debug"
+import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
 import { isAskingForImage, extractImagePrompt, imageUrlToBase64 } from "@/lib/image-utils"
 import { ImageModal } from "@/components/image-modal"
 import {
@@ -62,6 +63,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
+  // Debug mount
+  useEffect(() => {
+    console.log("ChatPage mounted. User authenticated:", !!user, "User ID:", user?.id)
+  }, [user])
+
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -72,6 +78,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null)
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string[] | null>(null)
   const [isMounted, setIsMounted] = useState(false)
   const [chatsWithHistory, setChatsWithHistory] = useState<string[]>([])
@@ -97,6 +104,42 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     storageType: "localStorage",
   })
 
+  // Carousel state
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  // Prepare gallery images
+  const galleryImages = useMemo(() => {
+    if (!character) return []
+    
+    // Start with the main image
+    let imgs = [character.image || "/placeholder.svg"]
+    
+    // Add additional images from the array if they exist (requires DB update for persistent storage)
+    if (character.images && Array.isArray(character.images) && character.images.length > 0) {
+      // Filter out matches to main image to avoid immediate duplicates if data is messy
+      const additional = character.images.filter((img: string) => img !== character.image)
+      imgs = [...imgs, ...additional]
+    }
+    
+    // Ensure we have at least 3 images for the carousel experience
+    // We duplicate the main image if needed to meet the "3 profile photos" requirement
+    while (imgs.length < 3) {
+      imgs.push(character.image || "/placeholder.svg")
+    }
+    
+    return imgs
+  }, [character])
+
+  const handleNextImage = () => {
+    if (galleryImages.length === 0) return
+    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length)
+  }
+
+  const handlePrevImage = () => {
+    if (galleryImages.length === 0) return
+    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
+  }
+
   // Set mounted state on component mount
   useEffect(() => {
     setIsMounted(true)
@@ -109,10 +152,10 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     if (!charactersLoading && characterId) {
       // Check if this is a custom character (ID starts with "custom-")
       const charId = String(characterId);
-      
+
       console.log('🔍 Looking for character:', charId);
       console.log('📊 Available characters:', characters.length);
-      
+
       if (charId.startsWith("custom-")) {
         // Load custom character from localStorage
         const customCharacterData = localStorage.getItem(`character-${charId}`);
@@ -127,7 +170,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           }
         }
       }
-      
+
       // Load regular character from database
       const foundCharacter = characters.find((char) => char.id === charId);
       if (foundCharacter) {
@@ -515,7 +558,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           isProcessingImageRef.current = true
 
           console.log("Checking image status for task:", currentTaskIdRef.current)
-          
+
           // Build query params with userId if available
           const queryParams = new URLSearchParams({
             taskId: currentTaskIdRef.current
@@ -523,7 +566,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           if (user?.id) {
             queryParams.append('userId', user.id)
           }
-          
+
           const response = await fetch(`${checkEndpoint}?${queryParams.toString()}`)
 
           if (!response.ok) {
@@ -685,7 +728,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         try {
           const messageCheck = await checkMessageLimit(user.id)
           if (!messageCheck.allowed) {
-            setApiKeyError(messageCheck.message || "Daily message limit reached. Upgrade to Premium for unlimited messages.")
+            setIsPremiumModalOpen(true)
             return
           }
         } catch (error) {
@@ -764,16 +807,16 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         if (user?.id) {
           try {
             await incrementMessageUsage(user.id)
-            
+
             // Ensure user has tokens (creates if first time)
             const { ensureUserTokens } = await import('@/lib/ensure-user-tokens')
             await ensureUserTokens(user.id)
-            
+
             // Deduct tokens for the message (5 tokens per message)
             const MESSAGE_TOKEN_COST = 5
             const { deductTokens } = await import('@/lib/subscription-limits')
             const tokenDeducted = await deductTokens(user.id, MESSAGE_TOKEN_COST, 'Chat message')
-            
+
             if (!tokenDeducted) {
               console.warn('Failed to deduct tokens for message - user may be out of tokens')
               // Show low balance warning to user
@@ -1054,11 +1097,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           <div ref={messagesEndRef} />
         </div>
 
-    {apiKeyError && (
+        {apiKeyError && (
           <div className="mx-4 p-3 bg-destructive/20 border border-destructive text-destructive-foreground rounded-lg text-sm">
-      <p className="font-medium">API Key Error</p>
+            <p className="font-medium">API Key Error</p>
             <p>{apiKeyError}</p>
-      <p className="mt-1">Admin users can set the API key in the Admin Dashboard → API Keys section.</p>
+            <p className="mt-1">Admin users can set the API key in the Admin Dashboard → API Keys section.</p>
           </div>
         )}
 
@@ -1079,9 +1122,9 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
+                <Button
+                  variant="secondary"
+                  size="sm"
                   className="flex items-center gap-1 text-xs min-h-[44px] px-3 touch-manipulation"
                 >
                   <ImageIcon className="h-4 w-4" />
@@ -1149,40 +1192,66 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               </div>
             ) : (
               <>
-                {/* Use regular img tag for Cloudinary images */}
+                {/* Carousel Image */}
                 <img
-                  src={imageErrors["profile"] ? "/placeholder.svg" : character?.image || "/placeholder.svg"}
+                  src={
+                    (galleryImages.length > 0 
+                      ? galleryImages[currentImageIndex] 
+                      : (character?.image || "/placeholder.svg"))
+                  }
                   alt={character?.name || "Character"}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-opacity duration-300"
                   onError={() => handleImageError("profile")}
                   loading="lazy"
                 />
-                <button className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/50 p-1 rounded-full">
+                
+                {/* Navigation Arrows */}
+                <button 
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 p-1.5 rounded-full transition-colors text-white backdrop-blur-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevImage();
+                  }}
+                >
                   <ChevronLeft className="h-6 w-6" />
                 </button>
                 <button
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/50 p-1 rounded-full"
-                  onClick={() => {
-                    console.log("Right chevron clicked")
-                    console.log("Character videoUrl:", character?.videoUrl)
-                    if (character?.videoUrl) {
-                      console.log("Setting showVideo to true")
-                      setShowVideo(true)
-                    } else {
-                      console.log("No video URL available")
-                    }
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 p-1.5 rounded-full transition-colors text-white backdrop-blur-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextImage();
                   }}
-                  title={character?.videoUrl ? t("chat.viewVideoIntro") : t("chat.noVideoAvailable")}
                 >
                   <ChevronRight className="h-6 w-6" />
                 </button>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
-                  <div className="w-2 h-2 rounded-full bg-white"></div>
-                  <div className="w-2 h-2 rounded-full bg-white/50"></div>
-                  <div className="w-2 h-2 rounded-full bg-white/50"></div>
-                  <div className="w-2 h-2 rounded-full bg-white/50"></div>
-                  <div className="w-2 h-2 rounded-full bg-white/50"></div>
+                
+                {/* Dots Indicator */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                  {galleryImages.map((_, idx) => (
+                    <button 
+                      key={idx} 
+                      className={`w-2 h-2 rounded-full transition-all focus:outline-none ${
+                        idx === currentImageIndex ? "bg-white w-4" : "bg-white/50 hover:bg-white/70"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(idx);
+                      }}
+                      aria-label={`Go to image ${idx + 1}`}
+                    />
+                  ))}
                 </div>
+                
+                {/* Floating "Watch Video" button if video exists */}
+                {character?.videoUrl && (
+                  <button
+                    className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors backdrop-blur-sm z-10 font-medium"
+                    onClick={() => setShowVideo(true)}
+                  >
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    Video
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -1225,6 +1294,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         isOpen={false}
       />
       <SupabaseDebug />
+      <PremiumUpgradeModal 
+        isOpen={isPremiumModalOpen} 
+        onClose={() => setIsPremiumModalOpen(false)}
+        imageSrc={character?.image}
+      />
       {selectedImage && (
         <ImageModal
           images={selectedImage}

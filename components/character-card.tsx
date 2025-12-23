@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import type { Character } from "@/types/character"
 import {
   Dialog,
@@ -19,7 +19,6 @@ interface CharacterCardProps {
 }
 
 export function CharacterCard({ character }: CharacterCardProps) {
-  const router = useRouter()
   const [imageError, setImageError] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -54,10 +53,6 @@ export function CharacterCard({ character }: CharacterCardProps) {
     }
   }
 
-  const handleCardClick = () => {
-    router.push(`/chat/${character.id}`)
-  }
-
   // Extract age from character data
   const age = character.age || ""
 
@@ -76,9 +71,9 @@ export function CharacterCard({ character }: CharacterCardProps) {
   }, [])
 
   return (
-    <div
-      className="relative overflow-hidden rounded-[var(--radius)] aspect-[3/4] cursor-pointer shadow-md hover:shadow-lg transition-all duration-300 bg-card text-card-foreground border border-border"
-      onClick={handleCardClick}
+    <Link
+      href={`/chat/${character.id}`}
+      className="block relative overflow-hidden rounded-[var(--radius)] aspect-[3/4] cursor-pointer shadow-md hover:shadow-lg transition-all duration-300 bg-card text-card-foreground border border-border"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -133,6 +128,6 @@ export function CharacterCard({ character }: CharacterCardProps) {
         </div>
         <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{character.description}</p>
       </div>
-    </div>
+    </Link>
   )
 }

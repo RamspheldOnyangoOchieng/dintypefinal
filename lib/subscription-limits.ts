@@ -69,9 +69,14 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
     const planInfo = await getUserPlanInfo(userId);
     console.log('📋 User plan info:', planInfo);
 
-    const limit = planInfo?.restrictions?.daily_message_limit;
+    let limit = planInfo?.restrictions?.daily_message_limit;
 
-    // If null/undefined/unlimited, allow
+    // Default to 3 messages for free plan if not set
+    if ((!limit || limit === 'null') && planInfo.planType === 'free') {
+      limit = 3;
+    }
+
+    // If null/undefined/unlimited, allow (usually for premium)
     if (!limit || limit === null || limit === 'null' || limit === undefined) {
       console.log('✅ No message limit set, allowing message');
       return { allowed: true, currentUsage: 0, limit: null };
