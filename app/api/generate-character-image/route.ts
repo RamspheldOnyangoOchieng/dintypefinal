@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadImageToCloudinary } from '@/lib/cloudinary-upload';
-import { getUnifiedNovitaKey, generateImage } from '@/lib/novita-api';
+import { generateImage } from '@/lib/novita-api';
+import { getUnifiedNovitaKey } from '@/lib/unified-api-keys';
 
 export async function POST(request: NextRequest) {
   try {
