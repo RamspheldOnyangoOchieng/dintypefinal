@@ -31,14 +31,14 @@ export interface GeneratedImage {
 export async function generateImage(params: ImageGenerationParams): Promise<GeneratedImage> {
   // Get API key with fallback (DB → .env)
   const { key: NOVITA_API_KEY, error: keyError } = await getUnifiedNovitaKey()
-  
+
   if (!NOVITA_API_KEY) {
     throw new Error(keyError || 'Novita API key is not configured');
   }
 
   const {
     prompt,
-    negativePrompt = 'nude, naked, nsfw, explicit, sexual, vulgar, inappropriate, low quality, blurry, distorted',
+    negativePrompt = 'low quality, blurry, distorted, deformed, bad anatomy, ugly, disgusting, text, watermark',
     width = 512,
     height = 768,
     steps = 30,
@@ -53,17 +53,24 @@ export async function generateImage(params: ImageGenerationParams): Promise<Gene
     : `anime style, ${prompt}, beautiful anime art, detailed illustration, high quality, professional digital art, clean lines, vibrant colors`;
 
   const requestBody = {
-    model_name: model,
-    prompt: enhancedPrompt,
-    negative_prompt: negativePrompt,
-    width,
-    height,
-    sampler_name: 'DPM++ 2M Karras',
-    steps,
-    cfg_scale: 7,
-    seed,
-    batch_size: 1,
-    image_num: 1,
+    extra: {
+      response_image_type: "jpeg",
+      enable_nsfw_detection: false,
+      nsfw_detection_level: 0
+    },
+    request: {
+      model_name: model,
+      prompt: enhancedPrompt,
+      negative_prompt: negativePrompt,
+      width,
+      height,
+      sampler_name: 'DPM++ 2M Karras',
+      steps,
+      cfg_scale: 7,
+      seed,
+      batch_size: 1,
+      image_num: 1,
+    }
   };
 
   try {
