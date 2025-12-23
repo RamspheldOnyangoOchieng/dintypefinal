@@ -100,11 +100,33 @@ export async function generateImage(params: ImageGenerationParams): Promise<Gene
     // Poll for completion
     const result = await pollForCompletion(taskId, NOVITA_API_KEY);
 
+    console.log('Novita polling result:', JSON.stringify(result, null, 2));
+
+    let imageUrl = '';
+    let seed = -1;
+    let width = params.width || 512;
+    let height = params.height || 768;
+
+    if (result.images && result.images.length > 0) {
+      imageUrl = result.images[0].image_url;
+      // Some responses have different structure for seed/dims in images array or at root
+      // Prioritize root if available, else assume requested dims or fallback
+      seed = result.seed || -1;
+      width = result.width || width;
+      height = result.height || height;
+    } else if (result.task && result.task.images && result.task.images.length > 0) {
+      // Handle task/images structure if nested
+      imageUrl = result.task.images[0].image_url;
+      seed = result.task.seed || seed;
+    } else {
+      throw new Error(`No images found in Novita response: ${JSON.stringify(result)}`);
+    }
+
     return {
-      url: result.images[0].image_url,
-      seed: result.seed,
-      width: result.width,
-      height: result.height,
+      url: imageUrl,
+      seed: seed,
+      width: width,
+      height: height,
     };
   } catch (error) {
     console.error('Error generating image:', error);
@@ -133,10 +155,15 @@ async function pollForCompletion(taskId: string, apiKey: string, maxAttempts = 6
 
     const data = await response.json();
 
-    if (data.task.status === 'TASK_STATUS_SUCCEED') {
-      return data.task;
-    } else if (data.task.status === 'TASK_STATUS_FAILED') {
-      throw new Error(`Image generation failed: ${data.task.reason}`);
+    // Check various status fields depending on exact API version response
+    const status = data.task ? data.task.status : data.status;
+
+    if (status === 'TASK_STATUS_SUCCEED' || status === 'SUCCEEDED') {
+      // Return the whole data object so caller can find images wherever they are
+      return data;
+    } else if (status === 'TASK_STATUS_FAILED' || status === 'FAILED') {
+      const reason = data.task ? data.task.reason : (data.reason || 'Unknown error');
+      throw new Error(`Image generation failed: ${reason}`);
     }
 
     // Continue polling if still processing
