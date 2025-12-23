@@ -1,7 +1,6 @@
 "use server"
 
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase-server"
 
 export type ImageSuggestion = {
   id: string
@@ -13,7 +12,7 @@ export type ImageSuggestion = {
 }
 
 export async function getImageSuggestions(): Promise<ImageSuggestion[]> {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase
@@ -35,7 +34,7 @@ export async function getImageSuggestions(): Promise<ImageSuggestion[]> {
 }
 
 export async function getImageSuggestionsByCategory(category: string): Promise<ImageSuggestion[]> {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase
