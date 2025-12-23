@@ -7,12 +7,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 export default function CreateCharacterPage() {
     const searchParams = useSearchParams();
     const gender = searchParams.get('gender') || 'lady'; // Default to 'lady' if not specified
-    
+
     // Define step flows for each gender
     // Lady: 8 steps - Style, Ethnicity/Age/Eyes, Hair, Body/Breast/Butt, Personality, Relationship, Summary, Generation
     // Gent: 4 steps - Style, Body, Personality, Relationship, Summary, Generation
     const totalSteps = gender === 'lady' ? 8 : 6; // Including summary and generation steps
-    
+
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedStyle, setSelectedStyle] = useState<'realistic' | 'anime' | null>(null);
     const [selectedEthnicity, setSelectedEthnicity] = useState<string | null>(null);
@@ -34,9 +34,60 @@ export default function CreateCharacterPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [maleImages, setMaleImages] = useState<{ [key: string]: { [key: string]: { [key: string]: string } } }>({});
     const [isLoadingMaleImages, setIsLoadingMaleImages] = useState(false);
+    const [femaleImages, setFemaleImages] = useState<{ [key: string]: { [key: string]: { [key: string]: string } } }>({});
+    const [isLoadingFemaleImages, setIsLoadingFemaleImages] = useState(false);
 
     const supabase = createClientComponentClient();
     const router = useRouter();
+
+    // Load female images from database for personality and relationship
+    useEffect(() => {
+        if (gender === 'lady' && Object.keys(femaleImages).length === 0 && !isLoadingFemaleImages) {
+            console.log('🔄 Starting to load female images from database...');
+            loadFemaleImages();
+        }
+    }, [gender]);
+
+    const loadFemaleImages = async () => {
+        setIsLoadingFemaleImages(true);
+        try {
+            const { data, error } = await supabase
+                .from('attribute_images')
+                .select('*')
+                .in('category', ['personality', 'relationship']);
+
+            if (error) throw error;
+
+            console.log(`📥 Loaded ${data?.length} female attribute images from database`);
+
+            // Organize images by category -> style -> value
+            const organized: { [key: string]: { [key: string]: { [key: string]: string } } } = {};
+            
+            data?.forEach((img: any) => {
+                if (!organized[img.category]) {
+                    organized[img.category] = {};
+                }
+                if (!organized[img.category][img.style]) {
+                    organized[img.category][img.style] = {};
+                }
+                // Normalize the key: lowercase and replace spaces with hyphens
+                const normalizedKey = img.value.toLowerCase().replace(/\s+/g, '-');
+                organized[img.category][img.style][normalizedKey] = img.image_url;
+            });
+
+            setFemaleImages(organized);
+            console.log('✅ Female images organized by category:', {
+                personality: organized.personality ? Object.keys(organized.personality) : [],
+                relationship: organized.relationship ? Object.keys(organized.relationship) : []
+            });
+        } catch (error) {
+            console.error('❌ Error loading female images:', error);
+            // Keep using hardcoded fallbacks if DB load fails
+            setFemaleImages({});
+        } finally {
+            setIsLoadingFemaleImages(false);
+        }
+    };
 
     // Load male images from database when gender is 'gent'
     useEffect(() => {
@@ -59,7 +110,7 @@ export default function CreateCharacterPage() {
 
             // Organize images by category -> style -> value
             const organized: { [key: string]: { [key: string]: { [key: string]: string } } } = {};
-            
+
             data?.forEach((img: any) => {
                 if (!organized[img.category]) {
                     organized[img.category] = {};
@@ -95,9 +146,9 @@ export default function CreateCharacterPage() {
     // Helper function to get local image URL from public directory
     const getImageUrl = (categoryName: string, optionKey: string, fallbackUrl: string) => {
         const defaultPlaceholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="300"%3E%3Crect width="200" height="300" fill="%23333"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%23666" font-family="Arial" font-size="16"%3ELoading...%3C/text%3E%3C/svg%3E';
-        
+
         if (!selectedStyle) return fallbackUrl || defaultPlaceholder;
-        
+
         // Complete mapping of all available images with their exact filenames
         // Separate imageMap for female (lady) and male (gent) characters
         const femaleImageMap: { [key: string]: { [key: string]: { [key: string]: string } } } = {
@@ -199,7 +250,7 @@ export default function CreateCharacterPage() {
                     'athletic': '/character creation/Butt Size/anime/butt_athletic-0ace722a99eedcd941d296049cf910caa40830f773d17f4514dbad0bb378340c.webp'
                 }
             },
-            'personality': {
+            'personality': femaleImages.personality || {
                 'realistic': {
                     'caregiver': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/caregiver-1764316753269.jpg',
                     'sage': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/sage-1764316773281.jpg',
@@ -229,7 +280,7 @@ export default function CreateCharacterPage() {
                     'experimenter': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/experimenter-1764317184187.jpg'
                 }
             },
-            'relationship': {
+            'relationship': femaleImages.relationship || {
                 'realistic': {
                     'stranger': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/stranger-1764319962013.jpg',
                     'school-mate': 'https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/images/personality/school-mate-1764319980133.jpg',
@@ -292,10 +343,10 @@ export default function CreateCharacterPage() {
                 'anime': {}
             }
         };
-        
+
         // Select the appropriate imageMap based on gender
         const imageMap = gender === 'gent' ? maleImageMap : femaleImageMap;
-        
+
         // Debug logging for gent images
         if (gender === 'gent') {
             const maleImagesLoaded = Object.keys(maleImages).length > 0;
@@ -308,26 +359,26 @@ export default function CreateCharacterPage() {
                 fallbackProvided: !!fallbackUrl
             });
         }
-        
+
         // Get the image path
         const categoryImages = imageMap[categoryName];
         if (!categoryImages) {
             console.warn(`⚠️  No images found for category: ${categoryName}`);
             return fallbackUrl || defaultPlaceholder;
         }
-        
+
         // For style, return directly
         if (categoryName === 'style') {
             return categoryImages[optionKey] || fallbackUrl || defaultPlaceholder;
         }
-        
+
         // For other categories, get the style-specific images
         const styleImages = categoryImages[selectedStyle];
         if (!styleImages) {
             console.warn(`⚠️  No images found for style: ${selectedStyle} in category: ${categoryName}`);
             return fallbackUrl || defaultPlaceholder;
         }
-        
+
         const finalUrl = styleImages[optionKey];
         if (!finalUrl) {
             if (gender === 'gent') {
@@ -335,7 +386,7 @@ export default function CreateCharacterPage() {
             }
             return fallbackUrl || defaultPlaceholder;
         }
-        
+
         return finalUrl;
     };
 
@@ -353,7 +404,7 @@ export default function CreateCharacterPage() {
     // Gent: 0=Style, 1=Body, 2=Personality, 3=Relationship, 4=Summary, 5=Generation
     const getStepValidation = () => {
         if (gender === 'lady') {
-            switch(currentStep) {
+            switch (currentStep) {
                 case 0: return !!selectedStyle;
                 case 1: return !!(selectedEthnicity && selectedAge && selectedEyeColor);
                 case 2: return !!(selectedHairStyle && selectedHairColor);
@@ -365,7 +416,7 @@ export default function CreateCharacterPage() {
                 default: return false;
             }
         } else { // gent
-            switch(currentStep) {
+            switch (currentStep) {
                 case 0: return !!selectedStyle;
                 case 1: return !!selectedBodyType; // Gents only need body type
                 case 2: return !!selectedPersonality;
@@ -487,9 +538,8 @@ export default function CreateCharacterPage() {
                     {generatedImageUrl && (
                         <div className="mb-8 flex justify-center">
                             <div
-                                className={`rounded-2xl overflow-hidden border-4 border-[#FF4D8D] shadow-2xl transition-opacity duration-1000 ${
-                                    showImage ? 'opacity-100' : 'opacity-0'
-                                }`}
+                                className={`rounded-2xl overflow-hidden border-4 border-[#FF4D8D] shadow-2xl transition-opacity duration-1000 ${showImage ? 'opacity-100' : 'opacity-0'
+                                    }`}
                                 style={{ maxWidth: '500px' }}
                             >
                                 <img
@@ -530,7 +580,7 @@ export default function CreateCharacterPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     characterDetails,
                     gender: gender, // Pass gender to the API
                 }),
@@ -571,7 +621,7 @@ export default function CreateCharacterPage() {
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            
+
             if (!user) {
                 alert('Please login to save your character');
                 return;
@@ -843,11 +893,10 @@ export default function CreateCharacterPage() {
                     <div className="flex items-center space-x-0.5 sm:space-x-1 md:space-x-2 overflow-x-auto pb-2">
                         {Array.from({ length: totalSteps }, (_, step) => (
                             <div key={step} className="flex items-center flex-shrink-0">
-                                <div className={`w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center text-xs sm:text-xs md:text-sm font-bold ${
-                                    step <= currentStep
+                                <div className={`w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center text-xs sm:text-xs md:text-sm font-bold ${step <= currentStep
                                         ? "bg-primary border-primary text-primary-foreground"
                                         : "bg-secondary border-secondary text-muted-foreground"
-                                }`}>
+                                    }`}>
                                     {step < currentStep ? (
                                         <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -857,9 +906,8 @@ export default function CreateCharacterPage() {
                                     )}
                                 </div>
                                 {step < totalSteps - 1 && (
-                                    <div className={`w-4 sm:w-6 md:w-12 h-1 mx-0.5 sm:mx-1 md:mx-2 ${
-                                        step < currentStep ? "bg-primary" : "bg-secondary"
-                                    }`} />
+                                    <div className={`w-4 sm:w-6 md:w-12 h-1 mx-0.5 sm:mx-1 md:mx-2 ${step < currentStep ? "bg-primary" : "bg-secondary"
+                                        }`} />
                                 )}
                             </div>
                         ))}
@@ -878,11 +926,10 @@ export default function CreateCharacterPage() {
                             <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
                                 {/* Realistic Option */}
                                 <div
-                                    className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                        selectedStyle === 'realistic'
+                                    className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedStyle === 'realistic'
                                             ? 'bg-primary border-2 border-primary'
                                             : 'border-2 border-border hover:border-primary'
-                                    }`}
+                                        }`}
                                     onClick={() => setSelectedStyle('realistic')}
                                 >
                                     <div className="w-[120px] h-[160px] sm:w-[140px] sm:h-[206px] lg:w-[320px] lg:h-[443px] rounded-lg sm:rounded-xl overflow-hidden relative">
@@ -900,11 +947,10 @@ export default function CreateCharacterPage() {
                                             />
                                         )}
                                         <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2">
-                                            <span className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold ${
-                                                selectedStyle === 'realistic'
+                                            <span className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold ${selectedStyle === 'realistic'
                                                     ? 'bg-primary-foreground text-primary'
                                                     : 'bg-background/50 text-foreground'
-                                            }`}>
+                                                }`}>
                                                 Realistic
                                             </span>
                                         </div>
@@ -913,11 +959,10 @@ export default function CreateCharacterPage() {
 
                                 {/* Anime Option */}
                                 <div
-                                    className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                        selectedStyle === 'anime'
+                                    className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedStyle === 'anime'
                                             ? 'bg-primary border-2 border-primary'
                                             : 'border-2 border-border hover:border-primary'
-                                    }`}
+                                        }`}
                                     onClick={() => setSelectedStyle('anime')}
                                 >
                                     <div className="w-[120px] h-[160px] sm:w-[140px] sm:h-[206px] lg:w-[320px] lg:h-[443px] rounded-lg sm:rounded-xl overflow-hidden relative">
@@ -935,11 +980,10 @@ export default function CreateCharacterPage() {
                                             />
                                         )}
                                         <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2">
-                                            <span className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold ${
-                                                selectedStyle === 'anime'
+                                            <span className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold ${selectedStyle === 'anime'
                                                     ? 'bg-primary-foreground text-primary'
                                                     : 'bg-background/50 text-foreground'
-                                            }`}>
+                                                }`}>
                                                 Anime
                                             </span>
                                         </div>
@@ -960,11 +1004,10 @@ export default function CreateCharacterPage() {
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:justify-center md:items-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
                                     {/* Caucasian */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEthnicity === 'caucasian'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'caucasian'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEthnicity('caucasian')}
                                     >
                                         <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
@@ -974,11 +1017,10 @@ export default function CreateCharacterPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                             <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedEthnicity === 'caucasian'
+                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'caucasian'
                                                         ? 'bg-primary-foreground text-primary'
                                                         : 'bg-background/50 text-foreground'
-                                                }`}>
+                                                    }`}>
                                                     Caucasian
                                                 </span>
                                             </div>
@@ -987,11 +1029,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Latina */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEthnicity === 'latina'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'latina'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEthnicity('latina')}
                                     >
                                         <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
@@ -1001,11 +1042,10 @@ export default function CreateCharacterPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                             <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedEthnicity === 'latina'
+                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'latina'
                                                         ? 'bg-primary-foreground text-primary'
                                                         : 'bg-background/50 text-foreground'
-                                                }`}>
+                                                    }`}>
                                                     Latina
                                                 </span>
                                             </div>
@@ -1014,11 +1054,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Asian */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEthnicity === 'asian'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'asian'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEthnicity('asian')}
                                     >
                                         <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
@@ -1028,11 +1067,10 @@ export default function CreateCharacterPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                             <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedEthnicity === 'asian'
+                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'asian'
                                                         ? 'bg-primary-foreground text-primary'
                                                         : 'bg-background/50 text-foreground'
-                                                }`}>
+                                                    }`}>
                                                     Asian
                                                 </span>
                                             </div>
@@ -1041,11 +1079,10 @@ export default function CreateCharacterPage() {
 
                                     {/* African */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEthnicity === 'african'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'african'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEthnicity('african')}
                                     >
                                         <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
@@ -1055,11 +1092,10 @@ export default function CreateCharacterPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                             <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedEthnicity === 'african'
+                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'african'
                                                         ? 'bg-primary-foreground text-primary'
                                                         : 'bg-background/50 text-foreground'
-                                                }`}>
+                                                    }`}>
                                                     African
                                                 </span>
                                             </div>
@@ -1068,11 +1104,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Indian */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEthnicity === 'indian'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'indian'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEthnicity('indian')}
                                     >
                                         <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
@@ -1082,11 +1117,10 @@ export default function CreateCharacterPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                             <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedEthnicity === 'indian'
+                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'indian'
                                                         ? 'bg-primary-foreground text-primary'
                                                         : 'bg-background/50 text-foreground'
-                                                }`}>
+                                                    }`}>
                                                     Indian
                                                 </span>
                                             </div>
@@ -1103,64 +1137,56 @@ export default function CreateCharacterPage() {
                                 <div className="flex justify-center items-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
                                     {/* Teen(18+) */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${
-                                            selectedAge === 'teen'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedAge === 'teen'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedAge('teen')}
                                     >
-                                        <span className={`text-xs sm:text-sm font-semibold ${
-                                            selectedAge === 'teen' ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <span className={`text-xs sm:text-sm font-semibold ${selectedAge === 'teen' ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             Teen(18+)
                                         </span>
                                     </div>
 
                                     {/* 20s */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${
-                                            selectedAge === '20s'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedAge === '20s'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedAge('20s')}
                                     >
-                                        <span className={`text-xs sm:text-sm font-semibold ${
-                                            selectedAge === '20s' ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <span className={`text-xs sm:text-sm font-semibold ${selectedAge === '20s' ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             20s
                                         </span>
                                     </div>
 
                                     {/* 30s */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${
-                                            selectedAge === '30s'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedAge === '30s'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedAge('30s')}
                                     >
-                                        <span className={`text-xs sm:text-sm font-semibold ${
-                                            selectedAge === '30s' ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <span className={`text-xs sm:text-sm font-semibold ${selectedAge === '30s' ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             30s
                                         </span>
                                     </div>
 
                                     {/* 40s+ */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${
-                                            selectedAge === '40s+'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedAge === '40s+'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedAge('40s+')}
                                     >
-                                        <span className={`text-xs sm:text-sm font-semibold ${
-                                            selectedAge === '40s+' ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <span className={`text-xs sm:text-sm font-semibold ${selectedAge === '40s+' ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             40s+
                                         </span>
                                     </div>
@@ -1175,11 +1201,10 @@ export default function CreateCharacterPage() {
                                 <div className="flex justify-center items-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
                                     {/* Brown */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEyeColor === 'brown'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'brown'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEyeColor('brown')}
                                     >
                                         <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
@@ -1190,9 +1215,8 @@ export default function CreateCharacterPage() {
                                             />
                                         </div>
                                         <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${
-                                                selectedEyeColor === 'brown' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
+                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'brown' ? 'text-foreground' : 'text-muted-foreground'
+                                                }`}>
                                                 Brown
                                             </span>
                                         </div>
@@ -1200,11 +1224,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Blue */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEyeColor === 'blue'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'blue'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEyeColor('blue')}
                                     >
                                         <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
@@ -1215,9 +1238,8 @@ export default function CreateCharacterPage() {
                                             />
                                         </div>
                                         <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${
-                                                selectedEyeColor === 'blue' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
+                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'blue' ? 'text-foreground' : 'text-muted-foreground'
+                                                }`}>
                                                 Blue
                                             </span>
                                         </div>
@@ -1225,11 +1247,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Green */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEyeColor === 'green'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'green'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEyeColor('green')}
                                     >
                                         <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
@@ -1240,9 +1261,8 @@ export default function CreateCharacterPage() {
                                             />
                                         </div>
                                         <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${
-                                                selectedEyeColor === 'green' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
+                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'green' ? 'text-foreground' : 'text-muted-foreground'
+                                                }`}>
                                                 Green
                                             </span>
                                         </div>
@@ -1250,11 +1270,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Red */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEyeColor === 'red'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'red'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEyeColor('red')}
                                     >
                                         <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
@@ -1265,9 +1284,8 @@ export default function CreateCharacterPage() {
                                             />
                                         </div>
                                         <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${
-                                                selectedEyeColor === 'red' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
+                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'red' ? 'text-foreground' : 'text-muted-foreground'
+                                                }`}>
                                                 Red
                                             </span>
                                         </div>
@@ -1275,11 +1293,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Yellow */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedEyeColor === 'yellow'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'yellow'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedEyeColor('yellow')}
                                     >
                                         <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
@@ -1290,9 +1307,8 @@ export default function CreateCharacterPage() {
                                             />
                                         </div>
                                         <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${
-                                                selectedEyeColor === 'yellow' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
+                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'yellow' ? 'text-foreground' : 'text-muted-foreground'
+                                                }`}>
                                                 Yellow
                                             </span>
                                         </div>
@@ -1316,11 +1332,10 @@ export default function CreateCharacterPage() {
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:hidden gap-2 sm:gap-3 mb-4 sm:mb-6">
                                         {/* Straight */}
                                         <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedHairStyle === 'straight'
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedHairStyle === 'straight'
                                                     ? 'bg-primary border-2 border-primary'
                                                     : 'border-2 border-border hover:border-primary'
-                                            }`}
+                                                }`}
                                             onClick={() => setSelectedHairStyle('straight')}
                                         >
                                             <div className="w-[70px] h-[70px] sm:w-[88px] sm:h-[88px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
@@ -1330,11 +1345,10 @@ export default function CreateCharacterPage() {
                                                     className="w-full h-full object-cover"
                                                 />
                                                 <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedHairStyle === 'straight'
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedHairStyle === 'straight'
                                                             ? 'bg-primary-foreground text-primary'
                                                             : 'bg-background/50 text-foreground'
-                                                    }`}>
+                                                        }`}>
                                                         Straight
                                                     </span>
                                                 </div>
@@ -1343,11 +1357,10 @@ export default function CreateCharacterPage() {
 
                                         {/* Curly */}
                                         <div
-                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                selectedHairStyle === 'curly'
+                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'curly'
                                                     ? 'bg-primary border-2 border-primary'
                                                     : 'border-2 border-border hover:border-primary'
-                                            }`}
+                                                }`}
                                             onClick={() => setSelectedHairStyle('curly')}
                                         >
                                             <div className="w-[88px] h-[88px] rounded-xl overflow-hidden relative mx-auto">
@@ -1357,11 +1370,10 @@ export default function CreateCharacterPage() {
                                                     className="w-full h-full object-cover"
                                                 />
                                                 <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                        selectedHairStyle === 'curly'
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'curly'
                                                             ? 'bg-primary-foreground text-primary'
                                                             : 'bg-background/50 text-foreground'
-                                                    }`}>
+                                                        }`}>
                                                         Curly
                                                     </span>
                                                 </div>
@@ -1370,11 +1382,10 @@ export default function CreateCharacterPage() {
 
                                         {/* Bangs */}
                                         <div
-                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                selectedHairStyle === 'bangs'
+                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'bangs'
                                                     ? 'bg-primary border-2 border-primary'
                                                     : 'border-2 border-border hover:border-primary'
-                                            }`}
+                                                }`}
                                             onClick={() => setSelectedHairStyle('bangs')}
                                         >
                                             <div className="w-[88px] h-[88px] rounded-xl overflow-hidden relative mx-auto">
@@ -1384,11 +1395,10 @@ export default function CreateCharacterPage() {
                                                     className="w-full h-full object-cover"
                                                 />
                                                 <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                        selectedHairStyle === 'bangs'
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'bangs'
                                                             ? 'bg-primary-foreground text-primary'
                                                             : 'bg-background/50 text-foreground'
-                                                    }`}>
+                                                        }`}>
                                                         Bangs
                                                     </span>
                                                 </div>
@@ -1397,11 +1407,10 @@ export default function CreateCharacterPage() {
 
                                         {/* Short */}
                                         <div
-                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                selectedHairStyle === 'short'
+                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'short'
                                                     ? 'bg-primary border-2 border-primary'
                                                     : 'border-2 border-border hover:border-primary'
-                                            }`}
+                                                }`}
                                             onClick={() => setSelectedHairStyle('short')}
                                         >
                                             <div className="w-[88px] h-[88px] rounded-xl overflow-hidden relative mx-auto">
@@ -1411,11 +1420,10 @@ export default function CreateCharacterPage() {
                                                     className="w-full h-full object-cover"
                                                 />
                                                 <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                        selectedHairStyle === 'short'
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'short'
                                                             ? 'bg-primary-foreground text-primary'
                                                             : 'bg-background/50 text-foreground'
-                                                    }`}>
+                                                        }`}>
                                                         Short
                                                     </span>
                                                 </div>
@@ -1424,11 +1432,10 @@ export default function CreateCharacterPage() {
 
                                         {/* Long */}
                                         <div
-                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                selectedHairStyle === 'long'
+                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'long'
                                                     ? 'bg-primary border-2 border-primary'
                                                     : 'border-2 border-border hover:border-primary'
-                                            }`}
+                                                }`}
                                             onClick={() => setSelectedHairStyle('long')}
                                         >
                                             <div className="w-[88px] h-[88px] rounded-xl overflow-hidden relative mx-auto">
@@ -1438,11 +1445,10 @@ export default function CreateCharacterPage() {
                                                     className="w-full h-full object-cover"
                                                 />
                                                 <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                        selectedHairStyle === 'long'
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'long'
                                                             ? 'bg-primary-foreground text-primary'
                                                             : 'bg-background/50 text-foreground'
-                                                    }`}>
+                                                        }`}>
                                                         Long
                                                     </span>
                                                 </div>
@@ -1451,11 +1457,10 @@ export default function CreateCharacterPage() {
 
                                         {/* Bun */}
                                         <div
-                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                selectedHairStyle === 'bun'
+                                            className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'bun'
                                                     ? 'bg-primary border-2 border-primary'
                                                     : 'border-2 border-border hover:border-primary'
-                                            }`}
+                                                }`}
                                             onClick={() => setSelectedHairStyle('bun')}
                                         >
                                             <div className="w-[88px] h-[88px] rounded-xl overflow-hidden relative mx-auto">
@@ -1465,11 +1470,10 @@ export default function CreateCharacterPage() {
                                                     className="w-full h-full object-cover"
                                                 />
                                                 <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                        selectedHairStyle === 'bun'
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'bun'
                                                             ? 'bg-primary-foreground text-primary'
                                                             : 'bg-background/50 text-foreground'
-                                                    }`}>
+                                                        }`}>
                                                         Bun
                                                     </span>
                                                 </div>
@@ -1478,11 +1482,10 @@ export default function CreateCharacterPage() {
                                         {/* Ponytail - Only available for anime */}
                                         {selectedStyle === 'anime' ? (
                                             <div
-                                                className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                    selectedHairStyle === 'ponytail'
+                                                className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'ponytail'
                                                         ? 'bg-primary border-2 border-primary'
                                                         : 'border-2 border-border hover:border-primary'
-                                                }`}
+                                                    }`}
                                                 onClick={() => setSelectedHairStyle('ponytail')}
                                             >
                                                 <div className="w-[88px] h-[88px] rounded-xl overflow-hidden relative mx-auto">
@@ -1492,11 +1495,10 @@ export default function CreateCharacterPage() {
                                                         className="w-full h-full object-cover"
                                                     />
                                                     <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                            selectedHairStyle === 'ponytail'
+                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'ponytail'
                                                                 ? 'bg-primary-foreground text-primary'
                                                                 : 'bg-background/50 text-foreground'
-                                                        }`}>
+                                                            }`}>
                                                             Ponytail
                                                         </span>
                                                     </div>
@@ -1507,179 +1509,167 @@ export default function CreateCharacterPage() {
 
                                     {/* Desktop: Scattered layout */}
                                     <div className="hidden md:block">
-                                    {/* First row - Straight and Short with gaps */}
-                                    <div className="flex justify-center items-center mb-8">
-                                        {/* Straight */}
-                                        <div className="mx-4">
-                                            <div
-                                                className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                    selectedHairStyle === 'straight'
-                                                        ? 'bg-primary border-2 border-primary'
-                                                        : 'border-2 border-border hover:border-primary'
-                                                }`}
-                                                onClick={() => setSelectedHairStyle('straight')}
-                                            >
-                                                <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
-                                                    <img
-                                                        src={getImageUrl('hairStyle', 'straight', '/character creation/hair styles/realistic/straight-50860930cc288e0be0fef427289870b6d421a4eba489ec04600fd0b3b1b32826.webp')}
-                                                        alt="Straight hair"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                            selectedHairStyle === 'straight'
-                                                                ? 'bg-primary-foreground text-primary'
-                                                                : 'bg-background/50 text-foreground'
-                                                        }`}>
-                                                            Straight
-                                                        </span>
+                                        {/* First row - Straight and Short with gaps */}
+                                        <div className="flex justify-center items-center mb-8">
+                                            {/* Straight */}
+                                            <div className="mx-4">
+                                                <div
+                                                    className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'straight'
+                                                            ? 'bg-primary border-2 border-primary'
+                                                            : 'border-2 border-border hover:border-primary'
+                                                        }`}
+                                                    onClick={() => setSelectedHairStyle('straight')}
+                                                >
+                                                    <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
+                                                        <img
+                                                            src={getImageUrl('hairStyle', 'straight', '/character creation/hair styles/realistic/straight-50860930cc288e0be0fef427289870b6d421a4eba489ec04600fd0b3b1b32826.webp')}
+                                                            alt="Straight hair"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'straight'
+                                                                    ? 'bg-primary-foreground text-primary'
+                                                                    : 'bg-background/50 text-foreground'
+                                                                }`}>
+                                                                Straight
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Curly */}
+                                            <div className="mx-6">
+                                                <div
+                                                    className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'curly'
+                                                            ? 'bg-primary border-2 border-primary'
+                                                            : 'border-2 border-border hover:border-primary'
+                                                        }`}
+                                                    onClick={() => setSelectedHairStyle('curly')}
+                                                >
+                                                    <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
+                                                        <img
+                                                            src={getImageUrl('hairStyle', 'curly', '/character creation/hair styles/realistic/curly-4110486ba90646770e43e75e045c0cd9db53fcec28cadbc0222985bdf39d3cea.webp')}
+                                                            alt="Curly hair"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'curly'
+                                                                    ? 'bg-primary-foreground text-primary'
+                                                                    : 'bg-background/50 text-foreground'
+                                                                }`}>
+                                                                Curly
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Bangs */}
+                                            <div className="mx-6">
+                                                <div
+                                                    className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'bangs'
+                                                            ? 'bg-primary border-2 border-primary'
+                                                            : 'border-2 border-border hover:border-primary'
+                                                        }`}
+                                                    onClick={() => setSelectedHairStyle('bangs')}
+                                                >
+                                                    <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
+                                                        <img
+                                                            src={getImageUrl('hairStyle', 'bangs', '/character creation/hair styles/realistic/bangs-c696685cde2cdd4b88d2c80cd8bd71a1d62d94348a840e2ff3ec2b974f1b9e75.webp')}
+                                                            alt="Bangs hair"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'bangs'
+                                                                    ? 'bg-primary-foreground text-primary'
+                                                                    : 'bg-background/50 text-foreground'
+                                                                }`}>
+                                                                Bangs
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Short */}
+                                            <div className="mx-4">
+                                                <div
+                                                    className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'short'
+                                                            ? 'bg-primary border-2 border-primary'
+                                                            : 'border-2 border-border hover:border-primary'
+                                                        }`}
+                                                    onClick={() => setSelectedHairStyle('short')}
+                                                >
+                                                    <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
+                                                        <img
+                                                            src={getImageUrl('hairStyle', 'short', '/character creation/hair styles/realistic/short-f0217dbf9ddb599d1d7ceff342e1a9b846f4ea5c083e66630dbeff55ce574691.webp')}
+                                                            alt="Short hair"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'short'
+                                                                    ? 'bg-primary-foreground text-primary'
+                                                                    : 'bg-background/50 text-foreground'
+                                                                }`}>
+                                                                Short
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Curly */}
-                                        <div className="mx-6">
-                                            <div
-                                                className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                    selectedHairStyle === 'curly'
-                                                        ? 'bg-primary border-2 border-primary'
-                                                        : 'border-2 border-border hover:border-primary'
-                                                }`}
-                                                onClick={() => setSelectedHairStyle('curly')}
-                                            >
-                                                <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
-                                                    <img
-                                                        src={getImageUrl('hairStyle', 'curly', '/character creation/hair styles/realistic/curly-4110486ba90646770e43e75e045c0cd9db53fcec28cadbc0222985bdf39d3cea.webp')}
-                                                        alt="Curly hair"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                            selectedHairStyle === 'curly'
-                                                                ? 'bg-primary-foreground text-primary'
-                                                                : 'bg-background/50 text-foreground'
-                                                        }`}>
-                                                            Curly
-                                                        </span>
+                                        {/* Second row - Long positioned more to the left */}
+                                        <div className="flex justify-center items-center">
+                                            <div className="mx-8">
+                                                <div
+                                                    className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'long'
+                                                            ? 'bg-primary border-2 border-primary'
+                                                            : 'border-2 border-border hover:border-primary'
+                                                        }`}
+                                                    onClick={() => setSelectedHairStyle('long')}
+                                                >
+                                                    <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
+                                                        <img
+                                                            src={getImageUrl('hairStyle', 'long', '/character creation/hair styles/realistic/long-eb817bef0e59709224eaea96296f33b260b2574a6fc10a5a1f10bfcd5dffb9cd.webp')}
+                                                            alt="Long hair"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'long'
+                                                                    ? 'bg-primary-foreground text-primary'
+                                                                    : 'bg-background/50 text-foreground'
+                                                                }`}>
+                                                                Long
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Bangs */}
-                                        <div className="mx-6">
-                                            <div
-                                                className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                    selectedHairStyle === 'bangs'
-                                                        ? 'bg-primary border-2 border-primary'
-                                                        : 'border-2 border-border hover:border-primary'
-                                                }`}
-                                                onClick={() => setSelectedHairStyle('bangs')}
-                                            >
-                                                <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
-                                                    <img
-                                                        src={getImageUrl('hairStyle', 'bangs', '/character creation/hair styles/realistic/bangs-c696685cde2cdd4b88d2c80cd8bd71a1d62d94348a840e2ff3ec2b974f1b9e75.webp')}
-                                                        alt="Bangs hair"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                            selectedHairStyle === 'bangs'
-                                                                ? 'bg-primary-foreground text-primary'
-                                                                : 'bg-background/50 text-foreground'
-                                                        }`}>
-                                                            Bangs
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Short */}
-                                        <div className="mx-4">
-                                            <div
-                                                className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                    selectedHairStyle === 'short'
-                                                        ? 'bg-primary border-2 border-primary'
-                                                        : 'border-2 border-border hover:border-primary'
-                                                }`}
-                                                onClick={() => setSelectedHairStyle('short')}
-                                            >
-                                                <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
-                                                    <img
-                                                        src={getImageUrl('hairStyle', 'short', '/character creation/hair styles/realistic/short-f0217dbf9ddb599d1d7ceff342e1a9b846f4ea5c083e66630dbeff55ce574691.webp')}
-                                                        alt="Short hair"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                            selectedHairStyle === 'short'
-                                                                ? 'bg-primary-foreground text-primary'
-                                                                : 'bg-background/50 text-foreground'
-                                                        }`}>
-                                                            Short
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Second row - Long positioned more to the left */}
-                                    <div className="flex justify-center items-center">
-                                        <div className="mx-8">
-                                            <div
-                                                className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                    selectedHairStyle === 'long'
-                                                        ? 'bg-primary border-2 border-primary'
-                                                        : 'border-2 border-border hover:border-primary'
-                                                }`}
-                                                onClick={() => setSelectedHairStyle('long')}
-                                            >
-                                                <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
-                                                    <img
-                                                        src={getImageUrl('hairStyle', 'long', '/character creation/hair styles/realistic/long-eb817bef0e59709224eaea96296f33b260b2574a6fc10a5a1f10bfcd5dffb9cd.webp')}
-                                                        alt="Long hair"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                            selectedHairStyle === 'long'
-                                                                ? 'bg-primary-foreground text-primary'
-                                                                : 'bg-background/50 text-foreground'
-                                                        }`}>
-                                                            Long
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Bun */}
-                                        <div className="mx-12">
-                                            <div
-                                                className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${
-                                                    selectedHairStyle === 'bun'
-                                                        ? 'bg-primary border-2 border-primary'
-                                                        : 'border-2 border-border hover:border-primary'
-                                                }`}
-                                                onClick={() => setSelectedHairStyle('bun')}
-                                            >
-                                                <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
-                                                    <img
-                                                        src={getImageUrl('hairStyle', 'bun', '/character creation/hair styles/realistic/bun-93b58d32131d1905f6654d992d20bad3adc798ced8e028d89274aac1d7743885.webp')}
-                                                        alt="Bun hair"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                            selectedHairStyle === 'bun'
-                                                                ? 'bg-primary-foreground text-primary'
-                                                                : 'bg-background/50 text-foreground'
-                                                        }`}>
-                                                            Bun
-                                                        </span>
+                                            {/* Bun */}
+                                            <div className="mx-12">
+                                                <div
+                                                    className={`relative cursor-pointer rounded-xl p-2 transition-all duration-200 ${selectedHairStyle === 'bun'
+                                                            ? 'bg-primary border-2 border-primary'
+                                                            : 'border-2 border-border hover:border-primary'
+                                                        }`}
+                                                    onClick={() => setSelectedHairStyle('bun')}
+                                                >
+                                                    <div className="w-[88px] h-[88px] lg:w-[120px] lg:h-[120px] rounded-xl overflow-hidden relative">
+                                                        <img
+                                                            src={getImageUrl('hairStyle', 'bun', '/character creation/hair styles/realistic/bun-93b58d32131d1905f6654d992d20bad3adc798ced8e028d89274aac1d7743885.webp')}
+                                                            alt="Bun hair"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedHairStyle === 'bun'
+                                                                    ? 'bg-primary-foreground text-primary'
+                                                                    : 'bg-background/50 text-foreground'
+                                                                }`}>
+                                                                Bun
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1698,80 +1688,70 @@ export default function CreateCharacterPage() {
                                 <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
                                     {/* Blonde */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${
-                                            selectedHairColor === 'blonde'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'blonde'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedHairColor('blonde')}
                                     >
-                                        <span className={`text-xs sm:text-sm font-semibold ${
-                                            selectedHairColor === 'blonde' ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'blonde' ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             Blonde
                                         </span>
                                     </div>
 
                                     {/* Brunette */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${
-                                            selectedHairColor === 'brunette'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'brunette'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedHairColor('brunette')}
                                     >
-                                        <span className={`text-xs sm:text-sm font-semibold ${
-                                            selectedHairColor === 'brunette' ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'brunette' ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             Brunette
                                         </span>
                                     </div>
 
                                     {/* Black */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${
-                                            selectedHairColor === 'black'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'black'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedHairColor('black')}
                                     >
-                                        <span className={`text-xs sm:text-sm font-semibold ${
-                                            selectedHairColor === 'black' ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'black' ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             Black
                                         </span>
                                     </div>
 
                                     {/* Red */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${
-                                            selectedHairColor === 'red'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'red'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedHairColor('red')}
                                     >
-                                        <span className={`text-xs sm:text-sm font-semibold ${
-                                            selectedHairColor === 'red' ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'red' ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             Red
                                         </span>
                                     </div>
 
                                     {/* Gray */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${
-                                            selectedHairColor === 'gray'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'gray'
                                                 ? 'bg-primary border-2 border-primary'
                                                 : 'border-2 border-border hover:border-primary'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedHairColor('gray')}
                                     >
-                                        <span className={`text-xs sm:text-sm font-semibold ${
-                                            selectedHairColor === 'gray' ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}>
+                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'gray' ? 'text-foreground' : 'text-muted-foreground'
+                                            }`}>
                                             Gray
                                         </span>
                                     </div>
@@ -1789,284 +1769,264 @@ export default function CreateCharacterPage() {
                                 </div>
                                 {/* Ultra-small: 2 columns with smaller items, Small: 3 columns, Desktop: 5 columns */}
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:justify-center md:items-center gap-1.5 sm:gap-2 md:gap-4 mb-4 sm:mb-6 md:mb-8 max-w-full overflow-x-hidden">
-                                    
+
                                     {/* Lady Body Types */}
                                     {gender === 'lady' && (
                                         <>
-                                        {/* Petite */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'petite'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('petite')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'petite', '/character creation/Body Type/realistic/body_petite-b18f62bc362b356112dcf9255804da6c878a0d63d461b683201e6119aa78ea4e.webp')}
-                                                    alt="Petite body"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'petite'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Petite
-                                                    </span>
+                                            {/* Petite */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'petite'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('petite')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'petite', '/character creation/Body Type/realistic/body_petite-b18f62bc362b356112dcf9255804da6c878a0d63d461b683201e6119aa78ea4e.webp')}
+                                                        alt="Petite body"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'petite'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Petite
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Slim */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'slim'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('slim')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'slim', '/character creation/Body Type/realistic/body_slim-ce55ea6a36780b0dcc3d75e5c8e23eeea3ff2177c9bbcadd92e02e61e6397b96.webp')}
-                                                    alt="Slim body"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'slim'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Slim
-                                                    </span>
+                                            {/* Slim */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'slim'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('slim')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'slim', '/character creation/Body Type/realistic/body_slim-ce55ea6a36780b0dcc3d75e5c8e23eeea3ff2177c9bbcadd92e02e61e6397b96.webp')}
+                                                        alt="Slim body"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'slim'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Slim
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Athletic */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'athletic'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('athletic')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'athletic', '/character creation/Body Type/realistic/body_athletic-c3a09551c478b35d5bab217b946c8d3da9eab3ac3f6c4d1fa106aa4e5d763c16.webp')}
-                                                    alt="Athletic body"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'athletic'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Athletic
-                                                    </span>
+                                            {/* Athletic */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'athletic'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('athletic')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'athletic', '/character creation/Body Type/realistic/body_athletic-c3a09551c478b35d5bab217b946c8d3da9eab3ac3f6c4d1fa106aa4e5d763c16.webp')}
+                                                        alt="Athletic body"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'athletic'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Athletic
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Voluptuous */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'voluptuous'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('voluptuous')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'voluptuous', '/character creation/Body Type/realistic/body_voluptuous-d4128f1812af6cff122eb24e973b08eed430b86a315cb80f2506f1258f12535c.webp')}
-                                                    alt="Voluptuous body"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'voluptuous'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Voluptuous
-                                                    </span>
+                                            {/* Voluptuous */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'voluptuous'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('voluptuous')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'voluptuous', '/character creation/Body Type/realistic/body_voluptuous-d4128f1812af6cff122eb24e973b08eed430b86a315cb80f2506f1258f12535c.webp')}
+                                                        alt="Voluptuous body"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'voluptuous'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Voluptuous
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Curvy */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'curvy'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('curvy')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'curvy', '/character creation/Body Type/realistic/body_curvy-f18d1ee332d545ae810fd3351824967d9710c4ae8991e6184abb5af5f5ec21bc.webp')}
-                                                    alt="Curvy body"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'curvy'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Curvy
-                                                    </span>
+                                            {/* Curvy */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'curvy'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('curvy')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'curvy', '/character creation/Body Type/realistic/body_curvy-f18d1ee332d545ae810fd3351824967d9710c4ae8991e6184abb5af5f5ec21bc.webp')}
+                                                        alt="Curvy body"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'curvy'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Curvy
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
                                         </>
                                     )}
 
                                     {/* Gent Body Types */}
                                     {gender === 'gent' && (
                                         <>
-                                        {/* Athletic */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'athletic'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('athletic')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'athletic', '')}
-                                                    alt="Athletic body"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'athletic'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Athletic
-                                                    </span>
+                                            {/* Athletic */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'athletic'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('athletic')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'athletic', '')}
+                                                        alt="Athletic body"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'athletic'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Athletic
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Muscular */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'muscular'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('muscular')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'muscular', '')}
-                                                    alt="Muscular body"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'muscular'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Muscular
-                                                    </span>
+                                            {/* Muscular */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'muscular'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('muscular')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'muscular', '')}
+                                                        alt="Muscular body"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'muscular'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Muscular
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Slim */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'slim'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('slim')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'slim', '')}
-                                                    alt="Slim body"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'slim'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Slim
-                                                    </span>
+                                            {/* Slim */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'slim'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('slim')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'slim', '')}
+                                                        alt="Slim body"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'slim'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Slim
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Average */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'average'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('average')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'average', '')}
-                                                    alt="Average body"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'average'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Average
-                                                    </span>
+                                            {/* Average */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'average'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('average')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'average', '')}
+                                                        alt="Average body"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'average'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Average
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Dad Bod */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                                selectedBodyType === 'dad-bod'
-                                                    ? 'bg-primary border-2 border-primary'
-                                                    : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                            onClick={() => setSelectedBodyType('dad-bod')}
-                                        >
-                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                                <img
-                                                    src={getImageUrl('bodyType', 'dad-bod', '')}
-                                                    alt="Dad Bod"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                        selectedBodyType === 'dad-bod'
-                                                            ? 'bg-primary-foreground text-primary'
-                                                            : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                        Dad Bod
-                                                    </span>
+                                            {/* Dad Bod */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBodyType === 'dad-bod'
+                                                        ? 'bg-primary border-2 border-primary'
+                                                        : 'border-2 border-border hover:border-primary'
+                                                    }`}
+                                                onClick={() => setSelectedBodyType('dad-bod')}
+                                            >
+                                                <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                    <img
+                                                        src={getImageUrl('bodyType', 'dad-bod', '')}
+                                                        alt="Dad Bod"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                        <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBodyType === 'dad-bod'
+                                                                ? 'bg-primary-foreground text-primary'
+                                                                : 'bg-background/50 text-foreground'
+                                                            }`}>
+                                                            Dad Bod
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
                                         </>
                                     )}
 
@@ -2075,294 +2035,274 @@ export default function CreateCharacterPage() {
 
                             {/* Choose Breast Size Section - Only for Ladies */}
                             {gender === 'lady' && (
-                            <div className="mb-6 sm:mb-8 md:mb-12">
-                                <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">Choose Breast Size*</h2>
-                                </div>
-                                {/* Ultra-small: 2 columns, Small: 3 columns, Desktop: 6 columns */}
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:justify-center md:items-center gap-1.5 sm:gap-2 md:gap-4 mb-4 sm:mb-6 md:mb-8 max-w-full overflow-x-hidden">
-                                    {/* Small */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedBreastSize === 'small'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedBreastSize('small')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('breastSize', 'small', '/character creation/Breast Size/realistic/breasts_small-9063db23ae2bf7f45863129f664bef7edc1164fccc4d03007c1a92c561470cd5.webp')}
-                                                alt="Small breast size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedBreastSize === 'small'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Small
-                                                </span>
+                                <div className="mb-6 sm:mb-8 md:mb-12">
+                                    <div className="text-center mb-4 sm:mb-6 md:mb-8">
+                                        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">Choose Breast Size*</h2>
+                                    </div>
+                                    {/* Ultra-small: 2 columns, Small: 3 columns, Desktop: 6 columns */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:justify-center md:items-center gap-1.5 sm:gap-2 md:gap-4 mb-4 sm:mb-6 md:mb-8 max-w-full overflow-x-hidden">
+                                        {/* Small */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBreastSize === 'small'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedBreastSize('small')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('breastSize', 'small', '/character creation/Breast Size/realistic/breasts_small-9063db23ae2bf7f45863129f664bef7edc1164fccc4d03007c1a92c561470cd5.webp')}
+                                                    alt="Small breast size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBreastSize === 'small'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Small
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Medium */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedBreastSize === 'medium'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedBreastSize('medium')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('breastSize', 'medium', '/character creation/Breast Size/realistic/breasts_medium-93b4eeb0383da569f549ba5f0b63f2fd6e40b91dc987a5dc54818378507f9fa2.webp')}
-                                                alt="Medium breast size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedBreastSize === 'medium'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Medium
-                                                </span>
+                                        {/* Medium */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBreastSize === 'medium'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedBreastSize('medium')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('breastSize', 'medium', '/character creation/Breast Size/realistic/breasts_medium-93b4eeb0383da569f549ba5f0b63f2fd6e40b91dc987a5dc54818378507f9fa2.webp')}
+                                                    alt="Medium breast size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBreastSize === 'medium'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Medium
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Large */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedBreastSize === 'large'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedBreastSize('large')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('breastSize', 'large', '/character creation/Breast Size/realistic/breasts_large-6a6177548ba4e4a026b91fd4d1cb335ca0af31fba1773355f160a31248e30263.webp')}
-                                                alt="Large breast size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedBreastSize === 'large'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Large
-                                                </span>
+                                        {/* Large */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBreastSize === 'large'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedBreastSize('large')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('breastSize', 'large', '/character creation/Breast Size/realistic/breasts_large-6a6177548ba4e4a026b91fd4d1cb335ca0af31fba1773355f160a31248e30263.webp')}
+                                                    alt="Large breast size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBreastSize === 'large'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Large
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Huge */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedBreastSize === 'huge'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedBreastSize('huge')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('breastSize', 'huge', '/character creation/Breast Size/realistic/breasts_huge-f358a0ada25c9c77fa364bb83d10455f909f09c0b7c8779f27122ed7c91c98e2.webp')}
-                                                alt="Huge breast size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedBreastSize === 'huge'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Huge
-                                                </span>
+                                        {/* Huge */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBreastSize === 'huge'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedBreastSize('huge')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('breastSize', 'huge', '/character creation/Breast Size/realistic/breasts_huge-f358a0ada25c9c77fa364bb83d10455f909f09c0b7c8779f27122ed7c91c98e2.webp')}
+                                                    alt="Huge breast size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBreastSize === 'huge'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Huge
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Flat */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedBreastSize === 'flat'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedBreastSize('flat')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('breastSize', 'flat', '/character creation/Breast Size/realistic/breasts_flat-340ebc7321d0635c127c7649dba47bbee9b64f6b7d1b9b30cedcf6c75fdd5cf8.webp')}
-                                                alt="Flat breast size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedBreastSize === 'flat'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Flat
-                                                </span>
+                                        {/* Flat */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedBreastSize === 'flat'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedBreastSize('flat')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('breastSize', 'flat', '/character creation/Breast Size/realistic/breasts_flat-340ebc7321d0635c127c7649dba47bbee9b64f6b7d1b9b30cedcf6c75fdd5cf8.webp')}
+                                                    alt="Flat breast size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedBreastSize === 'flat'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Flat
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                             )}
 
                             {/* Choose Butt Size Section - Only for Ladies */}
                             {gender === 'lady' && (
-                            <div className="mb-6 sm:mb-8 md:mb-12">
-                                <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">Choose Butt Size*</h2>
-                                </div>
-                                {/* Ultra-small: 2 columns, Small: 3 columns, Desktop: 5 columns */}
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:justify-center md:items-center gap-1.5 sm:gap-2 md:gap-4 mb-4 sm:mb-6 md:mb-8 max-w-full overflow-x-hidden">
-                                    {/* Small */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedButtSize === 'small'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedButtSize('small')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('buttSize', 'small', '/character creation/Butt Size/realistic/butt_small-48c1b16f769794ec161e5cd5c125e55d4d472abb1d0d99ecfb342f0905e4cc0f.webp')}
-                                                alt="Small butt size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedButtSize === 'small'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Small
-                                                </span>
+                                <div className="mb-6 sm:mb-8 md:mb-12">
+                                    <div className="text-center mb-4 sm:mb-6 md:mb-8">
+                                        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">Choose Butt Size*</h2>
+                                    </div>
+                                    {/* Ultra-small: 2 columns, Small: 3 columns, Desktop: 5 columns */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:justify-center md:items-center gap-1.5 sm:gap-2 md:gap-4 mb-4 sm:mb-6 md:mb-8 max-w-full overflow-x-hidden">
+                                        {/* Small */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedButtSize === 'small'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedButtSize('small')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('buttSize', 'small', '/character creation/Butt Size/realistic/butt_small-48c1b16f769794ec161e5cd5c125e55d4d472abb1d0d99ecfb342f0905e4cc0f.webp')}
+                                                    alt="Small butt size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedButtSize === 'small'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Small
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Medium */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedButtSize === 'medium'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedButtSize('medium')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('buttSize', 'medium', '/character creation/Butt Size/realistic/butt_medium-04bd199dd8a881e43a677706acfa72c896b65f027ae63b9c098da6734eef6b0f.webp')}
-                                                alt="Medium butt size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedButtSize === 'medium'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Medium
-                                                </span>
+                                        {/* Medium */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedButtSize === 'medium'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedButtSize('medium')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('buttSize', 'medium', '/character creation/Butt Size/realistic/butt_medium-04bd199dd8a881e43a677706acfa72c896b65f027ae63b9c098da6734eef6b0f.webp')}
+                                                    alt="Medium butt size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedButtSize === 'medium'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Medium
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Large */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedButtSize === 'large'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedButtSize('large')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('buttSize', 'large', '/character creation/Butt Size/realistic/butt_large-30ddcb640a43c5882b28b9a56a5d68e711c3f6cd0ad86adf68ebfc5433a8401f.webp')}
-                                                alt="Large butt size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedButtSize === 'large'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Large
-                                                </span>
+                                        {/* Large */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedButtSize === 'large'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedButtSize('large')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('buttSize', 'large', '/character creation/Butt Size/realistic/butt_large-30ddcb640a43c5882b28b9a56a5d68e711c3f6cd0ad86adf68ebfc5433a8401f.webp')}
+                                                    alt="Large butt size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedButtSize === 'large'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Large
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Athletic */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedButtSize === 'athletic'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedButtSize('athletic')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('buttSize', 'athletic', '/character creation/Butt Size/realistic/butt_athletic-48e02ae266c3edba8cb56ccc74300afd82493dea11a51850e7ad9ffa4a28e69f.webp')}
-                                                alt="Athletic butt size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedButtSize === 'athletic'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Athletic
-                                                </span>
+                                        {/* Athletic */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedButtSize === 'athletic'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedButtSize('athletic')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('buttSize', 'athletic', '/character creation/Butt Size/realistic/butt_athletic-48e02ae266c3edba8cb56ccc74300afd82493dea11a51850e7ad9ffa4a28e69f.webp')}
+                                                    alt="Athletic butt size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedButtSize === 'athletic'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Athletic
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Skinny */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${
-                                            selectedButtSize === 'skinny'
-                                                ? 'bg-primary border-2 border-primary'
-                                                : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                        onClick={() => setSelectedButtSize('skinny')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('buttSize', 'skinny', '/character creation/Butt Size/realistic/butt_skinny-1fdd436cdf4ccc633444352998fe0f1094c62c69a568196f646067b71f1b7152.webp')}
-                                                alt="Skinny butt size"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
-                                                    selectedButtSize === 'skinny'
-                                                        ? 'bg-primary-foreground text-primary'
-                                                        : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                    Skinny
-                                                </span>
+                                        {/* Skinny */}
+                                        <div
+                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedButtSize === 'skinny'
+                                                    ? 'bg-primary border-2 border-primary'
+                                                    : 'border-2 border-border hover:border-primary'
+                                                }`}
+                                            onClick={() => setSelectedButtSize('skinny')}
+                                        >
+                                            <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
+                                                <img
+                                                    src={getImageUrl('buttSize', 'skinny', '/character creation/Butt Size/realistic/butt_skinny-1fdd436cdf4ccc633444352998fe0f1094c62c69a568196f646067b71f1b7152.webp')}
+                                                    alt="Skinny butt size"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
+                                                    <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedButtSize === 'skinny'
+                                                            ? 'bg-primary-foreground text-primary'
+                                                            : 'bg-background/50 text-foreground'
+                                                        }`}>
+                                                        Skinny
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                             )}
                         </>
                     )}
@@ -2377,446 +2317,428 @@ export default function CreateCharacterPage() {
 
                                 {/* Personality Grid - Ultra-small: 1 column, Small: 2 columns, Desktop: 3 columns */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-4xl mx-auto mb-4 sm:mb-6 md:mb-8">
-                                    
+
                                     {/* Lady Personalities */}
                                     {gender === 'lady' && (
                                         <>
-                                    {/* Caregiver */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'caregiver'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('caregiver')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'caregiver', '')}
-                                                alt="Caregiver"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Caregiver</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Nurturing, protective, and always there to offer comfort.
-                                                </p>
+                                            {/* Caregiver */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'caregiver'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('caregiver')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'caregiver', '')}
+                                                        alt="Caregiver"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Caregiver</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Nurturing, protective, and always there to offer comfort.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Sage */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'sage'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('sage')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'sage', '')}
-                                                alt="Sage"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Sage</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Wise, reflective, and a source of guidance.
-                                                </p>
+                                            {/* Sage */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'sage'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('sage')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'sage', '')}
+                                                        alt="Sage"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Sage</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Wise, reflective, and a source of guidance.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Innocent */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'innocent'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('innocent')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'innocent', '')}
-                                                alt="Innocent"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Innocent</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Optimistic, pure-hearted and exploring the world with wonder.
-                                                </p>
+                                            {/* Innocent */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'innocent'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('innocent')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'innocent', '')}
+                                                        alt="Innocent"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Innocent</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Optimistic, pure-hearted and exploring the world with wonder.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Jester */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'jester'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('jester')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'jester', '')}
-                                                alt="Jester"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Jester</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Playful, humorous, and always there to make you laugh.
-                                                </p>
+                                            {/* Jester */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'jester'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('jester')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'jester', '')}
+                                                        alt="Jester"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Jester</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Playful, humorous, and always there to make you laugh.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Temptress */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'temptress'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('temptress')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'temptress', '')}
-                                                alt="Temptress"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Temptress</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Flirtatious, playful, and always leaving you wanting more.
-                                                </p>
+                                            {/* Temptress */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'temptress'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('temptress')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'temptress', '')}
+                                                        alt="Temptress"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Temptress</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Flirtatious, playful, and always leaving you wanting more.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Dominant */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'dominant'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('dominant')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'dominant', '')}
-                                                alt="Dominant"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Dominant</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Assertive, controlling, and commanding.
-                                                </p>
+                                            {/* Dominant */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'dominant'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('dominant')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'dominant', '')}
+                                                        alt="Dominant"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Dominant</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Assertive, controlling, and commanding.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Submissive */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'submissive'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('submissive')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'submissive', '')}
-                                                alt="Submissive"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Submissive</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Obedient, eager to please, and eager to follow.
-                                                </p>
+                                            {/* Submissive */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'submissive'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('submissive')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'submissive', '')}
+                                                        alt="Submissive"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Submissive</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Obedient, eager to please, and eager to follow.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Lover */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'lover'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('lover')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'lover', '')}
-                                                alt="Lover"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Lover</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Romantic, passionate, and seeking a deep emotional connection.
-                                                </p>
+                                            {/* Lover */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'lover'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('lover')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'lover', '')}
+                                                        alt="Lover"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Lover</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Romantic, passionate, and seeking a deep emotional connection.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Nympho */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'nympho'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('nympho')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'nympho', '')}
-                                                alt="Nympho"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Nympho</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Insatiable, intense sexuality, craving intimacy.
-                                                </p>
+                                            {/* Nympho */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'nympho'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('nympho')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'nympho', '')}
+                                                        alt="Nympho"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Nympho</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Insatiable, intense sexuality, craving intimacy.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Mean */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'mean'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('mean')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'mean', '')}
-                                                alt="Mean"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Mean</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Cold, dismissive, and often sarcastic.
-                                                </p>
+                                            {/* Mean */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'mean'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('mean')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'mean', '')}
+                                                        alt="Mean"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Mean</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Cold, dismissive, and often sarcastic.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Confidant */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'confidant'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('confidant')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'confidant', '')}
-                                                alt="Confidant"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Confidant</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Trustworthy, a good listener, and always can offer advice.
-                                                </p>
+                                            {/* Confidant */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'confidant'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('confidant')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'confidant', '')}
+                                                        alt="Confidant"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Confidant</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Trustworthy, a good listener, and always can offer advice.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Experimenter */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedPersonality === 'experimenter'
-                                                ? 'ring-2 ring-primary'
-                                                : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
-                                        onClick={() => setSelectedPersonality('experimenter')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('personality', 'experimenter', '')}
-                                                alt="Experimenter"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Experimenter</h3>
-                                                <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                    Curious, willing, eager to try new things.
-                                                </p>
+                                            {/* Experimenter */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'experimenter'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('experimenter')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'experimenter', '')}
+                                                        alt="Experimenter"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Experimenter</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Curious, willing, eager to try new things.
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                    </>
+                                        </>
                                     )}
 
                                     {/* Gent Personalities */}
                                     {gender === 'gent' && (
                                         <>
-                                        {/* Confident */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                                selectedPersonality === 'confident'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                            onClick={() => setSelectedPersonality('confident')}
-                                        >
-                                            <div className="relative aspect-[3/4]">
-                                                <img
-                                                    src={getImageUrl('personality', 'confident', '')}
-                                                    alt="Confident"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                    <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Confident</h3>
-                                                    <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                        Strong, assertive, and self-assured.
-                                                    </p>
+                                            {/* Confident */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'confident'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('confident')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'confident', '')}
+                                                        alt="Confident"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Confident</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Strong, assertive, and self-assured.
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Caring */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                                selectedPersonality === 'caring'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                            onClick={() => setSelectedPersonality('caring')}
-                                        >
-                                            <div className="relative aspect-[3/4]">
-                                                <img
-                                                    src={getImageUrl('personality', 'caring', '')}
-                                                    alt="Caring"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                    <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Caring</h3>
-                                                    <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                        Warm, gentle, and supportive.
-                                                    </p>
+                                            {/* Caring */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'caring'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('caring')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'caring', '')}
+                                                        alt="Caring"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Caring</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Warm, gentle, and supportive.
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Dominant */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                                selectedPersonality === 'dominant'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                            onClick={() => setSelectedPersonality('dominant')}
-                                        >
-                                            <div className="relative aspect-[3/4]">
-                                                <img
-                                                    src={getImageUrl('personality', 'dominant', '')}
-                                                    alt="Dominant"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                    <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Dominant</h3>
-                                                    <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                        Commanding, controlling, and powerful.
-                                                    </p>
+                                            {/* Dominant */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'dominant'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('dominant')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'dominant', '')}
+                                                        alt="Dominant"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Dominant</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Commanding, controlling, and powerful.
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Playful */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                                selectedPersonality === 'playful'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                            onClick={() => setSelectedPersonality('playful')}
-                                        >
-                                            <div className="relative aspect-[3/4]">
-                                                <img
-                                                    src={getImageUrl('personality', 'playful', '')}
-                                                    alt="Playful"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                    <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Playful</h3>
-                                                    <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                        Fun-loving, charming, and mischievous.
-                                                    </p>
+                                            {/* Playful */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'playful'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('playful')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'playful', '')}
+                                                        alt="Playful"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Playful</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Fun-loving, charming, and mischievous.
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Mysterious */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                                selectedPersonality === 'mysterious'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                            onClick={() => setSelectedPersonality('mysterious')}
-                                        >
-                                            <div className="relative aspect-[3/4]">
-                                                <img
-                                                    src={getImageUrl('personality', 'mysterious', '')}
-                                                    alt="Mysterious"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                    <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Mysterious</h3>
-                                                    <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                        Enigmatic, intriguing, and captivating.
-                                                    </p>
+                                            {/* Mysterious */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'mysterious'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('mysterious')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'mysterious', '')}
+                                                        alt="Mysterious"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Mysterious</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Enigmatic, intriguing, and captivating.
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Romantic */}
-                                        <div
-                                            className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                                selectedPersonality === 'romantic'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                            onClick={() => setSelectedPersonality('romantic')}
-                                        >
-                                            <div className="relative aspect-[3/4]">
-                                                <img
-                                                    src={getImageUrl('personality', 'romantic', '')}
-                                                    alt="Romantic"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                    <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Romantic</h3>
-                                                    <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                        Passionate, tender, and loving.
-                                                    </p>
+                                            {/* Romantic */}
+                                            <div
+                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'romantic'
+                                                        ? 'ring-2 ring-primary'
+                                                        : 'hover:ring-2 hover:ring-primary/50'
+                                                    }`}
+                                                onClick={() => setSelectedPersonality('romantic')}
+                                            >
+                                                <div className="relative aspect-[3/4]">
+                                                    <img
+                                                        src={getImageUrl('personality', 'romantic', '')}
+                                                        alt="Romantic"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Romantic</h3>
+                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
+                                                            Passionate, tender, and loving.
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
                                         </>
                                     )}
 
@@ -2837,11 +2759,10 @@ export default function CreateCharacterPage() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-5xl mx-auto mb-4 sm:mb-6 md:mb-8 max-w-full overflow-x-hidden">
                                     {/* Row 1 */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'stranger'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'stranger'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('stranger')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -2857,11 +2778,10 @@ export default function CreateCharacterPage() {
                                     </div>
 
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'school-mate'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'school-mate'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('school-mate')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -2877,11 +2797,10 @@ export default function CreateCharacterPage() {
                                     </div>
 
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'colleague'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'colleague'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('colleague')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -2898,11 +2817,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Row 2 */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'mentor'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'mentor'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('mentor')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -2918,11 +2836,10 @@ export default function CreateCharacterPage() {
                                     </div>
 
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === (gender === 'gent' ? 'boyfriend' : 'girlfriend')
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === (gender === 'gent' ? 'boyfriend' : 'girlfriend')
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship(gender === 'gent' ? 'boyfriend' : 'girlfriend')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -2938,11 +2855,10 @@ export default function CreateCharacterPage() {
                                     </div>
 
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'sex-friend'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'sex-friend'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('sex-friend')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -2959,11 +2875,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Row 3 */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === (gender === 'gent' ? 'husband' : 'wife')
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === (gender === 'gent' ? 'husband' : 'wife')
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship(gender === 'gent' ? 'husband' : 'wife')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -2979,11 +2894,10 @@ export default function CreateCharacterPage() {
                                     </div>
 
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'mistress'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'mistress'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('mistress')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -2999,11 +2913,10 @@ export default function CreateCharacterPage() {
                                     </div>
 
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'friend'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'friend'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('friend')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -3020,11 +2933,10 @@ export default function CreateCharacterPage() {
 
                                     {/* Row 4 */}
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'best-friend'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'best-friend'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('best-friend')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -3040,11 +2952,10 @@ export default function CreateCharacterPage() {
                                     </div>
 
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'step-sister'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'step-sister'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('step-sister')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -3060,11 +2971,10 @@ export default function CreateCharacterPage() {
                                     </div>
 
                                     <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${
-                                            selectedRelationship === 'step-mom'
+                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'step-mom'
                                                 ? 'ring-2 ring-primary'
                                                 : 'hover:ring-2 hover:ring-primary/50'
-                                        }`}
+                                            }`}
                                         onClick={() => setSelectedRelationship('step-mom')}
                                     >
                                         <div className="relative aspect-[3/4]">
@@ -3100,11 +3010,10 @@ export default function CreateCharacterPage() {
                             </button>
                         )}
                         <button
-                            className={`px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg transition-all order-2 sm:order-2 w-full sm:w-auto relative z-20 ${
-                                getStepValidation() && !isGenerating
+                            className={`px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg transition-all order-2 sm:order-2 w-full sm:w-auto relative z-20 ${getStepValidation() && !isGenerating
                                     ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                                     : 'bg-secondary text-muted-foreground cursor-not-allowed border border-border'
-                            }`}
+                                }`}
                             disabled={!getStepValidation() || isGenerating}
                             onClick={() => {
                                 const finalStep = gender === 'lady' ? 7 : 5;
@@ -3130,7 +3039,7 @@ export default function CreateCharacterPage() {
                     <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 max-w-md w-full shadow-2xl border border-border">
                         <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-center text-card-foreground">Name Your AI Character</h2>
                         <p className="text-muted-foreground mb-4 sm:mb-6 text-center text-xs sm:text-sm md:text-base">Choose a unique name to bring your AI to life</p>
-                        
+
                         <input
                             type="text"
                             value={characterName}
@@ -3157,11 +3066,10 @@ export default function CreateCharacterPage() {
                             <button
                                 onClick={handleSaveCharacter}
                                 disabled={isSaving || !characterName.trim()}
-                                className={`flex-1 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg font-semibold transition-all text-xs sm:text-sm md:text-base ${
-                                    isSaving || !characterName.trim()
+                                className={`flex-1 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg font-semibold transition-all text-xs sm:text-sm md:text-base ${isSaving || !characterName.trim()
                                         ? 'bg-secondary text-muted-foreground cursor-not-allowed'
                                         : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                                }`}
+                                    }`}
                             >
                                 {isSaving ? 'Naming...' : 'Name Character'}
                             </button>
