@@ -22,6 +22,7 @@ import { sendChatMessage, type Message } from "@/lib/chat-actions"
 import { checkNovitaApiKey } from "@/lib/api-key-utils"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-context"
+import { useAuthModal } from "@/components/auth-modal-context"
 import { ClearChatDialog } from "@/components/clear-chat-dialog"
 import { checkMessageLimit, incrementMessageUsage } from "@/lib/subscription-limits"
 import { DebugPanel } from "@/components/debug-panel"
@@ -51,18 +52,18 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const { toggle, setIsOpen } = useSidebar();
   const router = useRouter();
   const { user, isLoading } = useAuth()
+  const { openLoginModal } = useAuthModal()
   const { t } = useTranslations()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // Check authentication and redirect if needed
+  // Check authentication and show login modal if needed
   useEffect(() => {
-    if (!user && !isLoading) {
-      // User is not authenticated, redirect to login
-      const currentPath = `/chat/${characterId}`
-      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+    if (!user && !isLoading && characterId) {
+      // User is not authenticated, show login modal
+      openLoginModal()
     }
-  }, [user, isLoading, characterId, router])
+  }, [user, isLoading, characterId, openLoginModal])
 
   // Debug mount
   useEffect(() => {
@@ -921,12 +922,12 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Show login modal if not authenticated
   if (!user) {
-    // The useEffect will handle the redirect, but we don't render anything
+    // The useEffect will trigger the login modal
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-muted-foreground">Redirecting to login...</div>
+        <div className="text-muted-foreground">Please log in to continue...</div>
       </div>
     );
   }
