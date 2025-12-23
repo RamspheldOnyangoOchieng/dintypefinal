@@ -1,4 +1,7 @@
+"use client"
+
 import type React from "react"
+import { PublicRouteGuard } from "@/components/public-route-guard"
 
 export default function ChatLayout({
   children,
@@ -6,8 +9,10 @@ export default function ChatLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen bg-background">
-      <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
-    </div>
+    <PublicRouteGuard>
+      <div className="flex min-h-screen bg-background">
+        <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
+      </div>
+    </PublicRouteGuard>
   )
 }

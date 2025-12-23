@@ -65,8 +65,12 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
   // Debug mount
   useEffect(() => {
-    console.log("ChatPage mounted. User authenticated:", !!user, "User ID:", user?.id)
-  }, [user])
+    console.log("🚀 ChatPage mounted")
+    console.log("   - User authenticated:", !!user)
+    console.log("   - User ID:", user?.id)
+    console.log("   - Character ID:", characterId)
+    console.log("   - Window location:", typeof window !== 'undefined' ? window.location.href : 'SSR')
+  }, [user, characterId])
 
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
