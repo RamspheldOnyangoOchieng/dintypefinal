@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -110,23 +110,23 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   // Prepare gallery images
   const galleryImages = useMemo(() => {
     if (!character) return []
-    
+
     // Start with the main image
     let imgs = [character.image || "/placeholder.svg"]
-    
+
     // Add additional images from the array if they exist (requires DB update for persistent storage)
     if (character.images && Array.isArray(character.images) && character.images.length > 0) {
       // Filter out matches to main image to avoid immediate duplicates if data is messy
       const additional = character.images.filter((img: string) => img !== character.image)
       imgs = [...imgs, ...additional]
     }
-    
+
     // Ensure we have at least 3 images for the carousel experience
     // We duplicate the main image if needed to meet the "3 profile photos" requirement
     while (imgs.length < 3) {
       imgs.push(character.image || "/placeholder.svg")
     }
-    
+
     return imgs
   }, [character])
 
@@ -1195,8 +1195,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                 {/* Carousel Image */}
                 <img
                   src={
-                    (galleryImages.length > 0 
-                      ? galleryImages[currentImageIndex] 
+                    (galleryImages.length > 0
+                      ? galleryImages[currentImageIndex]
                       : (character?.image || "/placeholder.svg"))
                   }
                   alt={character?.name || "Character"}
@@ -1204,9 +1204,9 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                   onError={() => handleImageError("profile")}
                   loading="lazy"
                 />
-                
+
                 {/* Navigation Arrows */}
-                <button 
+                <button
                   className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 p-1.5 rounded-full transition-colors text-white backdrop-blur-sm"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1224,15 +1224,14 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                 >
                   <ChevronRight className="h-6 w-6" />
                 </button>
-                
+
                 {/* Dots Indicator */}
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                   {galleryImages.map((_, idx) => (
-                    <button 
-                      key={idx} 
-                      className={`w-2 h-2 rounded-full transition-all focus:outline-none ${
-                        idx === currentImageIndex ? "bg-white w-4" : "bg-white/50 hover:bg-white/70"
-                      }`}
+                    <button
+                      key={idx}
+                      className={`w-2 h-2 rounded-full transition-all focus:outline-none ${idx === currentImageIndex ? "bg-white w-4" : "bg-white/50 hover:bg-white/70"
+                        }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setCurrentImageIndex(idx);
@@ -1241,7 +1240,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                     />
                   ))}
                 </div>
-                
+
                 {/* Floating "Watch Video" button if video exists */}
                 {character?.videoUrl && (
                   <button
@@ -1294,8 +1293,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         isOpen={false}
       />
       <SupabaseDebug />
-      <PremiumUpgradeModal 
-        isOpen={isPremiumModalOpen} 
+      <PremiumUpgradeModal
+        isOpen={isPremiumModalOpen}
         onClose={() => setIsPremiumModalOpen(false)}
         imageSrc={character?.image}
       />
