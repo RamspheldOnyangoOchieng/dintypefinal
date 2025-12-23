@@ -66,7 +66,7 @@ export async function generateImage(params: ImageGenerationParams): Promise<Gene
       height,
       sampler_name: 'DPM++ 2M Karras',
       steps,
-      cfg_scale: 7,
+      guidance_scale: 7,
       seed,
       batch_size: 1,
       image_num: 1,
