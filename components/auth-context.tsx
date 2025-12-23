@@ -66,7 +66,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         // Now get the user
-        const user = await getCurrentUser()
+        let user = await getCurrentUser()
+
+        // If check failed but we potentially had a session, try one more refresh to recover
+        if (!user) {
+          console.log("User check failed. Attempting recovery refresh.");
+          const refreshed = await refreshAuthSession();
+          if (refreshed) {
+            user = await getCurrentUser();
+          }
+        }
+
         if (!user) {
           console.log("No user found after session check")
           setUser(null)

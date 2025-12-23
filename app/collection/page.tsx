@@ -132,6 +132,7 @@ export default function CollectionPage() {
       try {
         const { createClientComponentClient } = await import("@supabase/auth-helpers-nextjs")
         const supabase = createClientComponentClient()
+        await supabase.auth.refreshSession()
         const { data: { user } } = await supabase.auth.getUser()
         if (user?.id) {
           setUserId(user.id)

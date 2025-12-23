@@ -636,9 +636,12 @@ export default function CreateCharacterPage() {
         setIsSaving(true);
 
         try {
+            // "Real system" check: Ensure session is active and valid with the server
+            await supabase.auth.refreshSession();
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
+                console.log('User session invalid or expired, prompting login');
                 setShowAuthModal(true);
                 return;
             }
