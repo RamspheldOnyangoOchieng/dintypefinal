@@ -14,15 +14,16 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 overflow-x-hidden">
       <div className="container flex h-16 items-center justify-between px-4 max-w-full">
         <div className="flex items-center gap-6">
+          <span className="font-bold text-xl text-[#F472B6]">SinStream</span>
           {/* Character Type Tabs - Removed for future implementation */}
         </div>
 
-        <div className="flex items-center justify-end space-x-2 sm:space-x-4 flex-wrap">
-          {user && <UserTokenBalance userId={user.id} />}
+        <div className="flex items-center justify-end space-x-2 flex-nowrap">
+          {user && <UserTokenBalance userId={user.id} className="hidden md:flex" />}
           <ThemeToggle />
           {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-foreground/90">Hej, {user.username || ""}!</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-foreground/90 hidden lg:inline">Hej, {user.username || ""}!</span>
               <UserNav />
             </div>
           ) : (
