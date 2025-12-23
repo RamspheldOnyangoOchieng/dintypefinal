@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getNovitaApiKey } from "@/lib/api-keys"
 
 type NovitaTaskResultResponse = {
   extra: {
@@ -31,17 +32,18 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const taskId = searchParams.get("taskId")
-    const userId = searchParams.get("userId")
 
     if (!taskId) {
       return NextResponse.json({ error: "Task ID is required" }, { status: 400 })
     }
 
-    // Get API key from environment variable
-    const apiKey = process.env.NEXT_PUBLIC_NOVITA_API_KEY
+    // Get API key with automatic fallback to .env
+    const apiKey = await getNovitaApiKey()
 
     if (!apiKey) {
-      return NextResponse.json({ error: "API key not configured" }, { status: 500 })
+      return NextResponse.json({
+        error: "No Novita API key configured. Please add it in Admin Dashboard or .env file"
+      }, { status: 500 })
     }
 
     console.log(`Checking task status for task ID: ${taskId}`)
@@ -57,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`Novita API error (${response.status}):`, errorText)
+      console.error(`NOVITA API error (${response.status}):`, errorText)
       return NextResponse.json(
         {
           error: `Failed to check generation status: ${response.status} ${response.statusText}`,
@@ -74,46 +76,9 @@ export async function GET(request: NextRequest) {
     if (data.task.status === "TASK_STATUS_SUCCEED") {
       // Task completed successfully
       console.log(`Task succeeded, found ${data.images.length} images`)
-      
-      let imageUrls = data.images.map((img) => img.image_url)
-      
-      // Apply watermark for free users
-      if (userId) {
-        try {
-          const { shouldAddWatermark, addWatermarkToUrl } = await import('@/lib/watermark')
-          const needsWatermark = await shouldAddWatermark(userId)
-          
-          if (needsWatermark) {
-            console.log(`🏷️ Adding watermarks for free user ${userId.substring(0, 8)}...`)
-            
-            // Watermark each image
-            const watermarkedUrls = await Promise.all(
-              imageUrls.map(async (url) => {
-                try {
-                  const watermarkedBuffer = await addWatermarkToUrl(url, 'DINTYP AI')
-                  
-                  // Convert buffer to base64 data URL
-                  const base64Image = watermarkedBuffer.toString('base64')
-                  return `data:image/jpeg;base64,${base64Image}`
-                } catch (error) {
-                  console.error('Error watermarking image:', error)
-                  return url // Return original if watermarking fails
-                }
-              })
-            )
-            
-            imageUrls = watermarkedUrls
-            console.log(`✅ Watermarked ${imageUrls.length} images`)
-          }
-        } catch (error) {
-          console.error('Error applying watermarks:', error)
-          // Continue with original images if watermarking fails
-        }
-      }
-      
       return NextResponse.json({
         status: "TASK_STATUS_SUCCEED",
-        images: imageUrls,
+        images: data.images.map((img) => img.image_url),
       })
     } else if (data.task.status === "TASK_STATUS_FAILED") {
       // Task failed

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getNovitaApiKey } from '@/lib/api-keys';
 
-const NOVITA_API_KEY = process.env.NOVITA_API_KEY;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
@@ -13,14 +13,16 @@ interface GenerateImageRequest {
 }
 
 async function generateImageWithNovita(prompt: string, negativePrompt: string): Promise<string> {
-  if (!NOVITA_API_KEY) {
-    throw new Error('NOVITA_API_KEY is not configured');
+  const NOVITA_API = await getNovitaApiKey();
+  
+  if (!NOVITA_API) {
+    throw new Error('No Novita API key configured. Please add it in Admin Dashboard or .env file');
   }
 
   const response = await fetch('https://api.novita.ai/v3/async/txt2img', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${NOVITA_API_KEY}`,
+      'Authorization': `Bearer ${NOVITA_API}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -44,7 +46,7 @@ async function generateImageWithNovita(prompt: string, negativePrompt: string): 
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`Novita API error: ${error}`);
+    throw new Error(`NOVITA API error: ${error}`);
   }
 
   const data = await response.json();
@@ -59,7 +61,7 @@ async function generateImageWithNovita(prompt: string, negativePrompt: string): 
 
     const progressResponse = await fetch(`https://api.novita.ai/v3/async/task-result?task_id=${taskId}`, {
       headers: {
-        'Authorization': `Bearer ${NOVITA_API_KEY}`,
+        'Authorization': `Bearer ${NOVITA_API}`,
       },
     });
 
@@ -142,7 +144,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`Generating ${style} style image...`);
     
-    // Generate image with Novita AI
+    // Generate image with NOVITA
     const imageUrl = await generateImageWithNovita(prompt, negative);
     console.log('Image generated:', imageUrl);
 

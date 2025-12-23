@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getNovitaApiKey } from "@/lib/api-keys"
 
 // Set maximum duration for this API route (30 seconds for Vercel Pro, 10 seconds for Hobby)
 export const maxDuration = 30
@@ -11,10 +12,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    const apiKey = process.env.NOVITA_API_KEY
+    const apiKey = await getNovitaApiKey()
     if (!apiKey) {
-      console.error("NOVITA_API_KEY not configured")
-      return NextResponse.json({ error: "NOVITA_API_KEY not configured" }, { status: 500 })
+      console.error("No Novita API key configured in database or .env")
+      return NextResponse.json({ 
+        error: "No Novita API key configured. Please add it in Admin Dashboard or .env file" 
+      }, { status: 500 })
     }
 
     // Generate random seed
@@ -35,14 +38,14 @@ export async function POST(request: NextRequest) {
       image_num: selectedCount ? parseInt(selectedCount) : 1,
     }
 
-    console.log("Sending request to Novita AI:", requestBody)
+    console.log("Sending request to NOVITA:", requestBody)
 
     // Create an AbortController for timeout handling
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 25000) // 25 second timeout
 
     try {
-      const response = await fetch("https://api.novita.ai/v3beta/flux-1-schnell", {
+      const response = await fetch("https://api.novita.ai/v3/async/txt2img", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -56,13 +59,13 @@ export async function POST(request: NextRequest) {
 
       // Check if response is ok first
       if (!response.ok) {
-        console.error("Novita API error - Status:", response.status, response.statusText)
+        console.error("NOVITA API error - Status:", response.status, response.statusText)
 
         // Try to get error details, but handle cases where response isn't JSON
-        let errorMessage = `Novita API error: ${response.status} ${response.statusText}`
+        let errorMessage = `NOVITA API error: ${response.status} ${response.statusText}`
         try {
           const errorData = await response.text()
-          console.error("Novita API error response:", errorData)
+          console.error("NOVITA API error response:", errorData)
 
           // Try to parse as JSON first
           try {
@@ -88,11 +91,11 @@ export async function POST(request: NextRequest) {
       try {
         data = await response.json()
       } catch (parseError) {
-        console.error("Failed to parse Novita API response as JSON:", parseError)
+        console.error("Failed to parse NOVITA API response as JSON:", parseError)
         return NextResponse.json({ error: "Invalid response from image generation service" }, { status: 500 })
       }
 
-      console.log("Novita AI response:", data)
+      console.log("NOVITA response:", data)
 
       // Extract image URLs from the response - the correct format is data.images array
       const images = data.images || []
