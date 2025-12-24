@@ -6,7 +6,10 @@ import { getUnifiedNovitaKey } from '@/lib/unified-api-keys';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { characterDetails } = body;
+    const { characterDetails, gender } = body;
+    // Default to 'lady' if not specified or invalid
+    const isMale = gender === 'gent';
+    const subjectTerm = isMale ? 'man' : 'woman';
 
     if (!characterDetails) {
       return NextResponse.json(
@@ -16,7 +19,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 1: Build the character description from details
-    const description = `A ${characterDetails.style || 'realistic'} style image of a ${characterDetails.age || 'young'} ${characterDetails.ethnicity || 'woman'} woman. She has ${characterDetails.eyeColor || 'brown'} eyes, ${characterDetails.hairColor || 'brown'} ${characterDetails.hairStyle || 'long'} hair. Her body type is ${characterDetails.bodyType || 'slim'} with ${characterDetails.breastSize || 'medium'} breasts and ${characterDetails.buttSize || 'medium'} butt. Her personality is ${characterDetails.personality || 'friendly'} and she's your ${characterDetails.relationship || 'friend'}.`;
+    let description = '';
+
+    if (isMale) {
+      description = `A ${characterDetails.style || 'realistic'} style image of a ${characterDetails.age || 'young'} ${characterDetails.ethnicity || ''} ${subjectTerm}. He has a ${characterDetails.bodyType || 'average'} body type. His personality is ${characterDetails.personality || 'friendly'} and he's your ${characterDetails.relationship || 'friend'}.`;
+    } else {
+      description = `A ${characterDetails.style || 'realistic'} style image of a ${characterDetails.age || 'young'} ${characterDetails.ethnicity || ''} ${subjectTerm}. She has ${characterDetails.eyeColor || 'brown'} eyes, ${characterDetails.hairColor || 'brown'} ${characterDetails.hairStyle || 'long'} hair. Her body type is ${characterDetails.bodyType || 'slim'} with ${characterDetails.breastSize || 'medium'} breasts and ${characterDetails.buttSize || 'medium'} butt. Her personality is ${characterDetails.personality || 'friendly'} and she's your ${characterDetails.relationship || 'friend'}.`;
+    }
 
     // Step 2: Enhance the description using Novità API
     const { key: novitaApiKey, error: keyError } = await getUnifiedNovitaKey();
@@ -65,20 +74,39 @@ export async function POST(request: NextRequest) {
 
     console.log('Enhanced prompt:', enhancedPrompt);
 
-    // Step 3: Generate image using Novita API (NSFW disabled by library)
+    // Step 3: Generate image using Novita API
     console.log('Generating image with Novita...');
 
     // Determine style
     const style = characterDetails.style === 'anime' ? 'anime' : 'realistic';
 
+    // Models
+    const REALISTIC_MODEL = "epicrealism_naturalSinRC1VAE_106430.safetensors";
+    const ANIME_MODEL = "dreamshaper_8_93211.safetensors";
+
+    // Enhanced negative prompts
+    const REALISTIC_NEGATIVE_PROMPT = "ugly, deformed, bad anatomy, disfigured, mutated, extra limbs, missing limbs, fused fingers, extra fingers, bad hands, malformed hands, poorly drawn hands, poorly drawn face, blurry, jpeg artifacts, worst quality, low quality, lowres, pixelated, out of frame, tiling, watermarks, signature, censored, distortion, grain, long neck, unnatural pose, asymmetrical face, cross-eyed, lazy eye, bad feet, extra arms, extra legs, disjointed limbs, incorrect limb proportions, unrealistic body, unrealistic face, unnatural skin, disconnected limbs, lopsided, cloned face, glitch, double torso, bad posture, wrong perspective, overexposed, underexposed, low detail, unrealistic proportions, cartoon, anime style, 3d render, illustration, painting, sketch, drawing, digital art, compressed, noisy, artifacts, chromatic aberration, duplicate, morbid, mutilated, poorly drawn, cloned, gross proportions, malformed, missing, error, cropped, lowres quality, normal quality, username, text, logo";
+
+    // For anime, we allow 'anime style' and 'illustration' but keep quality filters
+    const ANIME_NEGATIVE_PROMPT = "ugly, deformed, bad anatomy, disfigured, mutated, extra limbs, missing limbs, fused fingers, extra fingers, bad hands, malformed hands, poorly drawn hands, poorly drawn face, blurry, jpeg artifacts, worst quality, low quality, lowres, pixelated, out of frame, tiling, watermarks, signature, censored, distortion, grain, long neck, unnatural pose, asymmetrical face, cross-eyed, lazy eye, bad feet, extra arms, extra legs, disjointed limbs, incorrect limb proportions, unrealistic body, unrealistic face, unnatural skin, disconnected limbs, lopsided, cloned face, glitch, double torso, bad posture, wrong perspective, overexposed, underexposed, low detail, realistic, photorealistic, photograph, 3d, duplicate, morbid, mutilated, poorly drawn, cloned, gross proportions, malformed, missing, error, cropped, lowres quality, normal quality, username, text, logo";
+
+    // Select settings based on style
+    const selectedModel = style === 'anime' ? ANIME_MODEL : REALISTIC_MODEL;
+    const selectedNegativePrompt = style === 'anime' ? ANIME_NEGATIVE_PROMPT : REALISTIC_NEGATIVE_PROMPT;
+
+    // Resolution: SD1.5 (epicrealism/dreamshaper) works best at 512x768 (Portrait)
+    const width = 512;
+    const height = 768;
+
     // Generate the image
     const generatedImage = await generateImage({
-      prompt: enhancedPrompt,
+      prompt: enhancedPrompt + (style === 'realistic' ? ", photorealistic, 8k, highly detailed, dslr, soft lighting, high quality" : ", masterwork, best quality, highly detailed"),
+      negativePrompt: selectedNegativePrompt,
       style: style,
-      width: 1024,
-      height: 1024,
-      steps: 30,
-      model: 'sd_xl_base_1.0.safetensors' // Use SDXL for both (library adjusts prompt)
+      width: width,
+      height: height,
+      steps: 50, // Increased steps for quality
+      model: selectedModel
     });
 
     const novitaImageUrl = generatedImage.url;
