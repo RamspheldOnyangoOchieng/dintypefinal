@@ -18,8 +18,8 @@ interface PremiumUpgradeModalProps {
 export function PremiumUpgradeModal({
   isOpen,
   onClose,
-  feature = "Unlimited Messages",
-  description = "Chat without limits",
+  feature = "Obegränsat Skapande",
+  description = "Skapa utan gränser",
   imageSrc = "/login-placeholder.jpeg"
 }: PremiumUpgradeModalProps) {
   const router = useRouter()
@@ -30,11 +30,11 @@ export function PremiumUpgradeModal({
   }
 
   const benefits = [
-    "Create AI Video",
-    "Create your own AI Girls",
-    "Unlimited text messages",
-    "Remove image blur",
-    "Get 100 FREE tokens / month"
+    "Skapa AI-video",
+    "Skapa dina egna AI-tjejer",
+    "Obegränsade textmeddelanden",
+    "Snabbare generering",
+    "Inga vattenstämplar"
   ]
 
   return (
@@ -66,14 +66,14 @@ export function PremiumUpgradeModal({
           <div className="md:w-7/12 p-6 md:p-8 flex flex-col justify-center bg-[#0f0f0f]">
             <div className="mb-6">
               <h2 className="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2">
-                Upgrade to Unlock <MessageCircle className="h-5 w-5 md:h-6 md:w-6 fill-white" />
+                Uppgradera för att låsa upp <Crown className="h-5 w-5 md:h-6 md:w-6 fill-white text-[#ff4b7d]" />
               </h2>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-[#ff4b7d] mb-6">
-                Unlimited Messages
+              <h2 className="text-xl md:text-2xl font-extrabold text-[#ff4b7d] mb-6 leading-tight">
+                Uppgradera till Premium för att skapa obegränsat antal bilder
               </h2>
 
               <p className="text-gray-400 mb-4 text-sm">
-                With subscription you get access to:
+                Med en prenumeration får du tillgång till:
               </p>
 
               <div className="space-y-3 mb-8">
@@ -93,7 +93,7 @@ export function PremiumUpgradeModal({
               className="w-full py-6 text-base font-bold bg-[#ff4b7d] hover:bg-[#ff4b7d]/90 text-white rounded-xl shadow-[0_0_20px_rgba(255,75,125,0.4)] transition-all transform hover:scale-[1.02]"
             >
               <Crown className="mr-2 h-5 w-5 fill-white" />
-              Upgrade to Premium
+              Uppgradera till Premium
             </Button>
           </div>
         </div>

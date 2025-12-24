@@ -107,7 +107,7 @@ export default function Sidebar() {
                 className={`w-full justify-start ${pathname?.startsWith("/collection") ? "bg-[#252525]" : ""}`}
               >
                 <FolderHeart className="mr-2 h-5 w-5" />
-                Samling
+                Mina bilder
               </Button>
             </Link>
             <Link href="/premium">

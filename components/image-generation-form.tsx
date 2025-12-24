@@ -1,15 +1,18 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Slider } from "@/components/ui/slider"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2, Download, Save, RefreshCw, Sparkles } from "lucide-react"
+import { Loader2, Download, Save, RefreshCw, Sparkles, Check } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
 import { useAuth } from "@/components/auth-context"
+import { useAuthModal } from "@/components/auth-modal-context"
+import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
+import { cn } from "@/lib/utils"
 
 export default function ImageGenerationForm() {
   const [prompt, setPrompt] = useState("")
@@ -22,10 +25,73 @@ export default function ImageGenerationForm() {
   const [taskId, setTaskId] = useState<string | null>(null)
   const [isCheckingStatus, setIsCheckingStatus] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isPremium, setIsPremium] = useState(false)
+  const [hasUsedFreeImage, setHasUsedFreeImage] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const { user } = useAuth()
+  const { openLoginModal } = useAuthModal()
+
+  useEffect(() => {
+    async function checkStatus() {
+      if (user) {
+        // Check premium status
+        try {
+          const response = await fetch("/api/check-premium-status")
+          const data = await response.json()
+          setIsPremium(data.isPremium)
+        } catch (error) {
+          console.error("Failed to check premium status", error)
+        }
+
+        // Check local storage for free usage (simple daily check)
+        const today = new Date().toDateString()
+        const key = `dintyp_free_used_${user.id}_${today}`
+        if (localStorage.getItem(key)) {
+          setHasUsedFreeImage(true)
+        }
+      }
+    }
+    checkStatus()
+  }, [user])
+
+  const handleImageCountSelect = (count: number) => {
+    if (!user) {
+      openLoginModal()
+      return
+    }
+
+    if (!isPremium) {
+      if (count > 1) {
+        setShowUpgradeModal(true)
+        return
+      }
+      if (count === 1 && hasUsedFreeImage) {
+        setShowUpgradeModal(true)
+        return
+      }
+    }
+
+    setImageCount(count)
+  }
 
   const handleGenerate = async () => {
+    if (!user) {
+      openLoginModal()
+      return
+    }
+
+    if (!isPremium && imageCount > 1) {
+      setShowUpgradeModal(true)
+      return
+    }
+
+    if (!isPremium && imageCount === 1 && hasUsedFreeImage) {
+      setShowUpgradeModal(true)
+      return
+    }
+
     if (!prompt.trim()) {
       toast.error("Please enter a prompt")
       return
@@ -48,7 +114,7 @@ export default function ImageGenerationForm() {
           width,
           height,
         }),
-        credentials: "include", // Ensure cookies are sent
+        credentials: "include",
       })
 
       if (!response.ok) {
@@ -56,10 +122,15 @@ export default function ImageGenerationForm() {
         throw new Error(errorData.error || "Failed to generate image")
       }
 
+      // Mark free image as used if applicable
+      if (!isPremium) {
+        setHasUsedFreeImage(true)
+        const today = new Date().toDateString()
+        localStorage.setItem(`dintyp_free_used_${user.id}_${today}`, "true")
+      }
+
       const data = await response.json()
       setTaskId(data.taskId)
-
-      // Start checking status
       startStatusCheck(data.taskId)
     } catch (error) {
       console.error("Error generating image:", error)
@@ -70,25 +141,16 @@ export default function ImageGenerationForm() {
 
   const startStatusCheck = (taskId: string) => {
     setIsCheckingStatus(true)
-
-    // Clear any existing interval
-    if (checkIntervalRef.current) {
-      clearInterval(checkIntervalRef.current)
-    }
-
-    // Check immediately
+    if (checkIntervalRef.current) clearInterval(checkIntervalRef.current)
     checkGenerationStatus(taskId)
-
-    // Then set up interval
     checkIntervalRef.current = setInterval(() => {
       checkGenerationStatus(taskId)
-    }, 2000) // Check every 2 seconds
+    }, 2000)
   }
 
   const checkGenerationStatus = async (taskId: string) => {
     try {
       const response = await fetch(`/api/check-generation?taskId=${taskId}`)
-
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || "Failed to check generation status")
@@ -98,35 +160,26 @@ export default function ImageGenerationForm() {
       console.log("Task status response:", data)
 
       if (data.status === "TASK_STATUS_SUCCEED") {
-        // Image is ready - use the first image from the images array
         if (data.images && data.images.length > 0) {
           setGeneratedImage(data.images[0])
           setIsGenerating(false)
           setIsCheckingStatus(false)
-
-          // Clear the interval
           if (checkIntervalRef.current) {
             clearInterval(checkIntervalRef.current)
             checkIntervalRef.current = null
           }
-
           toast.success("Your image has been generated!")
         } else {
           throw new Error("No images returned from the API")
         }
       } else if (data.status === "TASK_STATUS_FAILED") {
-        // Generation failed
         throw new Error(data.reason || "Image generation failed")
       }
-      // For other statuses, we continue checking
     } catch (error) {
       console.error("Error checking generation status:", error)
       toast.error(error instanceof Error ? error.message : "Failed to check generation status")
-
       setIsGenerating(false)
       setIsCheckingStatus(false)
-
-      // Clear the interval
       if (checkIntervalRef.current) {
         clearInterval(checkIntervalRef.current)
         checkIntervalRef.current = null
@@ -136,14 +189,11 @@ export default function ImageGenerationForm() {
 
   const handleSaveImage = async () => {
     if (!generatedImage) return
-
     setIsSaving(true)
     try {
       const response = await fetch("/api/save-generated-image", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           imageUrl: generatedImage,
           prompt,
@@ -155,7 +205,6 @@ export default function ImageGenerationForm() {
         const errorData = await response.json()
         throw new Error(errorData.error || "Failed to save image")
       }
-
       toast.success("Image saved to your collection")
     } catch (error) {
       console.error("Error saving image:", error)
@@ -167,7 +216,6 @@ export default function ImageGenerationForm() {
 
   const handleDownload = async () => {
     if (!generatedImage) return
-
     try {
       const response = await fetch(generatedImage)
       const blob = await response.blob()
@@ -185,8 +233,15 @@ export default function ImageGenerationForm() {
     }
   }
 
+  const isFreeGeneration = user && !isPremium && !hasUsedFreeImage && imageCount === 1
+
   return (
     <div className="container mx-auto px-4 py-8">
+      <PremiumUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
+
       <h1 className="text-3xl font-bold mb-6">Generate Images</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -217,15 +272,23 @@ export default function ImageGenerationForm() {
                 </div>
 
                 <div>
-                  <Label>Image Count: {imageCount}</Label>
-                  <Slider
-                    value={[imageCount]}
-                    min={1}
-                    max={4}
-                    step={1}
-                    onValueChange={(value) => setImageCount(value[0])}
-                    className="my-2"
-                  />
+                  <Label className="mb-2 block">Image Count: {imageCount}</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[1, 4, 6, 8].map((count) => (
+                      <Button
+                        key={count}
+                        type="button"
+                        variant={imageCount === count ? "default" : "outline"}
+                        className={cn(
+                          "w-full",
+                          imageCount === count ? "bg-primary text-primary-foreground" : "bg-[#252525] border-[#333333]"
+                        )}
+                        onClick={() => handleImageCountSelect(count)}
+                      >
+                        {count}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -255,20 +318,27 @@ export default function ImageGenerationForm() {
 
                 <Button
                   onClick={handleGenerate}
-                  disabled={isGenerating || !prompt.trim()}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2"
+                  disabled={isGenerating || (user && !isPremium && hasUsedFreeImage && imageCount === 1 && !prompt.trim())}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2 relative overflow-hidden group"
                 >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isCheckingStatus ? "Processing..." : "Generating..."}
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Generate Image
-                    </>
-                  )}
+                  <span className="relative z-10 flex items-center justify-center">
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {isCheckingStatus ? "Processing..." : "Generating..."}
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Generate Image
+                        {isFreeGeneration ? (
+                          <span className="ml-2 bg-green-500/20 text-green-400 text-xs px-2 py-0.5 rounded border border-green-500/50">FREE</span>
+                        ) : (
+                          !isPremium && <span className="ml-2 text-xs opacity-70">(5 tokens)</span>
+                        )}
+                      </>
+                    )}
+                  </span>
                 </Button>
               </div>
             </CardContent>

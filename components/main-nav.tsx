@@ -10,37 +10,37 @@ import { useAuth } from "@/components/auth-context"
 
 const navItems = [
   {
-  name: "Hem",
+    name: "Hem",
     href: "/",
     icon: Home,
   },
   {
-  name: "Generera",
+    name: "Generera",
     href: "/generate",
     icon: ImageIcon,
   },
   {
-  name: "Karaktärer",
+    name: "Karaktärer",
     href: "/characters",
     icon: Users,
   },
   {
-  name: "Prompter",
+    name: "Prompter",
     href: "/prompts",
     icon: MessageSquare,
   },
   {
-  name: "Favoriter",
+    name: "Favoriter",
     href: "/favorites",
     icon: Star,
   },
   {
-  name: "Samlingar",
+    name: "Mina bilder",
     href: "/collections",
     icon: FolderOpen,
   },
   {
-  name: "Affiliate",
+    name: "Affiliate",
     href: "/affiliate",
     icon: Users,
   },
