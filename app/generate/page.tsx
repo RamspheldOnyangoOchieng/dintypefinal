@@ -969,69 +969,65 @@ export default function GenerateImagePage() {
           </Tabs>
         </div>
 
-        {/* Image Suggestions Gallery */}
-        {mediaType === 'image' && suggestions.length > 0 && (
-          <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-            <h3 className={`${isMobile ? 'text-sm' : 'text-base'} font-semibold mb-3 text-foreground`}>Create Your Lover</h3>
-
-            {/* Category Tabs */}
-            {categories.length > 0 && (
-              <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
+        {/* Suggestions */}
+        <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
+          <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold ${isMobile ? 'mb-3' : 'mb-4'}`}>Create your love from suggestions</h3>
+          {categories.length > 0 ? (
+            <Tabs defaultValue={categories[0]} value={activeCategory} onValueChange={handleCategoryChange}>
+              <TabsList className={`${isMobile ? 'mb-3 p-0.5' : 'mb-4 p-1'} bg-card border border-border rounded-lg`}>
                 {categories.map((category) => (
-                  <button
+                  <TabsTrigger
                     key={category}
-                    onClick={() => handleCategoryChange(category)}
-                    className={`${isMobile ? 'text-xs px-3 py-1.5' : 'text-sm px-4 py-2'} rounded-lg whitespace-nowrap transition-all duration-200 ${activeCategory === category
-                        ? 'bg-primary text-primary-foreground shadow-md'
-                        : 'bg-card text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border'
-                      }`}
+                    value={category}
+                    className={`capitalize text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md ${isMobile ? 'text-xs px-2 py-1' : ''}`}
                   >
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </button>
+                    {category}
+                  </TabsTrigger>
                 ))}
-              </div>
-            )}
-
-            {/* Suggestions Grid */}
-            {isLoadingSuggestions ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className={`grid ${isMobile ? 'grid-cols-4 gap-2' : 'grid-cols-8 gap-2'} mb-4`}>
-                {suggestions.slice(0, isMobile ? 8 : 8).map((suggestion) => (
-                  <div
-                    key={suggestion.id}
-                    onClick={() => {
-                      setPrompt(suggestion.name)
-                      toast({
-                        title: "Prompt updated",
-                        description: `"${suggestion.name}" added to your prompt`,
-                      })
-                    }}
-                    className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group border border-border hover:border-primary transition-all duration-200 hover:shadow-lg"
-                  >
-                    <Image
-                      src={suggestion.image}
-                      alt={suggestion.name}
-                      width={80}
-                      height={80}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <div className="absolute bottom-0 left-0 right-0 p-1.5">
-                        <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-medium text-white line-clamp-2`}>
-                          {suggestion.name}
-                        </p>
+              </TabsList>
+              <div className={`grid ${isMobile ? 'grid-cols-4 gap-1 p-1' : 'grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-1 sm:gap-1.5 md:gap-2 lg:gap-3 p-1 sm:p-2'}`}>
+                {isLoadingSuggestions
+                  ? // Show loading placeholders
+                  Array.from({ length: 8 }).map((_, index) => (
+                    <div key={index} className="aspect-square rounded-lg bg-muted animate-pulse" />
+                  ))
+                  : // Show filtered suggestions
+                  suggestions
+                    .filter((suggestion) => suggestion.category === activeCategory && suggestion.is_active)
+                    .map((suggestion) => (
+                      <div
+                        key={suggestion.id}
+                        className="relative aspect-square rounded-lg overflow-hidden group hover:ring-2 hover:ring-primary transition-all cursor-pointer min-w-0"
+                        onClick={() => handleSuggestionClick(suggestion.name)}
+                      >
+                        <Image
+                          src={getValidImageSrc(
+                            suggestion.image,
+                            `/placeholder.svg?height=88&width=88&query=${encodeURIComponent(suggestion.name || "suggestion")}`,
+                          )}
+                          alt={suggestion.name}
+                          width={88}
+                          height={88}
+                          className="w-full h-full object-cover rounded-lg"
+                          unoptimized={true}
+                          onError={(e) => {
+                            // Fall back to a local placeholder with the suggestion name
+                            e.currentTarget.src = `/placeholder.svg?height=88&width=88&query=${encodeURIComponent(suggestion.name || "suggestion")}`
+                          }}
+                        />
+                        <div className={`absolute inset-0 bg-black/40 flex items-end ${isMobile ? 'p-1' : 'p-1.5 sm:p-2'} rounded-lg`}>
+                          <span className={`${isMobile ? 'text-xs' : 'text-xs sm:text-sm'} font-medium text-white leading-tight line-clamp-2`}>
+                            {suggestion.name}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    ))}
               </div>
-            )}
-          </div>
-        )}
+            </Tabs>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">No suggestion categories available.</div>
+          )}
+        </div>
 
         {/* Video Mode: Image Selection */}
         {mediaType === 'video' && (
@@ -1193,65 +1189,7 @@ export default function GenerateImagePage() {
           </div>
         )}
 
-        {/* Suggestions */}
-        <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold ${isMobile ? 'mb-3' : 'mb-4'}`}>Suggestions</h3>
-          {categories.length > 0 ? (
-            <Tabs defaultValue={categories[0]} value={activeCategory} onValueChange={handleCategoryChange}>
-              <TabsList className={`${isMobile ? 'mb-3 p-0.5' : 'mb-4 p-1'} bg-card border border-border rounded-lg`}>
-                {categories.map((category) => (
-                  <TabsTrigger
-                    key={category}
-                    value={category}
-                    className={`capitalize text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md ${isMobile ? 'text-xs px-2 py-1' : ''}`}
-                  >
-                    {category}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <div className={`grid ${isMobile ? 'grid-cols-4 gap-1 p-1' : 'grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-1 sm:gap-1.5 md:gap-2 lg:gap-3 p-1 sm:p-2'}`}>
-                {isLoadingSuggestions
-                  ? // Show loading placeholders
-                  Array.from({ length: 8 }).map((_, index) => (
-                    <div key={index} className="aspect-square rounded-lg bg-muted animate-pulse" />
-                  ))
-                  : // Show filtered suggestions
-                  suggestions
-                    .filter((suggestion) => suggestion.category === activeCategory && suggestion.is_active)
-                    .map((suggestion) => (
-                      <div
-                        key={suggestion.id}
-                        className="relative aspect-square rounded-lg overflow-hidden group hover:ring-2 hover:ring-primary transition-all cursor-pointer min-w-0"
-                        onClick={() => handleSuggestionClick(suggestion.name)}
-                      >
-                        <Image
-                          src={getValidImageSrc(
-                            suggestion.image,
-                            `/placeholder.svg?height=88&width=88&query=${encodeURIComponent(suggestion.name || "suggestion")}`,
-                          )}
-                          alt={suggestion.name}
-                          width={88}
-                          height={88}
-                          className="w-full h-full object-cover rounded-lg"
-                          unoptimized={true}
-                          onError={(e) => {
-                            // Fall back to a local placeholder with the suggestion name
-                            e.currentTarget.src = `/placeholder.svg?height=88&width=88&query=${encodeURIComponent(suggestion.name || "suggestion")}`
-                          }}
-                        />
-                        <div className={`absolute inset-0 bg-black/40 flex items-end ${isMobile ? 'p-1' : 'p-1.5 sm:p-2'} rounded-lg`}>
-                          <span className={`${isMobile ? 'text-xs' : 'text-xs sm:text-sm'} font-medium text-white leading-tight line-clamp-2`}>
-                            {suggestion.name}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-              </div>
-            </Tabs>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">No suggestion categories available.</div>
-          )}
-        </div>
+
 
         {/* Number of Images - Only show in image mode */}
         {mediaType === 'image' && (

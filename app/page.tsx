@@ -14,11 +14,17 @@ import { useTranslations } from "@/lib/use-translations"
 import LandingDisclaimerModal from "@/components/landing-disclaimer-modal"
 import { CONSENT_VERSION, POLICY_VERSION, CONSENT_STORAGE_KEY } from "@/lib/consent-config"
 import { useConsent } from "@/components/use-consent"
+import { useAuth } from "@/components/auth-context"
+import { useAuthModal } from "@/components/auth-modal-context"
+import { useRouter } from "next/navigation"
 
 export default function Home() {
   const { characters, isLoading } = useCharacters()
   const { t } = useTranslations()
   const { consent, isLoaded, updateConsent } = useConsent()
+  const { user } = useAuth()
+  const { openLoginModal } = useAuthModal()
+  const router = useRouter()
 
   // Filter characters based on the active type (case-insensitive)
   const { activeType } = useCharacters()
@@ -36,10 +42,10 @@ export default function Home() {
   // Check if consent modal should be shown based on centralized consent state
   useEffect(() => {
     if (!isLoaded) return
-    
+
     const consentVersion = consent?.version
     const consentPolicyVersion = consent?.policyVersion
-    
+
     if (!consent || consentVersion !== CONSENT_VERSION || consentPolicyVersion !== POLICY_VERSION) {
       // No consent or outdated version -> show modal
       setModalOpen(true)
@@ -49,7 +55,7 @@ export default function Home() {
     }
   }, [isLoaded, consent?.version, consent?.policyVersion, consent?.timestamp])
 
-  const handleConfirm = (prefs: {analytics: boolean; marketing: boolean}) => {
+  const handleConfirm = (prefs: { analytics: boolean; marketing: boolean }) => {
     updateConsent(prefs)
     setModalOpen(false)
   }
@@ -59,7 +65,7 @@ export default function Home() {
     <div className="bg-background">
       {/* Content Area */}
       <main>
-  {/* Featured Promotional Banner */}
+        {/* Featured Promotional Banner */}
         <PromotionalBanner />
 
         <div className="mt-6 mb-4 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -96,12 +102,12 @@ export default function Home() {
         </section>
         <section id="roadmap" className="mx-auto max-w-5xl px-4 md:px-6 py-20 border-t border-border scroll-mt-24">
           <h2 className="text-3xl font-bold mb-4">Roadmap</h2>
-            <ul className="space-y-3 text-sm md:text-base text-muted-foreground">
-              <li><span className="font-medium text-foreground">Q1:</span> Förbättrad röstchatt & adaptivt minne.</li>
-              <li><span className="font-medium text-foreground">Q2:</span> Video-avatar rendering & förbättrad moderation.</li>
-              <li><span className="font-medium text-foreground">Q3:</span> Realtids flerpartschat & mobilappar.</li>
-              <li><span className="font-medium text-foreground">Q4:</span> Offline-läge och privat edge-inferens.</li>
-            </ul>
+          <ul className="space-y-3 text-sm md:text-base text-muted-foreground">
+            <li><span className="font-medium text-foreground">Q1:</span> Förbättrad röstchatt & adaptivt minne.</li>
+            <li><span className="font-medium text-foreground">Q2:</span> Video-avatar rendering & förbättrad moderation.</li>
+            <li><span className="font-medium text-foreground">Q3:</span> Realtids flerpartschat & mobilappar.</li>
+            <li><span className="font-medium text-foreground">Q4:</span> Offline-läge och privat edge-inferens.</li>
+          </ul>
         </section>
         <section id="guide" className="mx-auto max-w-5xl px-4 md:px-6 py-20 border-t border-border scroll-mt-24">
           <h2 className="text-3xl font-bold mb-4">Guide</h2>
@@ -157,7 +163,16 @@ export default function Home() {
           </svg>
           <span className="text-xs mt-1">{t("general.explore")}</span>
         </Link>
-        <Link href="/generate" className="flex flex-col items-center p-2 text-muted-foreground">
+        <button
+          onClick={() => {
+            if (!user) {
+              openLoginModal()
+            } else {
+              router.push('/generate')
+            }
+          }}
+          className="flex flex-col items-center p-2 text-muted-foreground"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -168,8 +183,17 @@ export default function Home() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           <span className="text-xs mt-1">{t("general.generate")}</span>
-        </Link>
-        <Link href="/create-character" className="flex flex-col items-center p-2 text-muted-foreground">
+        </button>
+        <button
+          onClick={() => {
+            if (!user) {
+              openLoginModal()
+            } else {
+              router.push('/create-character')
+            }
+          }}
+          className="flex flex-col items-center p-2 text-muted-foreground"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -180,7 +204,7 @@ export default function Home() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           <span className="text-xs mt-1">{t("general.create")}</span>
-        </Link>
+        </button>
         <Link href="/chat" className="flex flex-col items-center p-2 text-muted-foreground">
           <svg
             xmlns="http://www.w3.org/2000/svg"
