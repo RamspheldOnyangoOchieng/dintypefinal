@@ -57,7 +57,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
     async function loadCharacters() {
       try {
         const resolvedParams = await params;
-        
+
         // Load specific character first (priority)
         const characterResponse = await fetch(`/api/characters/${resolvedParams.characterId}`);
         if (characterResponse.ok) {
@@ -66,7 +66,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
           setSelectedCharacterId(resolvedParams.characterId);
           setIsLoadingCharacter(false);
         }
-        
+
         // Load all characters in background (non-blocking)
         fetch('/api/characters')
           .then(response => response.ok ? response.json() : null)
@@ -76,7 +76,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
             }
           })
           .catch(error => console.error('Error loading all characters:', error));
-        
+
       } catch (error) {
         console.error('Error loading character:', error);
         router.push('/my-ai');
@@ -130,7 +130,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
   // Handle character selection
   const handleCharacterChange = async (characterId: string) => {
     if (characterId === selectedCharacterId) return;
-    
+
     // Find character in already loaded list first
     const existingCharacter = allCharacters.find(char => char.id === characterId);
     if (existingCharacter) {
@@ -139,11 +139,11 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
       router.push(`/generate-character/${characterId}`, { scroll: false });
       return;
     }
-    
+
     // If not found, fetch from API
     setSelectedCharacterId(characterId);
     setIsLoadingCharacter(true);
-    
+
     try {
       const response = await fetch(`/api/characters/${characterId}`);
       if (response.ok) {
@@ -161,179 +161,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
   // Enhanced prompt generation that uses user input as main context
   const enhanceUserPrompt = (userPrompt: string) => {
     if (!character || !userPrompt.trim()) return userPrompt;
-    
-    const viewVariations = [
-      "close-up portrait",
-      "full body shot", 
-      "three-quarter view",
-      "profile view",
-      "over-the-shoulder",
-      "low angle view",
-      "high angle view",
-      "side profile",
-      "front facing",
-      "back view",
-      "sitting pose",
-      "standing pose",
-      "walking pose",
-      "dancing pose",
-      "relaxed pose",
-      "dynamic pose"
-    ];
-    
-    const lightingVariations = [
-      "soft natural lighting",
-      "dramatic lighting", 
-      "golden hour lighting",
-      "studio lighting",
-      "moody lighting",
-      "bright daylight",
-      "warm candlelight",
-      "cool blue lighting",
-      "neon lighting",
-      "sunset lighting"
-    ];
-    
-    const backgroundVariations = [
-      "luxurious bedroom",
-      "modern living room",
-      "elegant bathroom", 
-      "rooftop terrace",
-      "beach setting",
-      "forest background",
-      "urban cityscape",
-      "cozy cafe",
-      "art gallery",
-      "hotel suite",
-      "garden setting",
-      "mountain view",
-      "lake house",
-      "penthouse",
-      "boutique hotel"
-    ];
-    
-    const qualityEnhancers = [
-      "professional photography",
-      "high quality",
-      "detailed",
-      "realistic", 
-      "cinematic composition",
-      "perfect lighting",
-      "sharp focus",
-      "8K resolution",
-      "photorealistic",
-      "beautiful",
-      "elegant",
-      "sophisticated",
-      "artistic",
-      "masterpiece"
-    ];
-    
-    // Extract key elements from user prompt
-    const userWords = userPrompt.toLowerCase().split(/\s+/);
-    
-    // Check if user already specified view/pose
-    const hasView = viewVariations.some(view => 
-      userWords.some(word => view.toLowerCase().includes(word))
-    );
-    
-    // Check if user already specified lighting
-    const hasLighting = lightingVariations.some(lighting => 
-      userWords.some(word => lighting.toLowerCase().includes(word))
-    );
-    
-    // Check if user already specified background
-    const hasBackground = backgroundVariations.some(background => 
-      userWords.some(word => background.toLowerCase().includes(word))
-    );
-    
-    // Check for nudity and explicit content indicators
-    const nudityKeywords = [
-      "nude", "naked", "topless", "bottomless", "undressed", "unclothed", "bare", "exposed",
-      "lingerie", "underwear", "bra", "panties", "thong", "bikini", "swimsuit",
-      "intimate", "sensual", "erotic", "sexy", "seductive", "provocative", "revealing",
-      "boudoir", "pinup", "glamour", "artistic nude", "tasteful nude", "nude art"
-    ];
-    
-    const hasNudityContent = nudityKeywords.some(keyword => 
-      userWords.some(word => word.includes(keyword))
-    );
-    
-    // Build enhanced prompt
-    let enhancedPrompt = `${character.name}, ${userPrompt}`;
-    
-    // Add character details if not already mentioned
-    if (!userWords.includes(character.age.toString())) {
-      enhancedPrompt += `, ${character.age} years old`;
-    }
-    if (!userWords.includes(character.ethnicity.toLowerCase())) {
-      enhancedPrompt += `, ${character.ethnicity}`;
-    }
-    if (!userWords.includes(character.body.toLowerCase())) {
-      enhancedPrompt += `, ${character.body} build`;
-    }
-    
-    // Add view if not specified
-    if (!hasView) {
-      const randomView = viewVariations[Math.floor(Math.random() * viewVariations.length)];
-      enhancedPrompt += `, ${randomView}`;
-    }
-    
-    // Add lighting if not specified
-    if (!hasLighting) {
-      const randomLighting = lightingVariations[Math.floor(Math.random() * lightingVariations.length)];
-      enhancedPrompt += `, ${randomLighting}`;
-    }
-    
-    // Add background if not specified
-    if (!hasBackground) {
-      const randomBackground = backgroundVariations[Math.floor(Math.random() * backgroundVariations.length)];
-      enhancedPrompt += `, ${randomBackground}`;
-    }
-    
-    // Add personality if not mentioned
-    if (!userWords.some(word => character.personality.toLowerCase().includes(word))) {
-      enhancedPrompt += `, ${character.personality} personality`;
-    }
-    
-    // Add nudity enhancers if user specified nudity content
-    if (hasNudityContent) {
-      const nudityEnhancers = [
-        "artistic nude",
-        "tasteful nudity", 
-        "sensual pose",
-        "intimate setting",
-        "provocative expression",
-        "alluring gaze",
-        "seductive pose",
-        "romantic lighting",
-        "intimate atmosphere",
-        "passionate expression",
-        "elegant nude",
-        "beautiful nude",
-        "graceful nude",
-        "sophisticated nude"
-      ];
-      const randomNudity = nudityEnhancers[Math.floor(Math.random() * nudityEnhancers.length)];
-      enhancedPrompt += `, ${randomNudity}`;
-    }
-    
-    // Add quality enhancers
-    const randomQuality = qualityEnhancers[Math.floor(Math.random() * qualityEnhancers.length)];
-    enhancedPrompt += `, ${randomQuality}`;
-    
-    // Add nudity content tags if detected
-    if (hasNudityContent) {
-      enhancedPrompt += `, artistic nude, tasteful nudity, nude art, elegant nude, beautiful nude`;
-    }
-    
-    return enhancedPrompt;
-  };
 
-  // Generate a default prompt based on character attributes with view variations
-  const generateDefaultPrompt = () => {
-    if (!character) return;
-    
     const viewVariations = [
       "close-up portrait",
       "full body shot",
@@ -352,7 +180,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
       "relaxed pose",
       "dynamic pose"
     ];
-    
+
     const lightingVariations = [
       "soft natural lighting",
       "dramatic lighting",
@@ -365,7 +193,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
       "neon lighting",
       "sunset lighting"
     ];
-    
+
     const backgroundVariations = [
       "luxurious bedroom",
       "modern living room",
@@ -383,7 +211,179 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
       "penthouse",
       "boutique hotel"
     ];
-    
+
+    const qualityEnhancers = [
+      "professional photography",
+      "high quality",
+      "detailed",
+      "realistic",
+      "cinematic composition",
+      "perfect lighting",
+      "sharp focus",
+      "8K resolution",
+      "photorealistic",
+      "beautiful",
+      "elegant",
+      "sophisticated",
+      "artistic",
+      "masterpiece"
+    ];
+
+    // Extract key elements from user prompt
+    const userWords = userPrompt.toLowerCase().split(/\s+/);
+
+    // Check if user already specified view/pose
+    const hasView = viewVariations.some(view =>
+      userWords.some(word => view.toLowerCase().includes(word))
+    );
+
+    // Check if user already specified lighting
+    const hasLighting = lightingVariations.some(lighting =>
+      userWords.some(word => lighting.toLowerCase().includes(word))
+    );
+
+    // Check if user already specified background
+    const hasBackground = backgroundVariations.some(background =>
+      userWords.some(word => background.toLowerCase().includes(word))
+    );
+
+    // Check for nudity and explicit content indicators
+    const nudityKeywords = [
+      "nude", "naked", "topless", "bottomless", "undressed", "unclothed", "bare", "exposed",
+      "lingerie", "underwear", "bra", "panties", "thong", "bikini", "swimsuit",
+      "intimate", "sensual", "erotic", "sexy", "seductive", "provocative", "revealing",
+      "boudoir", "pinup", "glamour", "artistic nude", "tasteful nude", "nude art"
+    ];
+
+    const hasNudityContent = nudityKeywords.some(keyword =>
+      userWords.some(word => word.includes(keyword))
+    );
+
+    // Build enhanced prompt
+    let enhancedPrompt = `${character.name}, ${userPrompt}`;
+
+    // Add character details if not already mentioned
+    if (!userWords.includes(character.age.toString())) {
+      enhancedPrompt += `, ${character.age} years old`;
+    }
+    if (!userWords.includes(character.ethnicity.toLowerCase())) {
+      enhancedPrompt += `, ${character.ethnicity}`;
+    }
+    if (!userWords.includes(character.body.toLowerCase())) {
+      enhancedPrompt += `, ${character.body} build`;
+    }
+
+    // Add view if not specified
+    if (!hasView) {
+      const randomView = viewVariations[Math.floor(Math.random() * viewVariations.length)];
+      enhancedPrompt += `, ${randomView}`;
+    }
+
+    // Add lighting if not specified
+    if (!hasLighting) {
+      const randomLighting = lightingVariations[Math.floor(Math.random() * lightingVariations.length)];
+      enhancedPrompt += `, ${randomLighting}`;
+    }
+
+    // Add background if not specified
+    if (!hasBackground) {
+      const randomBackground = backgroundVariations[Math.floor(Math.random() * backgroundVariations.length)];
+      enhancedPrompt += `, ${randomBackground}`;
+    }
+
+    // Add personality if not mentioned
+    if (!userWords.some(word => character.personality.toLowerCase().includes(word))) {
+      enhancedPrompt += `, ${character.personality} personality`;
+    }
+
+    // Add nudity enhancers if user specified nudity content
+    if (hasNudityContent) {
+      const nudityEnhancers = [
+        "artistic nude",
+        "tasteful nudity",
+        "sensual pose",
+        "intimate setting",
+        "provocative expression",
+        "alluring gaze",
+        "seductive pose",
+        "romantic lighting",
+        "intimate atmosphere",
+        "passionate expression",
+        "elegant nude",
+        "beautiful nude",
+        "graceful nude",
+        "sophisticated nude"
+      ];
+      const randomNudity = nudityEnhancers[Math.floor(Math.random() * nudityEnhancers.length)];
+      enhancedPrompt += `, ${randomNudity}`;
+    }
+
+    // Add quality enhancers
+    const randomQuality = qualityEnhancers[Math.floor(Math.random() * qualityEnhancers.length)];
+    enhancedPrompt += `, ${randomQuality}`;
+
+    // Add nudity content tags if detected
+    if (hasNudityContent) {
+      enhancedPrompt += `, artistic nude, tasteful nudity, nude art, elegant nude, beautiful nude`;
+    }
+
+    return enhancedPrompt;
+  };
+
+  // Generate a default prompt based on character attributes with view variations
+  const generateDefaultPrompt = () => {
+    if (!character) return;
+
+    const viewVariations = [
+      "close-up portrait",
+      "full body shot",
+      "three-quarter view",
+      "profile view",
+      "over-the-shoulder",
+      "low angle view",
+      "high angle view",
+      "side profile",
+      "front facing",
+      "back view",
+      "sitting pose",
+      "standing pose",
+      "walking pose",
+      "dancing pose",
+      "relaxed pose",
+      "dynamic pose"
+    ];
+
+    const lightingVariations = [
+      "soft natural lighting",
+      "dramatic lighting",
+      "golden hour lighting",
+      "studio lighting",
+      "moody lighting",
+      "bright daylight",
+      "warm candlelight",
+      "cool blue lighting",
+      "neon lighting",
+      "sunset lighting"
+    ];
+
+    const backgroundVariations = [
+      "luxurious bedroom",
+      "modern living room",
+      "elegant bathroom",
+      "rooftop terrace",
+      "beach setting",
+      "forest background",
+      "urban cityscape",
+      "cozy cafe",
+      "art gallery",
+      "hotel suite",
+      "garden setting",
+      "mountain view",
+      "lake house",
+      "penthouse",
+      "boutique hotel"
+    ];
+
     const clothingVariations = [
       "elegant evening wear",
       "casual chic outfit",
@@ -401,19 +401,30 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
       "cocktail dress",
       "designer ensemble"
     ];
-    
+
     const randomView = viewVariations[Math.floor(Math.random() * viewVariations.length)];
     const randomLighting = lightingVariations[Math.floor(Math.random() * lightingVariations.length)];
     const randomBackground = backgroundVariations[Math.floor(Math.random() * backgroundVariations.length)];
     const randomClothing = clothingVariations[Math.floor(Math.random() * clothingVariations.length)];
-    
+
     const basePrompt = `${character.name}, ${randomView}, ${character.age} years old, ${character.ethnicity}, ${character.body} build, wearing ${randomClothing}, ${randomLighting}, ${randomBackground}, ${character.personality} personality, professional photography, high quality, detailed, realistic, cinematic composition, perfect lighting, sharp focus, 8K resolution, photorealistic, beautiful, elegant, sophisticated, artistic, masterpiece`;
-    
+
     setPrompt(basePrompt);
   };
 
   const addSuggestionToPrompt = (suggestion: ImageSuggestion) => {
-    setPrompt(prev => prev + `, ${suggestion.name}`);
+    setPrompt(prev => {
+      // If prompt is empty, just add the suggestion
+      if (!prev.trim()) {
+        return suggestion.name;
+      }
+      // If prompt already ends with comma, add space and suggestion
+      if (prev.trim().endsWith(',')) {
+        return `${prev} ${suggestion.name}`;
+      }
+      // Otherwise, add comma, space, and suggestion
+      return `${prev}, ${suggestion.name}`;
+    });
   };
 
   const handleDownload = async (imageUrl: string) => {
@@ -446,7 +457,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
     try {
       // Automatically enhance the user's prompt
       const enhancedPrompt = enhanceUserPrompt(prompt);
-      
+
       // Check if enhanced prompt contains nudity content
       const nudityKeywords = [
         "nude", "naked", "topless", "bottomless", "undressed", "unclothed", "bare", "exposed",
@@ -455,11 +466,11 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
         "boudoir", "pinup", "glamour", "artistic nude", "tasteful nude", "nude art",
         "artistic nude", "tasteful nudity", "nude art", "elegant nude", "beautiful nude"
       ];
-      
-      const hasNudityContent = nudityKeywords.some(keyword => 
+
+      const hasNudityContent = nudityKeywords.some(keyword =>
         enhancedPrompt.toLowerCase().includes(keyword)
       );
-      
+
       const response = await fetch("/api/generate-character-image-novita", {
         method: "POST",
         headers: {
@@ -479,7 +490,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
 
       if (data.success && data.imageUrl) {
         setGeneratedImage(data.imageUrl);
-        
+
         // Automatically save the generated image to the gallery
         try {
           const saveResponse = await fetch('/api/save-character-image', {
@@ -592,8 +603,8 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-700 max-h-60 shadow-xl backdrop-blur-sm">
                         {allCharacters.map((char) => (
-                          <SelectItem 
-                            key={char.id} 
+                          <SelectItem
+                            key={char.id}
                             value={char.id}
                             className="text-white hover:bg-gray-700 focus:bg-gray-700 cursor-pointer"
                           >
@@ -664,33 +675,45 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
                   </Button>
                 </div>
                 <div className="relative">
-                  <div className="absolute right-3 top-3 flex items-center gap-2 z-10">
-                    <Copy
-                      className="h-4 w-4 text-gray-400 cursor-pointer hover:text-white transition-colors"
+                  <div className="absolute right-3 top-3 flex items-center gap-1 z-10">
+                    <button
                       onClick={() => {
                         navigator.clipboard.writeText(prompt);
                         toast({ title: "Copied to clipboard" });
                       }}
-                    />
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 bg-transparent text-gray-400 hover:text-white hover:bg-gray-600"
+                      className="p-2 hover:bg-gray-600 rounded transition-colors"
+                      title="Copy"
+                    >
+                      <Copy className="h-4 w-4 text-gray-400 hover:text-white" />
+                    </button>
+                    <button
                       onClick={() => {
                         navigator.clipboard.readText().then((text) => {
                           setPrompt(text);
                           toast({ title: "Pasted from clipboard" });
                         });
                       }}
+                      className="p-2 hover:bg-gray-600 rounded transition-colors"
+                      title="Paste"
                     >
-                      Paste
-                    </Button>
+                      <ImageIcon className="h-4 w-4 text-gray-400 hover:text-white" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setPrompt("");
+                        toast({ title: "Prompt cleared" });
+                      }}
+                      className="p-2 hover:bg-gray-600 rounded transition-colors"
+                      title="Clear"
+                    >
+                      <X className="h-4 w-4 text-gray-400 hover:text-white" />
+                    </button>
                   </div>
                   <Textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder="Click 'Generate New Prompt' to create a varied prompt with different views, lighting, and settings..."
-                    className="min-h-[120px] bg-gray-700 border-gray-600 text-white placeholder-gray-400 resize-none pr-24"
+                    className="min-h-[120px] bg-gray-700 border-gray-600 text-white placeholder-gray-400 resize-none pr-32"
                   />
                 </div>
                 <div className="flex justify-end items-center mt-2">
@@ -712,20 +735,20 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
                     <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                     <h3 className="text-lg font-semibold text-white">Suggestions</h3>
                   </div>
-                  
+
                   <Tabs value={activeTab} onValueChange={handleCategoryChange} className="w-full">
                     <TabsList className="flex w-full bg-gray-700 border-gray-600 p-1 rounded-lg overflow-x-auto">
                       {categories.slice(0, 5).map((category) => (
-                        <TabsTrigger 
-                          key={category} 
-                          value={category.toLowerCase()} 
+                        <TabsTrigger
+                          key={category}
+                          value={category.toLowerCase()}
                           className="flex-shrink-0 text-gray-300 data-[state=active]:text-white data-[state=active]:bg-gray-600 data-[state=active]:shadow-sm transition-all px-3 py-2 text-sm font-medium whitespace-nowrap"
                         >
                           {category}
                         </TabsTrigger>
                       ))}
                     </TabsList>
-                    
+
                     <TabsContent value={activeTab} className="mt-4">
                       {isLoadingSuggestions ? (
                         <div className="flex items-center justify-center py-8">
@@ -736,16 +759,16 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
                           {/* Custom scrollbar styling */}
                           <div className="flex gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 pb-2 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
                             {suggestions.map((suggestion) => (
-                              <div 
-                                key={suggestion.id} 
-                                className="flex-shrink-0 cursor-pointer group flex flex-col items-center" 
+                              <div
+                                key={suggestion.id}
+                                className="flex-shrink-0 cursor-pointer group flex flex-col items-center"
                                 onClick={() => addSuggestionToPrompt(suggestion)}
                               >
                                 <div className="relative">
                                   <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-2 hover:scale-110 transition-all duration-200 relative overflow-hidden shadow-lg group-hover:shadow-purple-500/25">
                                     {suggestion.image ? (
-                                      <img 
-                                        src={suggestion.image} 
+                                      <img
+                                        src={suggestion.image}
                                         alt={suggestion.name}
                                         className="w-full h-full object-cover rounded-xl"
                                       />
@@ -764,7 +787,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
                               </div>
                             ))}
                           </div>
-                          
+
                           {/* Scroll indicators */}
                           <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-800 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
                           <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-800 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -809,7 +832,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
               <p className="text-sm text-gray-400 mb-4">
                 Here, you can find your images. You can leave the page or start a new series while others are still loading.
               </p>
-              
+
               {/* Video Toggle */}
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-sm text-gray-300">Show images you can turn into video</span>
@@ -843,7 +866,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
               ) : generatedImage ? (
                 <Card className="bg-gray-800 border-gray-700">
                   <CardContent className="p-0">
-                    <div 
+                    <div
                       className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
                       onClick={() => setSelectedImage(generatedImage)}
                     >
@@ -916,7 +939,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
             >
               <X className="h-6 w-6" />
             </Button>
-            
+
             <div className="relative aspect-square max-h-[80vh] rounded-lg overflow-hidden">
               <img
                 src={selectedImage}
@@ -924,7 +947,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
                 className="w-full h-full object-contain"
               />
             </div>
-            
+
             <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold text-white">Generated Image</h3>
