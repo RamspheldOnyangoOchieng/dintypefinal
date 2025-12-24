@@ -9,12 +9,14 @@ import { useSite } from "@/components/site-context"
 import { useAuth } from "@/components/auth-context"
 import { useCharacters } from "@/components/character-context"
 import { UserAvatar } from "./user-avatar"
+import { useAuthModal } from "@/components/auth-modal-context"
 import { useTranslations } from "@/lib/use-translations"
 
 export function UserHeader() {
   const { toggle, setIsOpen } = useSidebar()
   const { settings } = useSite()
   const { user, logout } = useAuth()
+  const { openLogoutModal } = useAuthModal()
   const pathname = usePathname()
   const { t } = useTranslations()
 
@@ -45,7 +47,7 @@ export function UserHeader() {
               <Button
                 variant="outline"
                 className="login-button hover:bg-primary/10 text-xs sm:text-sm"
-                onClick={logout}
+                onClick={openLogoutModal}
               >
                 {t("auth.logout")}
               </Button>

@@ -6,10 +6,13 @@ import { createContext, useContext, useState } from "react"
 interface AuthModalContextType {
     isLoginModalOpen: boolean
     isSignupModalOpen: boolean
+    isLogoutModalOpen: boolean
     openLoginModal: () => void
     closeLoginModal: () => void
     openSignupModal: () => void
     closeSignupModal: () => void
+    openLogoutModal: () => void
+    closeLogoutModal: () => void
     switchToSignup: () => void
     switchToLogin: () => void
 }
@@ -19,12 +22,16 @@ const AuthModalContext = createContext<AuthModalContextType | undefined>(undefin
 export function AuthModalProvider({ children }: { children: React.ReactNode }) {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
     const [isSignupModalOpen, setIsSignupModalOpen] = useState(false)
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
 
     const openLoginModal = () => setIsLoginModalOpen(true)
     const closeLoginModal = () => setIsLoginModalOpen(false)
 
     const openSignupModal = () => setIsSignupModalOpen(true)
     const closeSignupModal = () => setIsSignupModalOpen(false)
+
+    const openLogoutModal = () => setIsLogoutModalOpen(true)
+    const closeLogoutModal = () => setIsLogoutModalOpen(false)
 
     const switchToSignup = () => {
         closeLoginModal()
@@ -41,10 +48,13 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
             value={{
                 isLoginModalOpen,
                 isSignupModalOpen,
+                isLogoutModalOpen,
                 openLoginModal,
                 closeLoginModal,
                 openSignupModal,
                 closeSignupModal,
+                openLogoutModal,
+                closeLogoutModal,
                 switchToSignup,
                 switchToLogin,
             }}

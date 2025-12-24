@@ -19,7 +19,7 @@ import { useTranslations } from "@/lib/use-translations"
 
 export function UserNav() {
     const { user, logout } = useAuth()
-    const { openLoginModal, openSignupModal } = useAuthModal()
+    const { openLoginModal, openSignupModal, openLogoutModal } = useAuthModal()
     const { t } = useTranslations()
 
     if (user) {
@@ -50,7 +50,7 @@ export function UserNav() {
                         </Link>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout}>Logga ut</DropdownMenuItem>
+                    <DropdownMenuItem onClick={openLogoutModal}>Logga ut</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         )

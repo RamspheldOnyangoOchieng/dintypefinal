@@ -19,6 +19,7 @@ import {
 import { InsufficientTokensDialog } from "@/components/insufficient-tokens-dialog"
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useAuthModal } from "@/components/auth-modal-context"
 
 // Remove the static imageOptions array and replace with dynamic calculation
 // Get selected option for token calculation - move this logic up and make it dynamic
@@ -32,6 +33,7 @@ const imageOptions = [
 export default function GenerateImagePage() {
   const { toast } = useToast()
   const { user } = useAuth()
+  const { openLoginModal } = useAuthModal()
   const router = useRouter()
   const { setIsOpen } = useSidebar()
   const isMobile = useIsMobile()
@@ -316,57 +318,57 @@ export default function GenerateImagePage() {
 
     // Check if user is logged in
     if (!user) {
-      toast({
-        title: "Login required",
-        description: "Please log in to generate and save images",
-        variant: "destructive",
-      })
-      router.push("/login")
+      // Show login modal instead of redirecting
+      openLoginModal()
       return
     }
 
     // Check token balance before generation
+    // IMPORTANT: First SFW image (when selectedCount === "1") is FREE for logged-in users!
     const selectedOption = imageOptions.find((option) => option.value === selectedCount)
-    const tokensRequired = selectedOption?.tokens || 5
+    const tokensRequired = selectedCount === "1" ? 0 : (selectedOption?.tokens || 5)
 
-    try {
-      const response = await fetch("/api/deduct-token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: user.id, amount: tokensRequired }),
-      })
+    // Only deduct tokens if tokens are required (not for first free image)
+    if (tokensRequired > 0) {
+      try {
+        const response = await fetch("/api/deduct-token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId: user.id, amount: tokensRequired }),
+        })
 
-      const data = await response.json()
+        const data = await response.json()
 
-      if (!response.ok) {
-        if (data.insufficientTokens) {
-          // Show insufficient tokens dialog and don't start generation
-          setTokenBalanceInfo({
-            currentBalance: data.currentBalance || 0,
-            requiredTokens: data.requiredTokens || tokensRequired
-          })
-          setShowInsufficientTokens(true)
-          return
-        } else {
-          console.error("Failed to deduct tokens:", data.error)
-          toast({
-            title: "Error",
-            description: data.error || "Failed to check token balance",
-            variant: "destructive",
-          })
-          return
+        if (!response.ok) {
+          if (data.insufficientTokens) {
+            // Show insufficient tokens dialog and don't start generation
+            setTokenBalanceInfo({
+              currentBalance: data.currentBalance || 0,
+              requiredTokens: data.requiredTokens || tokensRequired
+            })
+            setShowInsufficientTokens(true)
+            return
+          } else {
+            console.error("Failed to deduct tokens:", data.error)
+            toast({
+              title: "Error",
+              description: data.error || "Failed to check token balance",
+              variant: "destructive",
+            })
+            return
+          }
         }
+      } catch (error) {
+        console.error("Failed to check token balance:", error)
+        toast({
+          title: "Error",
+          description: "Failed to check token balance. Please try again.",
+          variant: "destructive",
+        })
+        return
       }
-    } catch (error) {
-      console.error("Failed to check token balance:", error)
-      toast({
-        title: "Error",
-        description: "Failed to check token balance. Please try again.",
-        variant: "destructive",
-      })
-      return
     }
 
     setIsGenerating(true)
@@ -1260,7 +1262,12 @@ export default function GenerateImagePage() {
                       }`}
                   >
                     <span className={`${isMobile ? 'text-sm' : 'text-base md:text-lg'} font-semibold`}>{option.label}</span>
-                    <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>{option.tokens} tokens</span>
+                    {option.value !== "1" && (
+                      <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>{option.tokens} tokens</span>
+                    )}
+                    {option.value === "1" && (
+                      <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-500 font-medium`}>FREE</span>
+                    )}
                     {isDisabled && (
                       <span className="absolute top-1 right-1 text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-medium">
                         Premium

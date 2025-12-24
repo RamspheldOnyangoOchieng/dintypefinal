@@ -128,14 +128,6 @@ export function LoginModal() {
                 </div>
                 <div className="relative p-4 sm:p-6 md:p-8">
                     <DialogTitle className="sr-only">{t("auth.login")}</DialogTitle>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 z-10 bg-transparent hover:bg-black/20 text-white"
-                        onClick={closeLoginModal}
-                    >
-                        <X className="h-4 w-4" />
-                    </Button>
 
                     <div className="text-center mb-6 sm:mb-8">
                         <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">{t("auth.login")}</h1>

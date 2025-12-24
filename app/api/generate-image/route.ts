@@ -217,22 +217,27 @@ export async function POST(req: NextRequest) {
     }
 
     // Check token balance before deduction
-    console.log(`💳 Attempting to deduct ${tokenCost} tokens for user ${userId.substring(0, 8)}...`)
+    // Only deduct if cost is greater than 0
+    if (tokenCost > 0) {
+      console.log(`💳 Attempting to deduct ${tokenCost} tokens for user ${userId.substring(0, 8)}...`)
 
-    try {
-      const deductionResult = await deductTokens(userId, tokenCost, `Image generation (${model}, ${image_num} images)`)
-      if (!deductionResult) {
-        console.error("❌ Token deduction failed")
+      try {
+        const deductionResult = await deductTokens(userId, tokenCost, `Image generation (${model}, ${image_num} images)`)
+        if (!deductionResult) {
+          console.error("❌ Token deduction failed")
+          return NextResponse.json({
+            error: "Failed to deduct tokens. Please check your token balance."
+          }, { status: 402 })
+        }
+        console.log(`✅ Successfully deducted ${tokenCost} tokens`)
+      } catch (error: any) {
+        console.error("❌ Token deduction error:", error.message)
         return NextResponse.json({
-          error: "Failed to deduct tokens. Please check your token balance."
+          error: error.message || "Insufficient tokens or token deduction failed"
         }, { status: 402 })
       }
-      console.log(`✅ Successfully deducted ${tokenCost} tokens`)
-    } catch (error: any) {
-      console.error("❌ Token deduction error:", error.message)
-      return NextResponse.json({
-        error: error.message || "Insufficient tokens or token deduction failed"
-      }, { status: 402 })
+    } else {
+      console.log(`🆓 Free generation for user ${userId.substring(0, 8)} (0 tokens required)`)
     }
 
     const [width, height] = (size || "512x1024").split("x").map(Number)
@@ -350,7 +355,7 @@ export async function POST(req: NextRequest) {
     if (createdTask) {
       const { error: updateError } = await supabase
         .from('generation_tasks')
-        .update({ 
+        .update({
           task_id: data.task_id,
           status: 'processing'
         })

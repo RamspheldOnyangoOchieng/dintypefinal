@@ -8,11 +8,13 @@ import { useSidebar } from "@/components/sidebar-context"
 import { useSite } from "@/components/site-context"
 import { Home, MessageSquare, ImageIcon, Settings, Crown, ChevronLeft, LogOut, User } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
+import { useAuthModal } from "@/components/auth-modal-context"
 
 export default function Sidebar() {
   const pathname = usePathname()
   const { isOpen, toggle } = useSidebar()
   const { user, logout } = useAuth()
+  const { openLogoutModal } = useAuthModal()
   const { settings } = useSite()
   const [isAdmin, setIsAdmin] = useState(false)
 
@@ -118,7 +120,7 @@ export default function Sidebar() {
                   <p className="text-xs text-gray-400">{user.email}</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={logout}>
+              <Button variant="ghost" size="icon" onClick={openLogoutModal}>
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>

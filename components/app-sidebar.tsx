@@ -32,7 +32,7 @@ export default function AppSidebar() {
   const pathname = usePathname()
   const { isOpen, toggle, close, setIsOpen } = useSidebar()
   const { user, logout } = useAuth()
-  const { openLoginModal } = useAuthModal()
+  const { openLoginModal, openLogoutModal } = useAuthModal()
   const { settings } = useSite()
   const { t } = useTranslations()
 
@@ -227,7 +227,7 @@ export default function AppSidebar() {
                   </div>
                 )}
                 {isOpen && (
-                  <button onClick={logout} className="p-2 rounded-full hover:bg-secondary transition-colors">
+                  <button onClick={openLogoutModal} className="p-2 rounded-full hover:bg-secondary transition-colors">
                     <LogOut className="h-5 w-5" />
                   </button>
                 )}
