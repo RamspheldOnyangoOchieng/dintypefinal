@@ -145,6 +145,14 @@ export default function GenerateImagePage() {
     checkPremiumStatus()
   }, [user?.id])
 
+  // Calculate tokens required for button display
+  const selectedOption = imageOptions.find((option) => option.value === selectedCount)
+  const tokensRequired = mediaType === 'video'
+    ? 50
+    : (selectedCount === "1" ? 0 : (selectedOption?.tokens || 5))
+  // For admins, show 0 tokens or specific text
+  const displayTokens = user?.isAdmin ? 0 : tokensRequired;
+
   // Automatically close the sidebar on component mount
   useEffect(() => {
     setIsOpen(false)
@@ -329,7 +337,8 @@ export default function GenerateImagePage() {
     const tokensRequired = selectedCount === "1" ? 0 : (selectedOption?.tokens || 5)
 
     // Only deduct tokens if tokens are required (not for first free image)
-    if (tokensRequired > 0) {
+    // And skip deduction for admins
+    if (tokensRequired > 0 && !user?.isAdmin) {
       try {
         const response = await fetch("/api/deduct-token", {
           method: "POST",
@@ -922,8 +931,7 @@ export default function GenerateImagePage() {
     document.body.removeChild(link)
   }
 
-  const selectedOption = imageOptions.find((option) => option.value === selectedCount)
-  const tokensRequired = mediaType === 'video' ? 50 : (selectedOption?.tokens || 5)
+
 
   return (
     <div className={`flex flex-col ${isMobile ? 'min-h-screen' : 'lg:flex-row min-h-screen'} bg-background text-foreground`}>
@@ -1152,7 +1160,7 @@ export default function GenerateImagePage() {
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            className={`w-full ${isMobile ? 'h-24 text-sm' : 'h-32'} bg-card rounded-xl ${isMobile ? 'p-3' : 'p-4'} resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
+            className={`w-full ${isMobile ? 'h-24 text-sm' : 'h-32'} bg-card rounded-xl ${isMobile ? 'p-3' : 'p-4'} pr-16 resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
             placeholder={mediaType === 'image'
               ? "Describe the image you want to generate..."
               : "Describe the video animation (e.g., 'dancing', 'waving', 'smiling')..."}
@@ -1220,7 +1228,10 @@ export default function GenerateImagePage() {
                   >
                     <span className={`${isMobile ? 'text-sm' : 'text-base md:text-lg'} font-semibold`}>{option.label}</span>
                     {option.value !== "1" && (
-                      <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>{option.tokens} tokens</span>
+                      <>
+                        <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>{option.tokens} tokens</span>
+                        <span className={`${isMobile ? 'text-[10px]' : 'text-[10px]'} text-amber-500 font-medium uppercase tracking-wider`}>Premium</span>
+                      </>
                     )}
                     {option.value === "1" && (
                       <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-500 font-medium`}>FREE</span>
@@ -1281,7 +1292,7 @@ export default function GenerateImagePage() {
             ) : (
               <>
                 {mediaType === 'image' ? <Wand2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} /> : <Video className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />}
-                Generate {mediaType === 'image' ? 'Image' : 'Video'} ({tokensRequired} tokens)
+                Generate {mediaType === 'image' ? 'Image' : 'Video'} ({user?.isAdmin ? 'Free' : (displayTokens === 0 ? 'Free' : `${displayTokens} tokens`)})
               </>
             )}
           </Button>
