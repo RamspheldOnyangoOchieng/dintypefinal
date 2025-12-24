@@ -158,6 +158,13 @@ export default function AppSidebar() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      onClick={(e) => {
+                        const protectedRoutes = ["/generate", "/create-character"]
+                        if (protectedRoutes.includes(item.href) && !user) {
+                          e.preventDefault()
+                          openLoginModal()
+                        }
+                      }}
                       className={cn(
                         "flex items-center gap-4 rounded-full transition-all duration-200",
                         isOpen ? "px-4 py-2" : "h-12 w-12 justify-center",

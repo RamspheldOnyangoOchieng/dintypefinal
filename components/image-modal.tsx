@@ -68,7 +68,7 @@ export function ImageModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl p-0 bg-[#0A0A0A] border-[#252525] rounded-lg">
+      <DialogContent className="max-w-4xl p-0 bg-[#0A0A0A] border-[#252525] rounded-lg [&>button]:hidden">
         <DialogTitle className="sr-only">Image View</DialogTitle>
         <div className="relative">
           {/* Close button */}

@@ -793,7 +793,7 @@ export default function GenerateImagePage() {
 
         {/* Prompt Input */}
         <div className={`relative ${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <div className={`absolute ${isMobile ? 'right-2 top-2' : 'right-3 top-3'} flex flex-row gap-1 bg-card/80 backdrop-blur-sm rounded-lg p-1`}>
+          <div className={`absolute ${isMobile ? 'right-2 top-2' : 'right-3 top-3'} flex flex-col gap-1`}>
             <button
               onClick={() => {
                 navigator.clipboard.writeText(prompt)
@@ -830,7 +830,7 @@ export default function GenerateImagePage() {
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            className={`w-full ${isMobile ? 'h-24 text-sm' : 'h-32'} bg-card rounded-xl ${isMobile ? 'p-3' : 'p-4'} pr-28 resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
+            className={`w-full ${isMobile ? 'h-32 text-sm' : 'h-32'} bg-card rounded-xl ${isMobile ? 'p-3' : 'p-4'} pr-14 resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
             placeholder="Describe the image you want to generate..."
           />
         </div>
