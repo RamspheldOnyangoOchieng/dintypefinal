@@ -74,7 +74,7 @@ export default function AppSidebar() {
     },
     {
       icon: <FolderHeart className="h-5 w-5" />,
-      label: "samling",
+      label: "Mina bilder",
       href: "/collections",
       active: pathname?.startsWith("/collections"),
     },
@@ -159,7 +159,7 @@ export default function AppSidebar() {
                     <Link
                       href={item.href}
                       onClick={(e) => {
-                        const protectedRoutes = ["/generate", "/create-character"]
+                        const protectedRoutes = ["/generate", "/create-character", "/collections"]
                         if (protectedRoutes.includes(item.href) && !user) {
                           e.preventDefault()
                           openLoginModal()
