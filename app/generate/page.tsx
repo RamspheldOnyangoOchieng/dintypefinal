@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Copy, Wand2, Loader2, Download, Share2, AlertCircle, ChevronLeft, FolderOpen, Clock, Video, Image as ImageIcon, X } from "lucide-react"
+import { Copy, Wand2, Loader2, Download, Share2, AlertCircle, ChevronLeft, FolderOpen, Clock, Image as ImageIcon, X } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
 import { useToast } from "@/hooks/use-toast"
@@ -65,14 +65,7 @@ export default function GenerateImagePage() {
   const [isCheckingPremium, setIsCheckingPremium] = useState(true)
   const [showPremiumModal, setShowPremiumModal] = useState(false)
 
-  // Video generation states
-  const [mediaType, setMediaType] = useState<'image' | 'video'>('image')
-  const [userImages, setUserImages] = useState<any[]>([])
-  const [selectedImageForVideo, setSelectedImageForVideo] = useState<string | null>(null)
-  const [isLoadingUserImages, setIsLoadingUserImages] = useState(false)
-  const [generatedVideo, setGeneratedVideo] = useState<string | null>(null)
-  const videoStatusCheckInterval = useRef<NodeJS.Timeout | null>(null)
-  const [showImageSelectionModal, setShowImageSelectionModal] = useState(false)
+
 
   // Helper function to get valid image src
   const getValidImageSrc = (src: string | null | undefined, fallback: string): string => {
@@ -147,9 +140,7 @@ export default function GenerateImagePage() {
 
   // Calculate tokens required for button display
   const selectedOption = imageOptions.find((option) => option.value === selectedCount)
-  const tokensRequired = mediaType === 'video'
-    ? 50
-    : (selectedCount === "1" ? 0 : (selectedOption?.tokens || 5))
+  const tokensRequired = selectedCount === "1" ? 0 : (selectedOption?.tokens || 5)
   // For admins, show 0 tokens or specific text
   const displayTokens = user?.isAdmin ? 0 : tokensRequired;
 
@@ -158,49 +149,7 @@ export default function GenerateImagePage() {
     setIsOpen(false)
   }, [setIsOpen])
 
-  // Check URL parameters and sessionStorage for auto-switching to video mode and selecting image
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const mode = params.get('mode');
 
-    if (mode === 'video') {
-      setMediaType('video');
-
-      // Check sessionStorage for image URL (avoids URL length issues)
-      const storedImageUrl = sessionStorage.getItem('videoImageUrl');
-      if (storedImageUrl) {
-        setSelectedImageForVideo(storedImageUrl);
-        // Clear from sessionStorage after using
-        sessionStorage.removeItem('videoImageUrl');
-      }
-    }
-  }, [])
-
-  // Fetch user's images when switching to video mode
-  useEffect(() => {
-    if (mediaType === 'video' && user) {
-      fetchUserImages()
-    }
-  }, [mediaType, user])
-
-  const fetchUserImages = async () => {
-    setIsLoadingUserImages(true)
-    try {
-      const response = await fetch('/api/generated-images')
-      if (response.ok) {
-        const data = await response.json()
-        // Filter only images (not videos)
-        const images = (data.images || []).filter((img: any) =>
-          !img.media_type || img.media_type === 'image'
-        )
-        setUserImages(images)
-      }
-    } catch (error) {
-      console.error('Error fetching user images:', error)
-    } finally {
-      setIsLoadingUserImages(false)
-    }
-  }
 
   // Fetch suggestions on component mount
   useEffect(() => {
@@ -254,9 +203,7 @@ export default function GenerateImagePage() {
       if (statusCheckInterval.current) {
         clearInterval(statusCheckInterval.current)
       }
-      if (videoStatusCheckInterval.current) {
-        clearInterval(videoStatusCheckInterval.current)
-      }
+
     }
   }, [])
 
@@ -755,181 +702,7 @@ export default function GenerateImagePage() {
     router.push("/collection")
   }
 
-  // Video generation handlers
-  const handleVideoGenerate = async () => {
-    if (!prompt.trim()) {
-      toast({
-        title: "Prompt required",
-        description: "Please describe the video animation.",
-        variant: "destructive",
-      })
-      return
-    }
 
-    if (!selectedImageForVideo) {
-      toast({
-        title: "Image required",
-        description: "Please select an image from your collection for video generation.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!user) {
-      toast({
-        title: "Login required",
-        description: "Please log in to generate videos",
-        variant: "destructive",
-      })
-      router.push("/login")
-      return
-    }
-
-    setIsGenerating(true)
-    setError(null)
-    setGeneratedVideo(null)
-    setGenerationProgress(0)
-
-    try {
-      const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      let accessToken = session?.access_token
-
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      }
-
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`
-      } else if (user?.id) {
-        headers["X-User-ID"] = user.id
-      }
-
-      const response = await fetch("/api/generate-video", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          image_url: selectedImageForVideo,
-          prompt,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          setShowPremiumModal(true)
-          setError(data.error)
-        } else if (data.insufficientTokens) {
-          setTokenBalanceInfo({
-            currentBalance: data.currentBalance || 0,
-            requiredTokens: 50
-          })
-          setShowInsufficientTokens(true)
-        } else {
-          setError(data.error || "Failed to start video generation")
-        }
-        setIsGenerating(false)
-        return
-      }
-
-      if (data.job_id) {
-        startVideoStatusCheck(data.job_id)
-      } else {
-        throw new Error("No job ID received")
-      }
-    } catch (error) {
-      console.error("Error generating video:", error)
-      setError(error instanceof Error ? error.message : "An unexpected error occurred")
-      setIsGenerating(false)
-    }
-  }
-
-  const startVideoStatusCheck = (jobId: string) => {
-    if (videoStatusCheckInterval.current) {
-      clearInterval(videoStatusCheckInterval.current)
-    }
-
-    checkVideoStatus(jobId)
-    videoStatusCheckInterval.current = setInterval(() => {
-      checkVideoStatus(jobId)
-    }, 3000)
-  }
-
-  const checkVideoStatus = async (jobId: string) => {
-    try {
-      const response = await fetch(`/api/check-video-generation?jobId=${jobId}`)
-
-      if (!response.ok) {
-        if (response.status >= 400 && response.status < 500) {
-          if (videoStatusCheckInterval.current) clearInterval(videoStatusCheckInterval.current)
-          setError("Failed to check video generation status")
-          setIsGenerating(false)
-        }
-        return
-      }
-
-      const result = await response.json()
-
-      if (result.status === 'COMPLETED') {
-        if (videoStatusCheckInterval.current) clearInterval(videoStatusCheckInterval.current)
-
-        const videoData = `data:video/mp4;base64,${result.video}`
-        setGeneratedVideo(videoData)
-        setGenerationProgress(100)
-        setIsGenerating(false)
-
-        // Auto-save video
-        if (user) {
-          await saveVideoToCollection(videoData)
-        }
-
-        toast({
-          title: "Success!",
-          description: "Your video has been generated.",
-        })
-      } else if (result.status === 'FAILED') {
-        if (videoStatusCheckInterval.current) clearInterval(videoStatusCheckInterval.current)
-        setError(result.error || "Video generation failed")
-        setIsGenerating(false)
-      } else {
-        if (result.progress) {
-          setGenerationProgress(result.progress)
-        }
-      }
-    } catch (error) {
-      console.error("Error checking video status:", error)
-    }
-  }
-
-  const saveVideoToCollection = async (videoData: string) => {
-    try {
-      await fetch("/api/save-generated-video", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          videoData,
-          prompt,
-          userId: user?.id,
-        }),
-      })
-    } catch (error) {
-      console.error("Error saving video:", error)
-    }
-  }
-
-  const handleVideoDownload = () => {
-    if (!generatedVideo) return
-
-    const link = document.createElement('a')
-    link.href = generatedVideo
-    link.download = 'generated-video.mp4'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
 
 
 
@@ -944,7 +717,7 @@ export default function GenerateImagePage() {
             </Button>
             <Wand2 className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
             <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
-              {mediaType === 'image' ? 'Generate Image' : 'Generate Video'}
+              Generate Image
             </h1>
             {/* Debug: Show premium status */}
             {!isCheckingPremium && isPremium && (
@@ -955,27 +728,6 @@ export default function GenerateImagePage() {
           </div>
         </div>
 
-        {/* Image/Video Toggle */}
-        <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <Tabs value={mediaType} onValueChange={(value) => setMediaType(value as 'image' | 'video')}>
-            <TabsList className="grid w-full grid-cols-2 bg-card border border-border">
-              <TabsTrigger
-                value="image"
-                className="flex items-center gap-2 data-[state=active]:ring-1 data-[state=active]:ring-primary data-[state=active]:shadow-[0_0_12px_2px_rgba(255,19,240,0.4)] transition-all duration-300"
-              >
-                <ImageIcon className="h-4 w-4" />
-                Image
-              </TabsTrigger>
-              <TabsTrigger
-                value="video"
-                className="flex items-center gap-2 data-[state=active]:ring-1 data-[state=active]:ring-primary data-[state=active]:shadow-[0_0_12px_2px_rgba(255,19,240,0.4)] transition-all duration-300"
-              >
-                <Video className="h-4 w-4" />
-                Video {!isPremium && !isCheckingPremium && <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full ml-1">Premium</span>}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
 
         {/* Suggestions */}
         <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
@@ -1037,93 +789,11 @@ export default function GenerateImagePage() {
           )}
         </div>
 
-        {/* Video Mode: Image Selection */}
-        {mediaType === 'video' && (
-          <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-3`}>
-              Select Image for Video
-            </h3>
-            {isLoadingUserImages ? (
-              <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-3'} gap-3`}>
-                {Array.from({ length: isMobile ? 2 : 3 }).map((_, i) => (
-                  <div key={i} className={`aspect-square rounded-xl bg-muted animate-pulse ${isMobile ? 'h-20' : 'h-24'}`} />
-                ))}
-              </div>
-            ) : userImages.length === 0 ? (
-              <div className={`${isMobile ? 'p-4' : 'p-6'} border-2 border-dashed border-border rounded-xl text-center bg-card/50`}>
-                <p className={`${isMobile ? 'text-sm' : ''} text-muted-foreground mb-3`}>
-                  No images in your collection
-                </p>
-                <Button
-                  variant="outline"
-                  size={isMobile ? "sm" : "default"}
-                  onClick={() => setMediaType('image')}
-                  className="w-full"
-                >
-                  Generate images first
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className={`grid ${isMobile ? 'grid-cols-3' : 'grid-cols-4'} gap-2`}>
-                  {userImages.slice(0, isMobile ? 3 : 4).map((img) => (
-                    <div
-                      key={img.id}
-                      onClick={() => setSelectedImageForVideo(img.image_url)}
-                      className={`aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${selectedImageForVideo === img.image_url
-                        ? 'border-primary ring-2 ring-primary/20 shadow-lg scale-105'
-                        : 'border-transparent hover:border-primary/50 hover:shadow-md hover:scale-102'
-                        }`}
-                    >
-                      <Image
-                        src={img.image_url}
-                        alt="Your image"
-                        width={100}
-                        height={100}
-                        className="w-full h-full object-cover object-top"
-                        unoptimized
-                      />
-                      {selectedImageForVideo === img.image_url && (
-                        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                          <div className="bg-primary text-primary-foreground rounded-full p-1">
-                            <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} fill="currentColor" viewBox="0 0 16 16">
-                              <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 0 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
-                            </svg>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
 
-                {userImages.length > (isMobile ? 3 : 4) && (
-                  <div className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowImageSelectionModal(true)}
-                      className={`${isMobile ? 'text-xs' : ''} text-muted-foreground hover:text-foreground`}
-                    >
-                      View all ({userImages.length}) images
-                    </Button>
-                  </div>
-                )}
-
-                {selectedImageForVideo && (
-                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
-                    <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-primary font-medium`}>
-                      ✓ Image selected for video generation
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Prompt Input */}
         <div className={`relative ${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <div className={`absolute ${isMobile ? 'right-2 top-2' : 'right-3 top-3'} flex flex-col gap-1`}>
+          <div className={`absolute ${isMobile ? 'right-2 top-2' : 'right-3 top-3'} flex flex-row gap-1 bg-card/80 backdrop-blur-sm rounded-lg p-1`}>
             <button
               onClick={() => {
                 navigator.clipboard.writeText(prompt)
@@ -1160,114 +830,109 @@ export default function GenerateImagePage() {
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            className={`w-full ${isMobile ? 'h-24 text-sm' : 'h-32'} bg-card rounded-xl ${isMobile ? 'p-3' : 'p-4'} pr-16 resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
-            placeholder={mediaType === 'image'
-              ? "Describe the image you want to generate..."
-              : "Describe the video animation (e.g., 'dancing', 'waving', 'smiling')..."}
+            className={`w-full ${isMobile ? 'h-24 text-sm' : 'h-32'} bg-card rounded-xl ${isMobile ? 'p-3' : 'p-4'} pr-28 resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
+            placeholder="Describe the image you want to generate..."
           />
         </div>
 
         {/* Show Negative Prompt - Only in image mode */}
-        {mediaType === 'image' && (
-          <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowNegativePrompt(!showNegativePrompt)}
-              className={`text-muted-foreground hover:text-foreground ${isMobile ? 'text-xs' : ''}`}
-            >
-              {showNegativePrompt ? "Hide Negative Prompt" : "Show Negative Prompt"}
-            </Button>
+        {/* Show Negative Prompt */}
+        <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowNegativePrompt(!showNegativePrompt)}
+            className={`text-muted-foreground hover:text-foreground ${isMobile ? 'text-xs' : ''}`}
+          >
+            {showNegativePrompt ? "Hide Negative Prompt" : "Show Negative Prompt"}
+          </Button>
 
-            {/* Negative Prompt Input - Only shown when toggled */}
-            {showNegativePrompt && (
-              <div className={`${isMobile ? 'mt-2' : 'mt-3'}`}>
-                <label htmlFor="negative-prompt" className={`block ${isMobile ? 'text-xs' : 'text-sm'} font-medium text-muted-foreground ${isMobile ? 'mb-1' : 'mb-2'}`}>
-                  Negative Prompt (what to avoid in the image)
-                </label>
-                <textarea
-                  id="negative-prompt"
-                  value={negativePrompt}
-                  onChange={(e) => setNegativePrompt(e.target.value)}
-                  className={`w-full ${isMobile ? 'h-16 text-xs p-3' : 'h-20 p-4 text-sm'} bg-card rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
-                  placeholder="Elements to exclude from the image..."
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-
-
-        {/* Number of Images - Only show in image mode */}
-        {mediaType === 'image' && (
-          <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>Number of Images</h3>
-              {!isPremium && !isCheckingPremium && !user?.isAdmin && (
-                <span className="text-xs text-muted-foreground">
-                  🆓 Free: 1 image only
-                </span>
-              )}
+          {/* Negative Prompt Input - Only shown when toggled */}
+          {showNegativePrompt && (
+            <div className={`${isMobile ? 'mt-2' : 'mt-3'}`}>
+              <label htmlFor="negative-prompt" className={`block ${isMobile ? 'text-xs' : 'text-sm'} font-medium text-muted-foreground ${isMobile ? 'mb-1' : 'mb-2'}`}>
+                Negative Prompt (what to avoid in the image)
+              </label>
+              <textarea
+                id="negative-prompt"
+                value={negativePrompt}
+                onChange={(e) => setNegativePrompt(e.target.value)}
+                className={`w-full ${isMobile ? 'h-16 text-xs p-3' : 'h-20 p-4 text-sm'} bg-card rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
+                placeholder="Elements to exclude from the image..."
+              />
             </div>
-            <div className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2 md:gap-4'}`}>
-              {imageOptions.map((option) => {
-                // Don't disable options while checking premium status or for admins
-                const isDisabled = !isCheckingPremium && !isPremium && !user?.isAdmin && option.value !== "1"
-                return (
-                  <button
-                    key={option.value}
-                    onClick={() => !isDisabled && setSelectedCount(option.value)}
-                    disabled={isDisabled}
-                    className={`flex flex-col items-center gap-1 ${isMobile ? 'px-2 py-2' : 'px-3 md:px-6 py-2 md:py-3'} rounded-lg transition-all relative ${selectedCount === option.value
-                      ? "bg-primary text-primary-foreground"
-                      : isDisabled
-                        ? "bg-muted text-muted-foreground/50 cursor-not-allowed"
-                        : "bg-card text-muted-foreground hover:bg-muted"
-                      }`}
-                  >
-                    <span className={`${isMobile ? 'text-sm' : 'text-base md:text-lg'} font-semibold`}>{option.label}</span>
-                    {option.value !== "1" && (
-                      <>
-                        <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>{option.tokens} tokens</span>
-                        <span className={`${isMobile ? 'text-[10px]' : 'text-[10px]'} text-amber-500 font-medium uppercase tracking-wider`}>Premium</span>
-                      </>
-                    )}
-                    {option.value === "1" && (
-                      <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-500 font-medium`}>FREE</span>
-                    )}
-                    {isDisabled && (
-                      <span className="absolute top-1 right-1 text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-medium">
-                        Premium
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
+          )}
+        </div>
+
+
+
+        {/* Number of Images */}
+        <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>Number of Images</h3>
             {!isPremium && !isCheckingPremium && !user?.isAdmin && (
-              <div className={`${isMobile ? 'mt-2 p-2' : 'mt-3 p-3'} bg-primary/10 border border-primary/20 rounded-lg`}>
-                <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-foreground mb-2`}>
-                  <span className="font-semibold">Want to generate multiple images?</span>
-                </p>
-                <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mb-2`}>
-                  Upgrade to Premium to generate 4, 6, or 8 images at once!
-                </p>
-                <Button
-                  size={isMobile ? "sm" : "default"}
-                  variant="default"
-                  className="w-full"
-                  onClick={() => setShowPremiumModal(true)}
-                >
-                  Upgrade to Premium
-                </Button>
-              </div>
+              <span className="text-xs text-muted-foreground">
+                🆓 Free: 1 image only
+              </span>
             )}
-            <div className={`${isMobile ? 'mt-1 text-xs' : 'mt-2 text-sm'} text-muted-foreground`}>
-              5 tokens per image
-            </div>
           </div>
-        )}
+          <div className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2 md:gap-4'}`}>
+            {imageOptions.map((option) => {
+              // Don't disable options while checking premium status or for admins
+              const isDisabled = !isCheckingPremium && !isPremium && !user?.isAdmin && option.value !== "1"
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => !isDisabled && setSelectedCount(option.value)}
+                  disabled={isDisabled}
+                  className={`flex flex-col items-center gap-1 ${isMobile ? 'px-2 py-2' : 'px-3 md:px-6 py-2 md:py-3'} rounded-lg transition-all relative ${selectedCount === option.value
+                    ? "bg-primary text-primary-foreground"
+                    : isDisabled
+                      ? "bg-muted text-muted-foreground/50 cursor-not-allowed"
+                      : "bg-card text-muted-foreground hover:bg-muted"
+                    }`}
+                >
+                  <span className={`${isMobile ? 'text-sm' : 'text-base md:text-lg'} font-semibold`}>{option.label}</span>
+                  {option.value !== "1" && (
+                    <>
+                      <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>{option.tokens} tokens</span>
+                      <span className={`${isMobile ? 'text-[10px]' : 'text-[10px]'} text-amber-500 font-medium uppercase tracking-wider`}>Premium</span>
+                    </>
+                  )}
+                  {option.value === "1" && (
+                    <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-500 font-medium`}>FREE</span>
+                  )}
+                  {isDisabled && (
+                    <span className="absolute top-1 right-1 text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-medium">
+                      Premium
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+          {!isPremium && !isCheckingPremium && !user?.isAdmin && (
+            <div className={`${isMobile ? 'mt-2 p-2' : 'mt-3 p-3'} bg-primary/10 border border-primary/20 rounded-lg`}>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-foreground mb-2`}>
+                <span className="font-semibold">Want to generate multiple images?</span>
+              </p>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mb-2`}>
+                Upgrade to Premium to generate 4, 6, or 8 images at once!
+              </p>
+              <Button
+                size={isMobile ? "sm" : "default"}
+                variant="default"
+                className="w-full"
+                onClick={() => setShowPremiumModal(true)}
+              >
+                Upgrade to Premium
+              </Button>
+            </div>
+          )}
+          <div className={`${isMobile ? 'mt-1 text-xs' : 'mt-2 text-sm'} text-muted-foreground`}>
+            5 tokens per image
+          </div>
+        </div>
 
         {/* Error Message */}
         {error && (
@@ -1281,18 +946,18 @@ export default function GenerateImagePage() {
         <div className="relative">
           <Button
             className={`w-full ${isMobile ? 'py-4 text-base' : 'py-6 text-lg'} bg-primary hover:bg-primary/90 text-primary-foreground`}
-            disabled={!prompt.trim() || isGenerating || (mediaType === 'video' && !selectedImageForVideo)}
-            onClick={mediaType === 'image' ? handleGenerate : handleVideoGenerate}
+            disabled={!prompt.trim() || isGenerating}
+            onClick={handleGenerate}
           >
             {isGenerating ? (
               <>
                 <Loader2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'} animate-spin`} />
-                {mediaType === 'video' ? 'Generating...' : `Generating... ${Math.round(generationProgress)}%`}
+                Generating... {Math.round(generationProgress)}%
               </>
             ) : (
               <>
-                {mediaType === 'image' ? <Wand2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} /> : <Video className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />}
-                Generate {mediaType === 'image' ? 'Image' : 'Video'} ({user?.isAdmin ? 'Free' : (displayTokens === 0 ? 'Free' : `${displayTokens} tokens`)})
+                <Wand2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+                Generate Image ({user?.isAdmin ? 'Free' : (displayTokens === 0 ? 'Free' : `${displayTokens} tokens`)})
               </>
             )}
           </Button>
@@ -1313,7 +978,7 @@ export default function GenerateImagePage() {
       <div className={`w-full ${isMobile ? 'p-4' : 'lg:w-1/2 p-6'} overflow-y-auto`}>
         <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-6'}`}>
           <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
-            {mediaType === 'image' ? 'Generated Images' : 'Generated Video'}
+            Generated Images
           </h2>
           {generatedImages.length > 0 && (
             <div className={`flex ${isMobile ? 'flex-col gap-1' : 'gap-2'}`}>
@@ -1335,94 +1000,55 @@ export default function GenerateImagePage() {
               <Loader2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-primary animate-spin`} />
             </div>
             <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold mb-2`}>
-              Generating {mediaType === 'image' ? 'Images' : 'Video'}...
+              Generating Images...
             </h3>
             <p className={`text-muted-foreground ${isMobile ? 'max-w-sm text-sm' : 'max-w-md'} mb-4`}>
-              This may take a few moments. We're creating your {mediaType} based on the prompt.
+              This may take a few moments. We're creating your images based on the prompt.
             </p>
 
-            {/* Progress Bar - Only show for images */}
-            {mediaType === 'image' && (
-              <div className={`w-full ${isMobile ? 'max-w-sm' : 'max-w-md'} mb-4`}>
-                <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mb-2`}>
-                  <span>Progress</span>
-                  <span>{Math.round(generationProgress)}%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${generationProgress}%` }}
-                  />
-                </div>
+            {/* Progress Bar */}
+            <div className={`w-full ${isMobile ? 'max-w-sm' : 'max-w-md'} mb-4`}>
+              <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mb-2`}>
+                <span>Progress</span>
+                <span>{Math.round(generationProgress)}%</span>
               </div>
-            )}
+              <div className="w-full bg-muted rounded-full h-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${generationProgress}%` }}
+                />
+              </div>
+            </div>
 
             {/* Timeout Warning */}
             {timeoutWarning && (
               <div className={`${isMobile ? 'mt-3 p-2' : 'mt-4 p-3'} bg-yellow-900/20 border border-yellow-800 text-yellow-300 rounded-lg flex items-center ${isMobile ? 'max-w-sm' : 'max-w-md'}`}>
                 <Clock className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
-                <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Hang tight! Your video is being created...</span>
+                <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Hang tight! Your images are being created...</span>
               </div>
             )}
           </div>
         )}
 
-        {!isGenerating && generatedImages.length === 0 && !generatedVideo && !error && (
+        {!isGenerating && generatedImages.length === 0 && !error && (
           <div className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
             <div className={`bg-card ${isMobile ? 'p-6' : 'p-8'} rounded-xl mb-4`}>
-              {mediaType === 'image' ? (
-                <Wand2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-muted-foreground`} />
-              ) : (
-                <Video className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-muted-foreground`} />
-              )}
+              <Wand2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-muted-foreground`} />
             </div>
             <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold mb-2`}>
-              No {mediaType === 'image' ? 'Images' : 'Video'} Generated Yet
+              No Images Generated Yet
             </h3>
             <p className={`text-muted-foreground ${isMobile ? 'max-w-sm text-sm' : 'max-w-md'}`}>
-              {mediaType === 'image'
-                ? 'Enter a prompt and click the Generate button to create AI-generated images based on your description.'
-                : 'Select an image, enter an animation prompt, and click Generate to create an AI video.'}
+              Enter a prompt and click the Generate button to create AI-generated images based on your description.
             </p>
           </div>
         )}
 
-        {/* Video Display */}
-        {!isGenerating && generatedVideo && mediaType === 'video' && (
-          <div className="flex flex-col items-center">
-            <div className="w-full max-w-md bg-card rounded-xl overflow-hidden shadow-lg">
-              <video
-                controls
-                className="w-full"
-                autoPlay
-                playsInline
-              >
-                <source src={generatedVideo} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button onClick={handleVideoDownload} className="flex items-center gap-2">
-                <Download className="h-4 w-4" />
-                Download Video
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/collections")}>
-                <FolderOpen className="h-4 w-4 mr-2" />
-                View Collection
-              </Button>
-            </div>
-            <div className="mt-3 text-center">
-              <p className="text-sm text-muted-foreground">Prompt: {prompt}</p>
-              <div className="mt-2 bg-green-500/10 border border-green-500/20 text-green-600 text-xs px-3 py-1 rounded-full inline-block">
-                ✓ Saved to collection
-              </div>
-            </div>
-          </div>
-        )}
 
 
 
-        {!isGenerating && generatedImages.length > 0 && mediaType === 'image' && (
+
+        {!isGenerating && generatedImages.length > 0 && (
           <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-4'}`}>
             {generatedImages.map((image, index) => (
               <div
@@ -1507,90 +1133,7 @@ export default function GenerateImagePage() {
         description="Become a Premium user now and generate 4, 6, or 8 images simultaneously. Save time and explore more creative possibilities!"
       />
 
-      {/* Image Selection Modal for Video */}
-      {showImageSelectionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80" onClick={() => setShowImageSelectionModal(false)}>
-          <div
-            className={`bg-background rounded-xl shadow-2xl ${isMobile ? 'w-full max-h-[80vh]' : 'w-full max-w-4xl max-h-[85vh]'} overflow-hidden`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className={`${isMobile ? 'p-4' : 'p-6'} border-b border-border flex items-center justify-between`}>
-              <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold`}>Select Image for Video</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowImageSelectionModal(false)}
-                className="h-8 w-8 p-0"
-              >
-                <span className="sr-only">Close</span>
-                ✕
-              </Button>
-            </div>
 
-            {/* Modal Content */}
-            <div className={`${isMobile ? 'p-4' : 'p-6'} overflow-y-auto ${isMobile ? 'max-h-[calc(80vh-5rem)]' : 'max-h-[calc(85vh-6rem)]'}`}>
-              <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-3 md:grid-cols-4 gap-4'}`}>
-                {userImages.map((img) => (
-                  <div
-                    key={img.id}
-                    onClick={() => {
-                      setSelectedImageForVideo(img.image_url)
-                      setShowImageSelectionModal(false)
-                      toast({
-                        title: "Image selected",
-                        description: "You can now generate a video with this image.",
-                      })
-                    }}
-                    className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${selectedImageForVideo === img.image_url
-                      ? 'border-primary ring-2 ring-primary/20 shadow-lg'
-                      : 'border-transparent hover:border-primary/50 hover:shadow-md'
-                      }`}
-                  >
-                    <Image
-                      src={img.image_url}
-                      alt="Your image"
-                      width={200}
-                      height={200}
-                      className="w-full h-full object-cover object-top"
-                      unoptimized
-                    />
-                    {selectedImageForVideo === img.image_url && (
-                      <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                        <div className="bg-primary text-primary-foreground rounded-full p-2">
-                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 0 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
-                          </svg>
-                        </div>
-                      </div>
-                    )}
-                    {img.prompt && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                        <p className="text-xs text-white line-clamp-2">{img.prompt}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {userImages.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">No images in your collection</p>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowImageSelectionModal(false)
-                      setMediaType('image')
-                    }}
-                  >
-                    Generate images first
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

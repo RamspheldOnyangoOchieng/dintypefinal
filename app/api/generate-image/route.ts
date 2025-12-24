@@ -7,6 +7,9 @@ import type { Database } from "@/types/supabase"
 
 // Dynamic token costs based on model and image count
 const getTokenCost = (model: string, imageCount: number = 1): number => {
+  // Single image generation is free
+  if (imageCount === 1) return 0
+
   // Map frontend model names to token costs
   let baseTokenCost = 5 // Default for stability/seedream
 
@@ -108,6 +111,7 @@ export async function POST(req: NextRequest) {
   let tokenCost: number | undefined
   let actualImageCount: number
   let actualModel: string
+  let isAdmin: boolean = false
 
   try {
     const supabase = await createClient();
@@ -216,9 +220,38 @@ export async function POST(req: NextRequest) {
       }, { status: 401 })
     }
 
+    // Check if user is an admin to bypass token costs
+    try {
+      // Check admin_users table first
+      const { data: adminRecord } = await supabase
+        .from('admin_users')
+        .select('user_id')
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (adminRecord) {
+        isAdmin = true
+        console.log(`👑 User ${userId.substring(0, 8)} identified as Admin (admin_users table)`)
+      } else {
+        // Fallback: Check profiles table
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', userId)
+          .maybeSingle()
+
+        if (profile?.is_admin) {
+          isAdmin = true
+          console.log(`👑 User ${userId.substring(0, 8)} identified as Admin (profiles table)`)
+        }
+      }
+    } catch (error) {
+      console.error("⚠️ Error checking admin status:", error)
+    }
+
     // Check token balance before deduction
-    // Only deduct if cost is greater than 0
-    if (tokenCost > 0) {
+    // Only deduct if cost is greater than 0 AND user is not an admin
+    if (tokenCost > 0 && !isAdmin) {
       console.log(`💳 Attempting to deduct ${tokenCost} tokens for user ${userId.substring(0, 8)}...`)
 
       try {
@@ -237,7 +270,7 @@ export async function POST(req: NextRequest) {
         }, { status: 402 })
       }
     } else {
-      console.log(`🆓 Free generation for user ${userId.substring(0, 8)} (0 tokens required)`)
+      console.log(`🆓 Free generation for user ${userId.substring(0, 8)} (${isAdmin ? 'Admin override' : '0 tokens required'})`)
     }
 
     const [width, height] = (size || "512x1024").split("x").map(Number)
@@ -287,7 +320,7 @@ export async function POST(req: NextRequest) {
       width,
       height,
       status: 'pending',
-      tokens_deducted: tokenCost,
+      tokens_deducted: isAdmin ? 0 : tokenCost,
       task_id: '', // Will be updated after API call
     }
 
@@ -318,27 +351,29 @@ export async function POST(req: NextRequest) {
       console.error("❌ NOVITA API error:", errorData);
 
       // Refund tokens since image generation failed
-      console.log(`🔄 Image generation failed after deducting ${tokenCost} tokens. Attempting refund...`)
+      if (tokenCost > 0 && !isAdmin) {
+        console.log(`🔄 Image generation failed after deducting ${tokenCost} tokens. Attempting refund...`)
 
-      try {
-        const refundResult = await refundTokens(
-          userId,
-          tokenCost,
-          `Refund for failed image generation (${actualModel}, ${actualImageCount} images)`,
-          {
-            original_request: { prompt, model: actualModel, image_count: actualImageCount },
-            api_error: errorData,
-            refund_reason: "API generation failure"
+        try {
+          const refundResult = await refundTokens(
+            userId,
+            tokenCost,
+            `Refund for failed image generation (${actualModel}, ${actualImageCount} images)`,
+            {
+              original_request: { prompt, model: actualModel, image_count: actualImageCount },
+              api_error: errorData,
+              refund_reason: "API generation failure"
+            }
+          )
+
+          if (refundResult) {
+            console.log(`✅ Successfully refunded ${tokenCost} tokens to user`)
+          } else {
+            console.error(`❌ Failed to refund ${tokenCost} tokens to user`)
           }
-        )
-
-        if (refundResult) {
-          console.log(`✅ Successfully refunded ${tokenCost} tokens to user`)
-        } else {
-          console.error(`❌ Failed to refund ${tokenCost} tokens to user`)
+        } catch (refundError) {
+          console.error("❌ Error during token refund:", refundError)
         }
-      } catch (refundError) {
-        console.error("❌ Error during token refund:", refundError)
       }
 
       return NextResponse.json({
@@ -372,7 +407,7 @@ export async function POST(req: NextRequest) {
     // Note: Images will be automatically processed by webhook and stored to Cloudinary
     return NextResponse.json({
       task_id: data.task_id,
-      tokens_used: tokenCost,
+      tokens_used: isAdmin ? 0 : tokenCost,
       webhook_enabled: true,
       message: 'Task submitted successfully. Images will be automatically processed and stored to Cloudinary via webhook.',
     })
@@ -380,7 +415,7 @@ export async function POST(req: NextRequest) {
     console.error("❌ Error generating image:", error);
 
     // If we have a userId and tokenCost, attempt to refund tokens
-    if (userId && tokenCost) {
+    if (userId && tokenCost && !isAdmin) {
       console.log(`🔄 Unexpected error occurred after deducting ${tokenCost} tokens. Attempting refund...`)
 
       try {
