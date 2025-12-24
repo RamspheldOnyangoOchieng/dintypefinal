@@ -637,15 +637,7 @@ export default function CreateCharacterPage() {
         setIsSaving(true);
 
         try {
-            // "Real system" check: Ensure session is active and valid with the server
-            await supabase.auth.refreshSession();
-            const { data: { user } } = await supabase.auth.getUser();
-
-            if (!user) {
-                console.log('User session invalid or expired, prompting login');
-                openLoginModal();
-                return;
-            }
+            console.log('💾 Saving character...');
 
             const characterDetails = {
                 style: selectedStyle,
@@ -667,14 +659,21 @@ export default function CreateCharacterPage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId: user.id,
                     characterName: characterName.trim(),
                     imageUrl: generatedImageUrl,
                     characterDetails,
                     enhancedPrompt,
-                    gender: gender, // Pass gender to the API
+                    gender: gender,
                 }),
             });
+
+            // Handle auth errors from API
+            if (response.status === 401 || response.status === 403) {
+                console.log('⚠️ Not authenticated, prompting login');
+                setIsSaving(false);
+                openLoginModal();
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Failed to save character');

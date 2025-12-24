@@ -16,12 +16,34 @@ export async function POST(request: NextRequest) {
     let userId: string | undefined;
 
     try {
-        const body = await request.json();
-        const bodyData = body;
-        userId = bodyData.userId;
-        const { characterName, imageUrl, characterDetails } = bodyData;
+        // Get user from session (via cookies) - like generate-image does
+        const { cookies } = await import('next/headers');
+        const cookieStore = await cookies();
+        const supabaseAuth = createClient(supabaseUrl, supabaseServiceKey, {
+            global: {
+                headers: {
+                    cookie: cookieStore.toString()
+                }
+            }
+        });
 
-        if (!userId || !characterName || !imageUrl) {
+        const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+        if (authError || !user) {
+            console.log('❌ Authentication failed:', authError?.message || 'No user');
+            return NextResponse.json(
+                { success: false, error: 'Authentication required' },
+                { status: 401 }
+            );
+        }
+
+        userId = user.id;
+        console.log('✅ Authenticated user:', userId.substring(0, 8));
+
+        const body = await request.json();
+        const { characterName, imageUrl, characterDetails, gender } = body;
+
+        if (!characterName || !imageUrl) {
             return NextResponse.json(
                 { success: false, error: 'Missing required fields' },
                 { status: 400 }
@@ -33,7 +55,7 @@ export async function POST(request: NextRequest) {
         // Check active girlfriends limit before proceeding
         console.log(`👥 Checking active girlfriends limit for user ${userId.substring(0, 8)}...`);
         const activeCheck = await checkActiveGirlfriendsLimit(userId);
-        
+
         if (!activeCheck.allowed) {
             console.log(`❌ Active girlfriend limit reached: ${activeCheck.currentUsage}/${activeCheck.limit}`);
             return NextResponse.json(
@@ -47,16 +69,16 @@ export async function POST(request: NextRequest) {
                 { status: 403 }
             );
         }
-        
+
         console.log(`✅ Active girlfriend check passed: ${activeCheck.currentUsage}/${activeCheck.limit}`);
 
         // Check token balance before proceeding (ensure tokens exist)
         console.log(`💳 Checking token balance for user ${userId.substring(0, 8)}...`);
-        
+
         // Ensure user has token balance record
         const { ensureUserTokens } = await import('@/lib/ensure-user-tokens');
         const balance = await ensureUserTokens(userId);
-        
+
         console.log(`💰 Current balance: ${balance} tokens, required: ${CHARACTER_CREATION_TOKEN_COST} tokens`);
 
         if (balance < CHARACTER_CREATION_TOKEN_COST) {
@@ -96,13 +118,13 @@ export async function POST(request: NextRequest) {
         tokensDeducted = true;
         console.log(`✅ Successfully deducted ${CHARACTER_CREATION_TOKEN_COST} tokens`);
 
-        // Create Supabase client with service role for server-side operations
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        // Use the same supabaseAuth client for database operations
+        const supabase = supabaseAuth;
 
         // Download and upload image to Supabase Storage
         console.log('📥 Downloading and uploading image to Supabase Storage...');
         let permanentImageUrl = imageUrl;
-        
+
         try {
             // Check if imageUrl is an external URL (Novita, etc.)
             if (imageUrl.includes('novita.ai') || !imageUrl.includes(supabaseUrl)) {
@@ -118,12 +140,12 @@ export async function POST(request: NextRequest) {
 
         // Extract age from characterDetails (convert "20s" to 25, "30s" to 35, etc.)
         const ageValue = extractAge(characterDetails.age);
-        
+
         // Generate AI description
         console.log('🤖 Generating AI description...');
         const description = await generateAIDescription(characterName, characterDetails);
         console.log('✅ Description generated:', description.substring(0, 100) + '...');
-        
+
         const systemPrompt = buildSystemPrompt(characterDetails, characterName);
 
         // Insert character into database with permanent image URL
@@ -156,7 +178,7 @@ export async function POST(request: NextRequest) {
 
         if (error) {
             console.error('❌ Database error:', error);
-            
+
             // Refund tokens since character creation failed
             if (tokensDeducted && userId) {
                 console.log(`🔄 Character creation failed. Refunding ${CHARACTER_CREATION_TOKEN_COST} tokens...`);
@@ -178,10 +200,10 @@ export async function POST(request: NextRequest) {
             }
 
             return NextResponse.json(
-                { 
-                    success: false, 
+                {
+                    success: false,
                     error: error.message,
-                    refunded: tokensDeducted 
+                    refunded: tokensDeducted
                 },
                 { status: 500 }
             );
@@ -218,7 +240,7 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json(
-            { 
+            {
                 success: false,
                 error: error instanceof Error ? error.message : 'Failed to save character',
                 refunded: tokensDeducted
@@ -306,7 +328,7 @@ Make it warm, inviting, and engaging. Write in third person, present tense.`;
 
 function buildCharacterDescription(details: any): string {
     const parts = [];
-    
+
     if (details.age) parts.push(`${details.age} years old`);
     if (details.ethnicity) parts.push(`${details.ethnicity} ethnicity`);
     if (details.bodyType) parts.push(`${details.bodyType} build`);
@@ -318,20 +340,20 @@ function buildCharacterDescription(details: any): string {
     if (details.eyeColor) parts.push(`${details.eyeColor} eyes`);
     if (details.personality) parts.push(`${details.personality} personality`);
     if (details.relationship) parts.push(`Your ${details.relationship.toLowerCase()}`);
-    
+
     return parts.join(', ') + '.';
 }
 
 function extractAge(ageString: string): number {
     // Convert age ranges like "20s", "30s" to midpoint numbers
     if (!ageString) return 25; // default
-    
+
     const match = ageString.match(/(\d+)/);
     if (match) {
         const decade = parseInt(match[1]);
         return decade + 5; // e.g., "20s" -> 25, "30s" -> 35
     }
-    
+
     return 25; // default fallback
 }
 
@@ -339,6 +361,6 @@ function buildSystemPrompt(details: any, name: string): string {
     const personality = details.personality || 'friendly';
     const relationship = details.relationship || 'companion';
     const age = details.age || 'young';
-    
+
     return `You are ${name}, a ${age} ${details.ethnicity || ''} woman with a ${personality} personality. You are the user's ${relationship}. Be warm, engaging, and conversational. Respond naturally as this character would.`;
 }
