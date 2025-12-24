@@ -684,13 +684,8 @@ export default function CreateCharacterPage() {
             // Give the database and cache a moment to update
             await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // Redirect to My AI page
-            // Redirect to the new character chat
-            if (data.character && data.character.id) {
-                router.push(`/chat/${data.character.id}`);
-            } else {
-                router.push('/chat');
-            }
+            // Redirect to Min AI flickvän page to see all girlfriends
+            router.push('/my-ai');
         } catch (error) {
             console.error('Error saving character:', error);
             alert('Failed to save character. Please try again.');

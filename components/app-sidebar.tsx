@@ -73,6 +73,12 @@ export default function AppSidebar() {
       active: pathname?.startsWith("/create-character"),
     },
     {
+      icon: <Heart className="h-5 w-5 text-pink-500" />,
+      label: "Min AI flickvän",
+      href: "/my-ai",
+      active: pathname?.startsWith("/my-ai"),
+    },
+    {
       icon: <FolderHeart className="h-5 w-5" />,
       label: "Mina bilder",
       href: "/collections",
@@ -159,7 +165,7 @@ export default function AppSidebar() {
                     <Link
                       href={item.href}
                       onClick={(e) => {
-                        const protectedRoutes = ["/generate", "/create-character", "/collections"]
+                        const protectedRoutes = ["/generate", "/create-character", "/collections", "/my-ai"]
                         if (protectedRoutes.includes(item.href) && !user) {
                           e.preventDefault()
                           openLoginModal()

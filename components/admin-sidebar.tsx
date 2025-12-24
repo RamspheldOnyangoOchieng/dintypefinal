@@ -20,6 +20,8 @@ const navigation = [
   { name: "Banners", href: "/admin/dashboard/banners", icon: BarChart },
   { name: "Token Packages", href: "/admin/dashboard/token-packages", icon: Package },
   { name: "Premium Content", href: "/admin/dashboard/premium-content", icon: Gem },
+  { name: "Premium Management", href: "/admin/premium", icon: CreditCard },
+  { name: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard },
   { name: "Settings", href: "/admin/settings", icon: Settings },
   { name: "Legal", href: "/admin/dashboard/documents", icon: FileText },
 ]
