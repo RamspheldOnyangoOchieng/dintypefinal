@@ -1115,7 +1115,7 @@ export default function GenerateImagePage() {
 
         {/* Prompt Input */}
         <div className={`relative ${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <div className={`absolute ${isMobile ? 'right-2 top-2' : 'right-3 top-3'} flex items-center gap-1`}>
+          <div className={`absolute ${isMobile ? 'right-2 top-2' : 'right-3 top-3'} flex flex-col gap-1`}>
             <button
               onClick={() => {
                 navigator.clipboard.writeText(prompt)
