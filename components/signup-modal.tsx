@@ -43,6 +43,7 @@ export function SignupModal() {
             const success = await signup(username, email, password)
             if (success) {
                 toast.success(t("signup.creatingAccount"))
+                closeSignupModal() // Close the signup modal first
                 setShowConfirmEmail(true)
             } else {
                 const errorMessage = t("signup.emailInUse")
@@ -178,7 +179,7 @@ export function SignupModal() {
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     required
-                                    className="bg-card border-border text-foreground focus:ring-primary focus:border-primary"
+                                    className="bg-[#2a2a2a] border-[#404040] text-white placeholder:text-gray-500 focus:ring-primary focus:border-primary focus:bg-[#333]"
                                     placeholder={t("signup.username")}
                                 />
                             </div>
@@ -193,7 +194,7 @@ export function SignupModal() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="bg-card border-border text-foreground focus:ring-primary focus:border-primary"
+                                    className="bg-[#2a2a2a] border-[#404040] text-white placeholder:text-gray-500 focus:ring-primary focus:border-primary focus:bg-[#333]"
                                     placeholder={t("login.emailPlaceholder")}
                                 />
                             </div>
@@ -209,7 +210,7 @@ export function SignupModal() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
-                                        className="bg-card border-border text-foreground focus:ring-primary focus:border-primary pr-10"
+                                        className="bg-[#2a2a2a] border-[#404040] text-white placeholder:text-gray-500 focus:ring-primary focus:border-primary pr-10 focus:bg-[#333]"
                                         placeholder={t("login.passwordPlaceholder")}
                                     />
                                     <button

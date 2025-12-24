@@ -280,12 +280,23 @@ export default function ImageGenerationForm() {
                         type="button"
                         variant={imageCount === count ? "default" : "outline"}
                         className={cn(
-                          "w-full",
-                          imageCount === count ? "bg-primary text-primary-foreground" : "bg-[#252525] border-[#333333]"
+                          "w-full h-auto py-3 flex flex-col items-center justify-center gap-1",
+                          imageCount === count
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                            : "bg-[#252525] border-[#333333] hover:bg-[#2a2a2a]"
                         )}
                         onClick={() => handleImageCountSelect(count)}
                       >
-                        {count}
+                        <span className="text-lg font-bold">{count}</span>
+                        {count === 1 ? (
+                          <span className="text-[10px] uppercase font-bold text-green-400">
+                             FREE
+                          </span>
+                        ) : (
+                          <span className="text-[10px] uppercase font-bold text-blue-400">
+                            Premium
+                          </span>
+                        )}
                       </Button>
                     ))}
                   </div>
