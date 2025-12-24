@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/components/auth-context"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
+import { useTranslations } from "@/lib/use-translations"
 
 interface UserProfileInfoProps {
   userId: string
@@ -14,18 +15,14 @@ interface UserProfileInfoProps {
 
 export function UserProfileInfo({ userId }: UserProfileInfoProps) {
   const { user } = useAuth()
-  const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [username, setUsername] = useState(user?.username || "")
   const [isLoading, setIsLoading] = useState(false)
+  const { t } = useTranslations()
 
   const handleSave = async () => {
     if (!username.trim()) {
-      toast({
-        title: "Error",
-        description: "Username cannot be empty",
-        variant: "destructive",
-      })
+      toast.error(t("profile.usernameRequired"))
       return
     }
 
@@ -44,18 +41,11 @@ export function UserProfileInfo({ userId }: UserProfileInfoProps) {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully",
-      })
-
+      toast.success(t("profile.updateSuccessDesc"))
+      
       setIsEditing(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      })
+       toast.error(t("profile.updateErrorDesc"))
     } finally {
       setIsLoading(false)
     }
@@ -64,12 +54,12 @@ export function UserProfileInfo({ userId }: UserProfileInfoProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>Update your account details</CardDescription>
+        <CardTitle>{t("profile.accountInfo")}</CardTitle>
+        <CardDescription>{t("profile.accountInfoDesc")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
+          <Label htmlFor="username">{t("profile.username")}</Label>
           {isEditing ? (
             <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} />
           ) : (
@@ -78,7 +68,7 @@ export function UserProfileInfo({ userId }: UserProfileInfoProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("profile.email")}</Label>
           <div className="p-2 border rounded-md bg-muted/20">{user?.email}</div>
         </div>
 
@@ -91,10 +81,10 @@ export function UserProfileInfo({ userId }: UserProfileInfoProps) {
         {isEditing ? (
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isLoading}>
-              Cancel
+              {t("general.cancel")}
             </Button>
             <Button onClick={handleSave} disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save Changes"}
+              {isLoading ? t("general.loading") : t("general.save")}
             </Button>
           </div>
         ) : (

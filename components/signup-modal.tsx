@@ -11,6 +11,7 @@ import { useAuth } from "@/components/auth-context"
 import ConfirmEmailModal from "@/components/confirm-email-modal"
 import { useAuthModal } from "./auth-modal-context"
 import supabase from "@/lib/supabase"
+import { toast } from "sonner"
 
 export function SignupModal() {
     const [username, setUsername] = useState("")
@@ -30,7 +31,9 @@ export function SignupModal() {
         setError("")
 
         if (password.length < 6) {
-            setError(t("signup.passwordMinLength"))
+            const errorMessage = t("signup.passwordMinLength")
+            setError(errorMessage)
+            toast.error(errorMessage)
             return
         }
 
@@ -38,13 +41,18 @@ export function SignupModal() {
         try {
             const success = await signup(username, email, password)
             if (success) {
+                toast.success(t("signup.creatingAccount"))
                 setShowConfirmEmail(true)
             } else {
-                setError(t("signup.emailInUse"))
+                const errorMessage = t("signup.emailInUse")
+                setError(errorMessage)
+                toast.error(errorMessage)
             }
         } catch (err) {
             console.error(err)
-            setError(t("signup.errorOccurred"))
+            const errorMessage = t("signup.errorOccurred")
+            setError(errorMessage)
+            toast.error(errorMessage)
         } finally {
             setIsLoading(false)
         }
@@ -66,11 +74,15 @@ export function SignupModal() {
             })
 
             if (error) {
-                setError(t("signup.oauthError") || "Failed to signup with Google")
+                const errorMessage = t("signup.oauthError") || "Failed to signup with Google"
+                setError(errorMessage)
+                toast.error(errorMessage)
                 setIsOAuthLoading(false)
             }
         } catch (err) {
-            setError(t("signup.oauthError") || "An error occurred")
+            const errorMessage = t("signup.oauthError") || "An error occurred"
+            setError(errorMessage)
+            toast.error(errorMessage)
             setIsOAuthLoading(false)
             console.error(err)
         }
@@ -88,11 +100,15 @@ export function SignupModal() {
             })
 
             if (error) {
-                setError(t("signup.oauthError") || "Failed to signup with Discord")
+                const errorMessage = t("signup.oauthError") || "Failed to signup with Discord"
+                setError(errorMessage)
+                toast.error(errorMessage)
                 setIsOAuthLoading(false)
             }
         } catch (err) {
-            setError(t("signup.oauthError") || "An error occurred")
+            const errorMessage = t("signup.oauthError") || "An error occurred"
+            setError(errorMessage)
+            toast.error(errorMessage)
             setIsOAuthLoading(false)
             console.error(err)
         }
@@ -106,15 +122,19 @@ export function SignupModal() {
                 provider: "twitter",
                 options: {
                     redirectTo: `${window.location.origin}/auth/callback`,
-                },
-            })
+                    },
+                })
 
             if (error) {
-                setError(t("signup.oauthError") || "Failed to signup with Twitter/X")
+                const errorMessage = t("signup.oauthError") || "Failed to signup with Twitter/X"
+                setError(errorMessage)
+                toast.error(errorMessage)
                 setIsOAuthLoading(false)
             }
         } catch (err) {
-            setError(t("signup.oauthError") || "An error occurred")
+            const errorMessage = t("signup.oauthError") || "An error occurred"
+            setError(errorMessage)
+            toast.error(errorMessage)
             setIsOAuthLoading(false)
             console.error(err)
         }
@@ -205,9 +225,6 @@ export function SignupModal() {
                         </form>
 
                         <div className="relative my-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-gray-600" />
-                            </div>
                             <div className="relative flex justify-center text-xs uppercase">
                                 <span className="bg-[#1E1E1E] px-2 text-muted-foreground">{t("signup.orContinueWith")}</span>
                             </div>

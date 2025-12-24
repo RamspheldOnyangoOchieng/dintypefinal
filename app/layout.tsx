@@ -10,6 +10,7 @@ import ClientRootLayout from "./ClientRootLayout"
 import { MobileNav } from "@/components/mobile-nav"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
 import { getPageMetadata } from "@/lib/page-metadata"
 
@@ -58,6 +59,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <ClientRootLayout>
                 {children}
                 <AuthModals />
+                <Toaster />
+                <SonnerToaster />
               </ClientRootLayout>
             </AuthModalProvider>
           </AuthProvider>

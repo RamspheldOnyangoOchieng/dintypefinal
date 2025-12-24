@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Loader2, Download, Save, RefreshCw, Sparkles } from "lucide-react"
 import Image from "next/image"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useAuth } from "@/components/auth-context"
 
 export default function ImageGenerationForm() {
@@ -23,16 +23,11 @@ export default function ImageGenerationForm() {
   const [isCheckingStatus, setIsCheckingStatus] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const { toast } = useToast()
   const { user } = useAuth()
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a prompt",
-        variant: "destructive",
-      })
+      toast.error("Please enter a prompt")
       return
     }
 
@@ -68,11 +63,7 @@ export default function ImageGenerationForm() {
       startStatusCheck(data.taskId)
     } catch (error) {
       console.error("Error generating image:", error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate image",
-        variant: "destructive",
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to generate image")
       setIsGenerating(false)
     }
   }
@@ -119,10 +110,7 @@ export default function ImageGenerationForm() {
             checkIntervalRef.current = null
           }
 
-          toast({
-            title: "Success",
-            description: "Your image has been generated!",
-          })
+          toast.success("Your image has been generated!")
         } else {
           throw new Error("No images returned from the API")
         }
@@ -133,11 +121,7 @@ export default function ImageGenerationForm() {
       // For other statuses, we continue checking
     } catch (error) {
       console.error("Error checking generation status:", error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to check generation status",
-        variant: "destructive",
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to check generation status")
 
       setIsGenerating(false)
       setIsCheckingStatus(false)
@@ -172,17 +156,10 @@ export default function ImageGenerationForm() {
         throw new Error(errorData.error || "Failed to save image")
       }
 
-      toast({
-        title: "Success",
-        description: "Image saved to your collection",
-      })
+      toast.success("Image saved to your collection")
     } catch (error) {
       console.error("Error saving image:", error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save image",
-        variant: "destructive",
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to save image")
     } finally {
       setIsSaving(false)
     }
@@ -204,11 +181,7 @@ export default function ImageGenerationForm() {
       document.body.removeChild(a)
     } catch (error) {
       console.error("Error downloading image:", error)
-      toast({
-        title: "Download failed",
-        description: "Failed to download the image. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to download the image. Please try again.")
     }
   }
 

@@ -266,6 +266,11 @@ export type TranslationKey =
   | "profile.passwordTooShort"
   | "profile.errorChangingPassword"
   | "profile.errorCheckingStatus"
+  | "profile.usernameRequired"
+  | "profile.updateSuccessTitle"
+  | "profile.updateSuccessDesc"
+  | "profile.updateErrorTitle"
+  | "profile.updateErrorDesc"
   | "sidebar.toggleSidebar"
   | "sidebar.userMenu"
   | "sidebar.profile"
@@ -599,6 +604,11 @@ export const translations: Record<"en" | "sv", Translations> = {
     "profile.passwordTooShort": "Password must be at least 8 characters long",
     "profile.errorChangingPassword": "Error changing password",
     "profile.errorCheckingStatus": "Error checking premium status",
+    "profile.usernameRequired": "Username cannot be empty",
+    "profile.updateSuccessTitle": "Profile Updated",
+    "profile.updateSuccessDesc": "Your profile has been updated successfully",
+    "profile.updateErrorTitle": "Update Failed",
+    "profile.updateErrorDesc": "Failed to update profile",
     "sidebar.toggleSidebar": "Toggle sidebar",
     "sidebar.userMenu": "User menu",
     "sidebar.profile": "Profile",
@@ -928,6 +938,11 @@ export const translations: Record<"en" | "sv", Translations> = {
     "profile.passwordTooShort": "Lösenordet måste vara minst 8 tecken långt",
     "profile.errorChangingPassword": "Fel vid ändring av lösenord",
     "profile.errorCheckingStatus": "Fel vid kontroll av premiumstatus",
+    "profile.usernameRequired": "Användarnamn får inte vara tomt",
+    "profile.updateSuccessTitle": "Profil uppdaterad",
+    "profile.updateSuccessDesc": "Din profil har uppdaterats",
+    "profile.updateErrorTitle": "Uppdatering misslyckades",
+    "profile.updateErrorDesc": "Kunde inte uppdatera profilen",
     "sidebar.toggleSidebar": "Växla sidofält",
     "sidebar.userMenu": "Användarmeny",
     "sidebar.profile": "Profil",

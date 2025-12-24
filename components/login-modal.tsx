@@ -12,6 +12,7 @@ import { useAuthModal } from "./auth-modal-context"
 import Image from "next/image"
 import { useTranslations } from "@/lib/use-translations"
 import supabase from "@/lib/supabase"
+import { toast } from "sonner"
 
 export function LoginModal() {
     const [email, setEmail] = useState("")
@@ -31,12 +32,17 @@ export function LoginModal() {
         try {
             const success = await login(email, password)
             if (success) {
+                toast.success(t("general.success"))
                 window.location.reload()
             } else {
-                setError(t("login.invalidCredentials"))
+                const errorMessage = t("login.invalidCredentials")
+                setError(errorMessage)
+                toast.error(errorMessage)
             }
         } catch (err) {
-            setError(t("login.loginError"))
+            const errorMessage = t("login.loginError")
+            setError(errorMessage)
+            toast.error(errorMessage)
             console.error(err)
         } finally {
             setIsLoading(false)
@@ -59,12 +65,16 @@ export function LoginModal() {
             })
 
             if (error) {
-                setError(t("login.oauthError") || "Failed to login with Google")
+                const errorMessage = t("login.oauthError") || "Failed to login with Google"
+                setError(errorMessage)
+                toast.error(errorMessage)
                 setIsOAuthLoading(false)
             }
             // User will be redirected to Google
         } catch (err) {
-            setError(t("login.oauthError") || "An error occurred")
+            const errorMessage = t("login.oauthError") || "An error occurred"
+            setError(errorMessage)
+            toast.error(errorMessage)
             setIsOAuthLoading(false)
             console.error(err)
         }
@@ -82,11 +92,15 @@ export function LoginModal() {
             })
 
             if (error) {
-                setError(t("login.oauthError") || "Failed to login with Discord")
+                const errorMessage = t("login.oauthError") || "Failed to login with Discord"
+                setError(errorMessage)
+                toast.error(errorMessage)
                 setIsOAuthLoading(false)
             }
         } catch (err) {
-            setError(t("login.oauthError") || "An error occurred")
+            const errorMessage = t("login.oauthError") || "An error occurred"
+            setError(errorMessage)
+            toast.error(errorMessage)
             setIsOAuthLoading(false)
             console.error(err)
         }
@@ -104,11 +118,15 @@ export function LoginModal() {
             })
 
             if (error) {
-                setError(t("login.oauthError") || "Failed to login with Twitter/X")
+                const errorMessage = t("login.oauthError") || "Failed to login with Twitter/X"
+                setError(errorMessage)
+                toast.error(errorMessage)
                 setIsOAuthLoading(false)
             }
         } catch (err) {
-            setError(t("login.oauthError") || "An error occurred")
+            const errorMessage = t("login.oauthError") || "An error occurred"
+            setError(errorMessage)
+            toast.error(errorMessage)
             setIsOAuthLoading(false)
             console.error(err)
         }
