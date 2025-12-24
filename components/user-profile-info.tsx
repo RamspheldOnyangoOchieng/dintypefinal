@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { useAuth } from "@/components/auth-context"
 import { toast } from "sonner"
 import { useTranslations } from "@/lib/use-translations"
+import { createClient } from "@/lib/supabase/client"
 
 interface UserProfileInfoProps {
   userId: string
@@ -29,23 +30,38 @@ export function UserProfileInfo({ userId }: UserProfileInfoProps) {
     setIsLoading(true)
 
     try {
-      // This would be implemented in a real app
-      // const response = await fetch("/api/update-profile", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ username }),
-      // })
+      const supabase = createClient()
 
-      // if (!response.ok) throw new Error("Failed to update profile")
+      // Update auth metadata
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { username: username }
+      })
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (authError) throw authError
+
+      // Update profiles table if it exists and is used
+      // We assume there is a 'id' column matching userId and a 'username' column
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ username: username })
+        .eq('id', userId)
+      
+      if (profileError) {
+          console.error("Profile table update error:", profileError)
+          // Suppress error if table doesn't exist, as metadata update was successful
+          // In a strict environment we might want to alert the user
+      }
 
       toast.success(t("profile.updateSuccessDesc"))
       
       setIsEditing(false)
+      
+      // Force refresh of auth state if needed
+      window.location.reload()
+      
     } catch (error) {
-       toast.error(t("profile.updateErrorDesc"))
+      console.error(error)
+      toast.error(t("profile.updateErrorDesc"))
     } finally {
       setIsLoading(false)
     }

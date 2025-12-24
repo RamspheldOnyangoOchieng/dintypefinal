@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { AlertCircle, X } from "lucide-react"
+import { AlertCircle, X, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -17,6 +17,7 @@ export function SignupModal() {
     const [username, setUsername] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [isOAuthLoading, setIsOAuthLoading] = useState(false)
@@ -122,8 +123,8 @@ export function SignupModal() {
                 provider: "twitter",
                 options: {
                     redirectTo: `${window.location.origin}/auth/callback`,
-                    },
-                })
+                },
+            })
 
             if (error) {
                 const errorMessage = t("signup.oauthError") || "Failed to signup with Twitter/X"
@@ -201,15 +202,28 @@ export function SignupModal() {
                                 <label htmlFor="password-signup" className="block text-sm font-medium text-gray-300">
                                     {t("login.passwordLabel")}
                                 </label>
-                                <Input
-                                    id="password-signup"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    className="bg-card border-border text-foreground focus:ring-primary focus:border-primary"
-                                    placeholder={t("login.passwordPlaceholder")}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="password-signup"
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        className="bg-card border-border text-foreground focus:ring-primary focus:border-primary pr-10"
+                                        placeholder={t("login.passwordPlaceholder")}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="h-5 w-5" />
+                                        ) : (
+                                            <Eye className="h-5 w-5" />
+                                        )}
+                                    </button>
+                                </div>
                                 <p className="text-xs text-muted-foreground">{t("signup.passwordHint")}</p>
                             </div>
 

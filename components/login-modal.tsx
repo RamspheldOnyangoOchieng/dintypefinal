@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/components/auth-context"
-import { AlertCircle, X } from "lucide-react"
+import { AlertCircle, X, Eye, EyeOff } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import Link from "next/link"
 import { useAuthModal } from "./auth-modal-context"
@@ -17,6 +17,7 @@ import { toast } from "sonner"
 export function LoginModal() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [isOAuthLoading, setIsOAuthLoading] = useState(false)
@@ -184,15 +185,28 @@ export function LoginModal() {
                             >
                                 {t("login.passwordLabel")}
                             </label>
-                            <Input
-                                id="password-login"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                className="bg-card border-border text-foreground focus:ring-primary focus:border-primary"
-                                placeholder={t("login.passwordPlaceholder")}
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="password-login"
+                                    type={showPassword ? "text" : "password"}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    className="bg-card border-border text-foreground focus:ring-primary focus:border-primary pr-10"
+                                    placeholder={t("login.passwordPlaceholder")}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-5 w-5" />
+                                    ) : (
+                                        <Eye className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
                             <div className="text-right">
                                 <Link
                                     href={{ pathname: "/reset-password", query: email ? { email } : {} }}
