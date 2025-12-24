@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuthModal } from "@/components/auth-modal-context";
 
 export default function CreateCharacterPage() {
     const searchParams = useSearchParams();
@@ -30,7 +31,7 @@ export default function CreateCharacterPage() {
     const [enhancedPrompt, setEnhancedPrompt] = useState<string | null>(null);
     const [showImage, setShowImage] = useState(false);
     const [showNameDialog, setShowNameDialog] = useState(false);
-    const [showAuthModal, setShowAuthModal] = useState(false);
+    const { openLoginModal } = useAuthModal();
     const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string }>({
         isOpen: false,
         title: '',
@@ -642,7 +643,7 @@ export default function CreateCharacterPage() {
 
             if (!user) {
                 console.log('User session invalid or expired, prompting login');
-                setShowAuthModal(true);
+                openLoginModal();
                 return;
             }
 
@@ -3102,42 +3103,7 @@ export default function CreateCharacterPage() {
                 </div>
             )}
 
-            {/* Auth Modal */}
-            {showAuthModal && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 max-w-md w-full shadow-2xl border border-border">
-                        <div className="text-center mb-6">
-                            <h2 className="text-xl sm:text-2xl font-bold mb-2 text-card-foreground">Please Log In</h2>
-                            <p className="text-muted-foreground text-sm sm:text-base">
-                                You need to be logged in to save your AI character.
-                            </p>
-                        </div>
 
-                        <div className="flex flex-col gap-3">
-                            <button
-                                onClick={() => router.push('/login')}
-                                className="w-full px-4 py-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all text-sm sm:text-base flex items-center justify-center gap-2"
-                            >
-                                Log In
-                            </button>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => router.push('/signup')}
-                                    className="flex-1 px-4 py-3 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold transition-all text-sm sm:text-base"
-                                >
-                                    Sign Up
-                                </button>
-                                <button
-                                    onClick={() => setShowAuthModal(false)}
-                                    className="flex-1 px-4 py-3 rounded-lg border border-border hover:bg-accent hover:text-accent-foreground font-semibold transition-all text-sm sm:text-base"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
 
             {/* Error Modal */}

@@ -34,7 +34,7 @@ export function LoginModal() {
             const success = await login(email, password)
             if (success) {
                 toast.success(t("general.success"))
-                window.location.reload()
+                closeLoginModal()
             } else {
                 const errorMessage = t("login.invalidCredentials")
                 setError(errorMessage)
