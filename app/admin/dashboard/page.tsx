@@ -164,13 +164,6 @@ export default function AdminDashboardPage() {
     },
   ]
 
-  // Redirect if not logged in or not admin
-  useEffect(() => {
-    if (!isLoading && (!user || !user.isAdmin)) {
-      router.push("/admin/login")
-    }
-  }, [user, isLoading, router])
-
   const handleSave = () => {
     setIsSaving(true)
     // Simulate API call
@@ -217,10 +210,6 @@ export default function AdminDashboardPage() {
         </div>
       </div>
     )
-  }
-
-  if (!user || !user.isAdmin) {
-    return null // Will redirect in useEffect
   }
 
   return (

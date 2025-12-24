@@ -5,6 +5,30 @@
 -- 1. UPDATE TOKEN PACKAGES TABLE
 -- =====================================================
 
+-- Add description column if it doesn't exist
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'token_packages' AND column_name = 'description') THEN
+        ALTER TABLE token_packages ADD COLUMN description TEXT;
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'token_packages' AND column_name = 'active') THEN
+        ALTER TABLE token_packages ADD COLUMN active BOOLEAN DEFAULT true;
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'token_packages' AND column_name = 'created_at') THEN
+        ALTER TABLE token_packages ADD COLUMN created_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'token_packages' AND column_name = 'updated_at') THEN
+        ALTER TABLE token_packages ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+END $$;
+
 -- Clear existing packages and insert new ones
 TRUNCATE TABLE token_packages RESTART IDENTITY CASCADE;
 
