@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Copy, Wand2, Loader2, Download, Share2, AlertCircle, ChevronLeft, FolderOpen, Clock, Video, Image as ImageIcon } from "lucide-react"
+import { Copy, Wand2, Loader2, Download, Share2, AlertCircle, ChevronLeft, FolderOpen, Clock, Video, Image as ImageIcon, X } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
 import { useToast } from "@/hooks/use-toast"
@@ -623,8 +623,16 @@ export default function GenerateImagePage() {
 
   const handleSuggestionClick = (suggestion: string) => {
     setPrompt((prev) => {
-      const newPrompt = prev ? `${prev}, ${suggestion}` : suggestion
-      return newPrompt
+      // If prompt is empty, just add the suggestion
+      if (!prev.trim()) {
+        return suggestion
+      }
+      // If prompt already ends with comma, add space and suggestion
+      if (prev.trim().endsWith(',')) {
+        return `${prev} ${suggestion}`
+      }
+      // Otherwise, add comma, space, and suggestion
+      return `${prev}, ${suggestion}`
     })
   }
 
@@ -943,15 +951,15 @@ export default function GenerateImagePage() {
         <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
           <Tabs value={mediaType} onValueChange={(value) => setMediaType(value as 'image' | 'video')}>
             <TabsList className="grid w-full grid-cols-2 bg-card border border-border">
-              <TabsTrigger 
-                value="image" 
+              <TabsTrigger
+                value="image"
                 className="flex items-center gap-2 data-[state=active]:ring-1 data-[state=active]:ring-primary data-[state=active]:shadow-[0_0_12px_2px_rgba(255,19,240,0.4)] transition-all duration-300"
               >
                 <ImageIcon className="h-4 w-4" />
                 Image
               </TabsTrigger>
-              <TabsTrigger 
-                value="video" 
+              <TabsTrigger
+                value="video"
                 className="flex items-center gap-2 data-[state=active]:ring-1 data-[state=active]:ring-primary data-[state=active]:shadow-[0_0_12px_2px_rgba(255,19,240,0.4)] transition-all duration-300"
               >
                 <Video className="h-4 w-4" />
@@ -965,7 +973,7 @@ export default function GenerateImagePage() {
         {mediaType === 'image' && suggestions.length > 0 && (
           <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
             <h3 className={`${isMobile ? 'text-sm' : 'text-base'} font-semibold mb-3 text-foreground`}>Create Your Lover</h3>
-            
+
             {/* Category Tabs */}
             {categories.length > 0 && (
               <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
@@ -973,18 +981,17 @@ export default function GenerateImagePage() {
                   <button
                     key={category}
                     onClick={() => handleCategoryChange(category)}
-                    className={`${isMobile ? 'text-xs px-3 py-1.5' : 'text-sm px-4 py-2'} rounded-lg whitespace-nowrap transition-all duration-200 ${
-                      activeCategory === category
+                    className={`${isMobile ? 'text-xs px-3 py-1.5' : 'text-sm px-4 py-2'} rounded-lg whitespace-nowrap transition-all duration-200 ${activeCategory === category
                         ? 'bg-primary text-primary-foreground shadow-md'
                         : 'bg-card text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border'
-                    }`}
+                      }`}
                   >
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </button>
                 ))}
               </div>
             )}
-            
+
             {/* Suggestions Grid */}
             {isLoadingSuggestions ? (
               <div className="flex items-center justify-center py-8">
@@ -1060,8 +1067,8 @@ export default function GenerateImagePage() {
                       key={img.id}
                       onClick={() => setSelectedImageForVideo(img.image_url)}
                       className={`aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${selectedImageForVideo === img.image_url
-                          ? 'border-primary ring-2 ring-primary/20 shadow-lg scale-105'
-                          : 'border-transparent hover:border-primary/50 hover:shadow-md hover:scale-102'
+                        ? 'border-primary ring-2 ring-primary/20 shadow-lg scale-105'
+                        : 'border-transparent hover:border-primary/50 hover:shadow-md hover:scale-102'
                         }`}
                     >
                       <Image
@@ -1112,27 +1119,39 @@ export default function GenerateImagePage() {
 
         {/* Prompt Input */}
         <div className={`relative ${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <div className={`absolute right-3 top-3 flex items-center gap-2 ${isMobile ? 'flex-col gap-1' : ''}`}>
-            <Copy
-              className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-muted-foreground cursor-pointer`}
+          <div className={`absolute ${isMobile ? 'right-2 top-2' : 'right-3 top-3'} flex items-center gap-1`}>
+            <button
               onClick={() => {
                 navigator.clipboard.writeText(prompt)
                 toast({ title: "Copied to clipboard" })
               }}
-            />
-            <Button
-              size="sm"
-              variant="outline"
-              className={`${isMobile ? 'h-6 text-xs px-2' : 'h-8'} bg-transparent`}
+              className="p-2 hover:bg-gray-600 rounded transition-colors"
+              title="Copy"
+            >
+              <Copy className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 hover:text-white`} />
+            </button>
+            <button
               onClick={() => {
                 navigator.clipboard.readText().then((text) => {
                   setPrompt(text)
                   toast({ title: "Pasted from clipboard" })
                 })
               }}
+              className="p-2 hover:bg-gray-600 rounded transition-colors"
+              title="Paste"
             >
-              Paste
-            </Button>
+              <ImageIcon className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 hover:text-white`} />
+            </button>
+            <button
+              onClick={() => {
+                setPrompt("")
+                toast({ title: "Prompt cleared" })
+              }}
+              className="p-2 hover:bg-gray-600 rounded transition-colors"
+              title="Clear"
+            >
+              <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 hover:text-white`} />
+            </button>
           </div>
           <textarea
             value={prompt}
@@ -1255,10 +1274,10 @@ export default function GenerateImagePage() {
                     onClick={() => !isDisabled && setSelectedCount(option.value)}
                     disabled={isDisabled}
                     className={`flex flex-col items-center gap-1 ${isMobile ? 'px-2 py-2' : 'px-3 md:px-6 py-2 md:py-3'} rounded-lg transition-all relative ${selectedCount === option.value
-                        ? "bg-primary text-primary-foreground"
-                        : isDisabled
-                          ? "bg-muted text-muted-foreground/50 cursor-not-allowed"
-                          : "bg-card text-muted-foreground hover:bg-muted"
+                      ? "bg-primary text-primary-foreground"
+                      : isDisabled
+                        ? "bg-muted text-muted-foreground/50 cursor-not-allowed"
+                        : "bg-card text-muted-foreground hover:bg-muted"
                       }`}
                   >
                     <span className={`${isMobile ? 'text-sm' : 'text-base md:text-lg'} font-semibold`}>{option.label}</span>
@@ -1575,8 +1594,8 @@ export default function GenerateImagePage() {
                       })
                     }}
                     className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${selectedImageForVideo === img.image_url
-                        ? 'border-primary ring-2 ring-primary/20 shadow-lg'
-                        : 'border-transparent hover:border-primary/50 hover:shadow-md'
+                      ? 'border-primary ring-2 ring-primary/20 shadow-lg'
+                      : 'border-transparent hover:border-primary/50 hover:shadow-md'
                       }`}
                   >
                     <Image
