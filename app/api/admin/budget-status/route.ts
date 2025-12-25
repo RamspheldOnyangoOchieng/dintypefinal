@@ -5,6 +5,7 @@ import {
   getDailyUsageStats,
   projectMonthlyCost,
 } from '@/lib/budget-monitor'
+import { isUserAdmin } from '@/lib/admin-auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    import { isUserAdmin } from '@/lib/admin-auth'
+
 
     const isAdmin = await isUserAdmin(supabase, user.id)
 
