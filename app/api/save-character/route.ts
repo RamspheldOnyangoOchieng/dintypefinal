@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase-server';
 import { uploadImageToSupabase } from '@/lib/storage-utils';
 import { deductTokens, refundTokens, getUserTokenBalance } from '@/lib/token-utils';
 import { checkActiveGirlfriendsLimit } from '@/lib/subscription-limits';
@@ -16,18 +16,9 @@ export async function POST(request: NextRequest) {
     let userId: string | undefined;
 
     try {
-        // Get user from session (via cookies) - like generate-image does
-        const { cookies } = await import('next/headers');
-        const cookieStore = await cookies();
-        const supabaseAuth = createClient(supabaseUrl, supabaseServiceKey, {
-            global: {
-                headers: {
-                    cookie: cookieStore.toString()
-                }
-            }
-        });
-
-        const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+        // Get user using standard server client which handles cookies correctly
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
 
         if (authError || !user) {
             console.log('❌ Authentication failed:', authError?.message || 'No user');
@@ -118,8 +109,7 @@ export async function POST(request: NextRequest) {
         tokensDeducted = true;
         console.log(`✅ Successfully deducted ${CHARACTER_CREATION_TOKEN_COST} tokens`);
 
-        // Use the same supabaseAuth client for database operations
-        const supabase = supabaseAuth;
+
 
         // Download and upload image to Supabase Storage
         console.log('📥 Downloading and uploading image to Supabase Storage...');
