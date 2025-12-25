@@ -14,9 +14,22 @@ import legacySupabase from "@/lib/supabase"
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("admin@example.com")
-  // ... (keep state) ...
+  const [password, setPassword] = useState("admin")
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [loginStatus, setLoginStatus] = useState("")
+  const router = useRouter()
+  const { login, user } = useAuth()
+  
+  // Create Supabase client that uses cookies
+  const supabase = createClient()
 
-  // ... (keep useEffect) ...
+  // If already logged in as admin, redirect to dashboard
+  useEffect(() => {
+    if (user?.isAdmin) {
+      router.push("/admin/dashboard")
+    }
+  }, [user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,13 +88,11 @@ export default function AdminLoginPage() {
         window.location.href = "/admin/dashboard"
         
       } catch (adminCheckError) {
-        // ... (keep error handling) ...
         console.error("Admin check error:", adminCheckError)
         setError("Error validating admin privileges.")
         setIsLoading(false)
       }
     } catch (err) {
-       // ... (keep outer error handling) ...
       console.error("Login error:", err)
       setError(`An error occurred during login: ${err instanceof Error ? err.message : "Unknown error"}`)
       setIsLoading(false)

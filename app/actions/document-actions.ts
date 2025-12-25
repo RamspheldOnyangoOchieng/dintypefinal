@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 export async function getPrivacyPolicy() {
     try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from("documents")
             .select("content")
@@ -26,7 +26,7 @@ export async function getPrivacyPolicy() {
 
 export async function getTermsOfService() {
     try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from("documents")
             .select("content")
@@ -46,7 +46,7 @@ export async function getTermsOfService() {
 }
 
 export async function updatePrivacyPolicy(content: string) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase
         .from("documents")
         .update({ content })
@@ -64,7 +64,7 @@ export async function updatePrivacyPolicy(content: string) {
 }
 
 export async function updateTermsOfService(content: string) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase
         .from("documents")
         .update({ content })
