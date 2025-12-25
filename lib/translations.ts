@@ -948,7 +948,7 @@ export const translations: Record<"en" | "sv", Translations> = {
     "sidebar.profile": "Profil",
     "sidebar.navigation": "Navigation",
     "premium.addTokens": "Lägg till tokens",
-    "legal.privacyNotice": "Integritetsmeddelande",
+    "legal.privacyNotice": "Integritetspolicy",
     "legal.termsOfService": "Användarvillkor",
     "Calling...": "Ringer...",
     "Call me": "Ring mig",

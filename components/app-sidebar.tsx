@@ -267,8 +267,8 @@ export default function AppSidebar() {
           {isOpen && (
             <div className="px-4 py-2 border-t border-border text-xs text-muted-foreground">
               <div className="flex justify-between">
-                <Link href="/privacy" className="hover:text-foreground">{t("legal.privacyNotice")}</Link>
-                <Link href="/terms" className="hover:text-foreground">{t("legal.termsOfService")}</Link>
+                <Link href="/integritetspolicy" className="hover:text-foreground">{t("legal.privacyNotice")}</Link>
+                <Link href="/villkor" className="hover:text-foreground">{t("legal.termsOfService")}</Link>
               </div>
             </div>
           )}

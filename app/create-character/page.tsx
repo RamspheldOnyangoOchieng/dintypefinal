@@ -669,6 +669,13 @@ export default function CreateCharacterPage() {
 
             // Handle auth errors from API
             if (response.status === 401 || response.status === 403) {
+                // Check if it's actually an "Access Denied" or "Limit Reached" error from the backend rather than just missing auth
+                const errorData = await response.json().catch(() => ({}));
+                if (errorData.upgrade_required) {
+                    // It's a limit reached error, not an auth error
+                    throw new Error(errorData.error || 'Limit reached');
+                }
+                
                 console.log('⚠️ Not authenticated, prompting login');
                 setIsSaving(false);
                 openLoginModal();
@@ -676,7 +683,15 @@ export default function CreateCharacterPage() {
             }
 
             if (!response.ok) {
-                throw new Error('Failed to save character');
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.error || errorData.details || 'Failed to save character';
+                
+                // If it's a token error (402), make it clear
+                if (response.status === 402) {
+                    throw new Error(`Insufficient tokens: ${errorMessage}`);
+                }
+                
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -686,9 +701,10 @@ export default function CreateCharacterPage() {
 
             // Redirect to Min AI flickvän page to see all girlfriends
             router.push('/my-ai');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving character:', error);
-            alert('Failed to save character. Please try again.');
+            // Show more specific error message
+            alert(error.message || 'Failed to save character. Please try again.');
         } finally {
             setIsSaving(false);
         }

@@ -4,6 +4,8 @@ import { getApiKey } from "./db-init"
 import { isAskingForImage } from "./image-utils"
 import { checkMonthlyBudget, logApiCost } from "./budget-monitor"
 
+import { incrementMessageUsage } from "./subscription-limits"
+
 export type Message = {
   id: string
   role: "user" | "assistant" | "system"
@@ -77,7 +79,8 @@ Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren k
       // Only try database if environment variables are not available
       if (!apiKey) {
         try {
-          apiKey = await getApiKey("novita_api_key")
+          const dbApiKey = await getApiKey("novita_api_key")
+          apiKey = dbApiKey || undefined;
           console.log("API key from database:", apiKey ? "Found" : "Not found")
         } catch (error) {
           console.warn("Could not fetch API key from database:", error)
@@ -161,6 +164,13 @@ Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren k
       await logApiCost('Chat message', 5, apiCost, userId).catch(err =>
         console.error('Failed to log API cost:', err)
       )
+
+      // Increment message usage count
+      if (userId) {
+        await incrementMessageUsage(userId).catch(err => 
+          console.error('Failed to increment message usage:', err)
+        )
+      }
 
       return {
         id: Math.random().toString(36).substring(2, 15),

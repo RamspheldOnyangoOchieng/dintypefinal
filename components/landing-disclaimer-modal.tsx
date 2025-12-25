@@ -6,17 +6,17 @@ import { Button } from "@/components/ui/button";
 const translations = {
   en: {
     ageTitle: "This site is for adults only! It contains only AI-generated adult content.",
-  ageDesc: "By entering this website, you confirm that you are 18 years or older. We use cookies for basic analytics and spam detection. All content on this website is AI-generated! Any generations that resemble real people are purely coincidental.",
+    ageDesc: "By entering this website, you confirm that you are 18 years or older. We use cookies for basic analytics and spam detection. All content on this website is AI-generated! Any generations that resemble real people are purely coincidental.",
     cookieTitle: "This website uses cookies",
     cookieDesc: "To change your preferences, please click on the settings button.",
     cookieSettings: "Cookie-inställningar",
-  confirmAll: "Bekräfta alla villkor",
-  reject: "Reject non-essential",
-  termsLink: "Terms",
-  privacyLink: "Privacy",
-  ageCheckbox: "I confirm I am at least 18 years old",
-  termsCheckbox: "I agree to the Terms and Policies",
-  needConfirm: "Please confirm age and accept terms first",
+    confirmAll: "Bekräfta alla villkor",
+    reject: "Reject non-essential",
+    termsLink: "Terms",
+    privacyLink: "Privacy",
+    ageCheckbox: "I confirm I am at least 18 years old",
+    termsCheckbox: "I agree to the Terms and Policies",
+    needConfirm: "Please confirm age and accept terms first",
     rulesTitle: "Chatbots are strictly allowed for sexting with minimum age of 18. Restricted and blocked activities from chat bots:",
     rules: [
       "Illegal Activities & Criminal Behavior",
@@ -80,17 +80,17 @@ const translations = {
   },
   sv: {
     ageTitle: "Den här sidan är endast för vuxna!",
-  ageDesc: "Den innehåller enbart AI-genererat vuxeninnehåll. Genom att besöka denna webbplats bekräftar du att du är 18 år eller äldre. Vi använder cookies för grundläggande analys och skräppostdetektering. Allt innehåll på denna webbplats är AI-genererat! Eventuella likheter med verkliga personer är helt tillfälliga.",
+    ageDesc: "Den innehåller enbart AI-genererat vuxeninnehåll. Genom att besöka denna webbplats bekräftar du att du är 18 år eller äldre. Vi använder cookies för grundläggande analys och skräppostdetektering. Allt innehåll på denna webbplats är AI-genererat! Eventuella likheter med verkliga personer är helt tillfälliga.",
     cookieTitle: "Denna webbplats använder cookies",
     cookieDesc: "För att ändra dina inställningar, klicka på knappen för inställningar.",
     cookieSettings: "Cookie-inställningar",
-  confirmAll: "Bekräfta alla villkor",
-  reject: "Avvisa icke-nödvändiga",
-  termsLink: "Villkor",
-  privacyLink: "Integritet",
-  ageCheckbox: "Jag bekräftar att jag är minst 18 år gammal",
-  termsCheckbox: "Jag godkänner Villkor och Policyer",
-  needConfirm: "Bekräfta ålder och godkänn villkor först",
+    confirmAll: "Bekräfta alla villkor",
+    reject: "Avvisa icke-nödvändiga",
+    termsLink: "Villkor",
+    privacyLink: "Integritet",
+    ageCheckbox: "Jag bekräftar att jag är minst 18 år gammal",
+    termsCheckbox: "Jag godkänner Villkor och Policyer",
+    needConfirm: "Bekräfta ålder och godkänn villkor först",
     rulesTitle: "Chatbots är strikt tillåtna för sexting med minimiålder 18. Begränsade och blockerade aktiviteter från chatbots:",
     rules: [
       "Illegal verksamhet och kriminellt beteende",
@@ -223,7 +223,7 @@ export default function LandingDisclaimerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-xl w-[75%] max-h-[90vh] overflow-y-auto flex flex-col p-8 relative border border-blue-400/30">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-xl w-[95%] md:w-[75%] max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col p-4 md:p-8 relative border border-blue-400/30">
         {!showSettings && (
           <>
             <h2 className="text-2xl font-bold mb-2 text-white">{t.ageTitle}</h2>

@@ -69,7 +69,7 @@ export function PremiumUpgradeModal({
                 Uppgradera för att låsa upp <Crown className="h-5 w-5 md:h-6 md:w-6 fill-white text-[#ff4b7d]" />
               </h2>
               <h2 className="text-xl md:text-2xl font-extrabold text-[#ff4b7d] mb-6 leading-tight">
-                Uppgradera till Premium för att skapa obegränsat antal bilder
+                {description}
               </h2>
 
               <p className="text-gray-400 mb-4 text-sm">

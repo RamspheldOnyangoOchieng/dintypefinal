@@ -71,6 +71,12 @@ export default function PremiumPage() {
   }, [user?.id])
 
   const handlePremiumPurchase = async () => {
+    if (!user) {
+      toast.error("Vänligen logga in för att köpa Premium")
+      router.push("/login?redirect=/premium")
+      return
+    }
+
     try {
       setIsLoading(true)
 
@@ -107,6 +113,12 @@ export default function PremiumPage() {
   const handleTokenPurchase = async () => {
     if (!selectedTokenPackageId) {
       toast.error("Välj ett token-paket")
+      return
+    }
+
+    if (!user) {
+      toast.error("Vänligen logga in för att köpa tokens")
+      router.push("/login?redirect=/premium")
       return
     }
 
@@ -158,21 +170,7 @@ export default function PremiumPage() {
     )
   }
 
-  if (!user) {
-    return (
-      <div className="container max-w-md mx-auto py-12 px-4">
-        <Card className="p-8">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold mb-2">Inloggning krävs</h1>
-            <p className="text-muted-foreground">Logga in för att få åtkomst till premiumfunktioner</p>
-          </div>
-          <Button className="w-full" onClick={() => router.push("/login?redirect=/premium")}>
-            Logga in
-          </Button>
-        </Card>
-      </div>
-    )
-  }
+  // Removed the "Login Required" block to allow all visitors to see the page
 
   if (statusError) {
     return (
@@ -251,8 +249,8 @@ export default function PremiumPage() {
         </div>
 
         <div className="mt-8 text-center">
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-12 py-6 text-lg font-bold"
             onClick={handlePremiumPurchase}
             disabled={isLoading}
@@ -345,11 +343,10 @@ export default function PremiumPage() {
           {tokenPackages.map((pkg) => (
             <div
               key={pkg.id}
-              className={`rounded-lg p-4 cursor-pointer transition-all duration-300 border-2 ${
-                selectedTokenPackageId === pkg.id
+              className={`rounded-lg p-4 cursor-pointer transition-all duration-300 border-2 ${selectedTokenPackageId === pkg.id
                   ? "bg-primary text-primary-foreground shadow-lg border-primary transform scale-105"
                   : "bg-card hover:bg-primary/5 border-border hover:border-primary/50"
-              }`}
+                }`}
               onClick={() => setSelectedTokenPackageId(pkg.id)}
             >
               <div className="font-bold text-lg mb-2">{pkg.name}</div>

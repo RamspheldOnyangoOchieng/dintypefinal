@@ -1302,16 +1302,16 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       <PremiumUpgradeModal
         isOpen={isPremiumModalOpen}
         onClose={() => setIsPremiumModalOpen(false)}
-        imageSrc={character?.image}
+        feature="Obegränsade Meddelanden"
+        description="Uppgradera till Premium för att skicka obegränsat antal meddelanden"
+        imageSrc="/login-placeholder.jpeg"
       />
+
       {selectedImage && (
         <ImageModal
-          images={selectedImage}
-          initialIndex={0}
-          open={isModalOpen}
-          onOpenChange={setIsModalOpen}
-          onDownload={() => { }}
-          onShare={() => { }}
+          isOpen={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+          imageSrc={selectedImage[0]}
         />
       )}
     </div>
