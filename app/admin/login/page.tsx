@@ -60,81 +60,44 @@ export default function AdminLoginPage() {
 
       setLoginStatus("Checking admin status...")
 
-      // For demo purposes, if email is admin@example.com, consider them an admin
-      const isDefaultAdmin = email === "admin@example.com"
-
-      if (isDefaultAdmin) {
-        // Store user info in localStorage
-        localStorage.setItem(
-          "currentUser",
-          JSON.stringify({
-            id: data.user.id,
-            username: data.user.user_metadata?.username || data.user.email?.split("@")[0] || "Admin",
-            email: data.user.email || "",
-            isAdmin: true,
-            createdAt: data.user.created_at || new Date().toISOString(),
-          }),
-        )
-
-        // Also cache admin status
-        localStorage.setItem("isAdmin:" + data.user.id, "true")
-
-        setLoginStatus("Login successful! Redirecting...")
-
-        // Redirect to dashboard
-        setTimeout(() => {
-          router.push("/admin/dashboard")
-        }, 500)
-        return
-      }
-
-      // Try to check admin status via the users_view
       try {
-        const { data: viewData, error: viewError } = await supabase
-          .from("users_view")
-          .select("is_admin")
-          .eq("id", data.user.id)
-          .single()
-
-        if (viewError) {
-          console.error("Error checking admin status via view:", viewError)
-          throw new Error("Error checking admin privileges")
+        // Use the Server Action to check admin status securely
+        // We import this dynamically or rely on the fact that we can fetch an API route
+        // But since we can't easily import 'isUserAdmin' if not already imported and it's a client component...
+        // Let's use the API route /api/admin/check which uses the server-side logic
+        
+        const response = await fetch('/api/admin/check')
+        
+        if (!response.ok) {
+           // If request failed (e.g. 401/403), try to see if it's because cookies aren't ready?
+           // Actually, fetch from client might not send cookies by default unless credentials: 'include' is set?
+           // But same-origin requests usually do.
+           throw new Error("Admin check failed")
         }
-
-        const isAdmin = !!viewData?.is_admin
-
-        if (!isAdmin) {
+        
+        const checkData = await response.json()
+        
+        if (!checkData.isAdmin) {
           setError("You don't have admin privileges")
-          // Sign out since they're not an admin
           await supabase.auth.signOut()
           setIsLoading(false)
           return
         }
 
-        // Store user info in localStorage
-        localStorage.setItem(
-          "currentUser",
-          JSON.stringify({
-            id: data.user.id,
-            username: data.user.user_metadata?.username || data.user.email?.split("@")[0] || "Admin",
-            email: data.user.email || "",
-            isAdmin: true,
-            createdAt: data.user.created_at || new Date().toISOString(),
-          }),
-        )
-
-        // Also cache admin status
-        localStorage.setItem("isAdmin:" + data.user.id, "true")
-
         setLoginStatus("Login successful! Redirecting...")
+        
+        // Clean up any legacy local storage hacks
+        localStorage.removeItem("currentUser") 
+        localStorage.removeItem("isAdmin:" + data.user.id)
 
         // Redirect to dashboard
+        router.refresh() // Refresh to ensure cookies are picked up
         setTimeout(() => {
           router.push("/admin/dashboard")
         }, 500)
       } catch (adminCheckError) {
         console.error("Admin check error:", adminCheckError)
-        setError("Error checking admin privileges. Please try the manual setup.")
+        setError("Error validating admin privileges.")
         setIsLoading(false)
       }
     } catch (err) {

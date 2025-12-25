@@ -246,7 +246,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signOut()
       setUser(null)
-      localStorage.removeItem("currentUser")
       router.push("/")
     } catch (error) {
       console.error("Logout error:", error)
