@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { Home, ImageIcon, Crown, User, Users, MessageSquare, Star, FolderOpen, Heart } from "lucide-react"
+import { Home, Sparkles, Crown, Users, MessageSquare, Heart, FolderHeart, DollarSign } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
 import { useTheme } from "next-themes"
 
@@ -22,7 +22,7 @@ export function MobileNav() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
-      
+
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
         // Scrolling down & past 100px
         setIsVisible(false)
@@ -30,7 +30,7 @@ export function MobileNav() {
         // Scrolling up or at top
         setIsVisible(true)
       }
-      
+
       setLastScrollY(currentScrollY)
     }
 
@@ -47,7 +47,7 @@ export function MobileNav() {
   // Normalize current path by stripping any leading /sv or /en so active states still work.
   const normalizedPath = (pathname || "/").replace(/^\/(sv|en)(?=\/|$)/, "") || "/"
   const homeHref = "/"
-  
+
   const isActive = (p: string) => {
     if (p === "/") return normalizedPath === "/"
     return normalizedPath === p || normalizedPath.startsWith(`${p}/`)
@@ -59,34 +59,33 @@ export function MobileNav() {
 
   const navItems = [
     { name: "Hem", href: "/", icon: Home },
-    { name: "Skapa", href: "/generate", icon: ImageIcon },
-    { name: "Flickvän", href: "/create-character", icon: Heart },
-    { name: "Karaktärer", href: "/characters", icon: Users },
-    { name: "Prompter", href: "/prompts", icon: MessageSquare },
-    { name: "Favoriter", href: "/favorites", icon: Star },
-    { name: "Galleri", href: "/collections", icon: FolderOpen },
-    { name: "Affiliate", href: "/affiliate", icon: Users },
-    { name: "Premium", href: "/premium", icon: Crown },
-    { name: "Profil", href: "/profile", icon: User },
+    { name: "Chatta", href: "/chat", icon: MessageSquare },
+    { name: "Skapa bild", href: "/generate", icon: Sparkles },
+    { name: "Skapa flickvän", href: "/create-character", icon: Users },
+    { name: "Min AI flickvän", href: "/my-ai", icon: Heart },
+    { name: "Mina bilder", href: "/collections", icon: FolderHeart },
+    { name: "Premium", href: "/premium", icon: DollarSign },
   ]
 
+  if (user?.isAdmin) {
+    navItems.push({ name: "Admin Panel", href: "/admin/dashboard", icon: Crown })
+  }
+
   return (
-    <div 
-      className={`fixed bottom-0 left-0 right-0 z-50 md:hidden transition-transform duration-300 ease-in-out ${
-        isVisible ? "translate-y-0" : "translate-y-full"
-      }`}
+    <div
+      className={`fixed bottom-0 left-0 right-0 z-50 md:hidden transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "translate-y-full"
+        }`}
     >
       <div className="bg-card/95 backdrop-blur-sm border-t border-border shadow-[0_-5px_10px_rgba(0,0,0,0.1)] pb-safe-area-bottom">
         <div className="flex overflow-x-auto no-scrollbar py-2 px-1 gap-1">
           {navItems.map((item) => (
-            <Link 
+            <Link
               key={item.href}
-              href={item.href} 
-              className={`flex flex-col items-center justify-center min-w-[68px] p-2 rounded-lg flex-shrink-0 transition-colors ${
-                isActive(item.href) 
-                  ? "text-primary bg-primary/10" 
+              href={item.href}
+              className={`flex flex-col items-center justify-center min-w-[68px] p-2 rounded-lg flex-shrink-0 transition-colors ${isActive(item.href)
+                  ? "text-primary bg-primary/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-              }`}
+                }`}
             >
               <item.icon className={`h-5 w-5 mb-1 ${isActive(item.href) ? "text-primary" : "text-current"}`} />
               <span className="text-[10px] font-medium whitespace-nowrap">{item.name}</span>
