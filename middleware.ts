@@ -68,11 +68,19 @@ export async function middleware(req: NextRequest) {
 
     // Admin route protection: restrict /admin paths to admin users only
     if (url.pathname.startsWith('/admin')) {
+      // Skip middleware check for login/signup pages to prevent redirect loops
+      if (url.pathname === '/admin/login' || url.pathname === '/admin/signup') {
+        log('admin-login-page skip-check')
+        if (debug) res.headers.set('x-mw-logs', encodeURIComponent(logs.join(';')))
+        return res
+      }
+
       if (!user) {
         log('admin-no-user')
-        // Redirect to login for admin pages
-        const redirectUrl = new URL('/login', req.url)
+        // Redirect to admin login for admin pages
+        const redirectUrl = new URL('/admin/login', req.url)
         redirectUrl.searchParams.set('redirect', url.pathname)
+        if (debug) res.headers.set('x-mw-logs', encodeURIComponent(logs.join(';')))
         return NextResponse.redirect(redirectUrl)
       }
 
@@ -89,22 +97,31 @@ export async function middleware(req: NextRequest) {
         }
 
         // Fallback: check profiles.is_admin
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', user.id)
           .maybeSingle()
         
+        if (profileError) {
+          log('profile-check-error ' + profileError.message)
+        }
+        
         const metaRole = user.user_metadata?.role
         const isAdminUser = !!adminUser || profile?.is_admin === true || metaRole === 'admin'
         
+        log(`admin-status: adminUser=${!!adminUser} profile.is_admin=${profile?.is_admin} metaRole=${metaRole}`)
+        
         if (!isAdminUser) {
-          log('not-admin')
-          // Redirect non-admins to home page
-          return NextResponse.redirect(new URL('/', req.url))
+          log('not-admin redirecting')
+          // Redirect non-admins to home page with message
+          const redirectUrl = new URL('/', req.url)
+          redirectUrl.searchParams.set('error', 'admin_access_required')
+          if (debug) res.headers.set('x-mw-logs', encodeURIComponent(logs.join(';')))
+          return NextResponse.redirect(redirectUrl)
         }
         
-        log('admin-verified')
+        log('admin-verified ✅')
       } catch (e: any) {
         log('admin-check-failed ' + (e?.message || e))
         if (debug) {
@@ -113,7 +130,9 @@ export async function middleware(req: NextRequest) {
             { status: 500, headers: { 'content-type': 'application/json' } }
           )
         }
-        return NextResponse.redirect(new URL('/', req.url))
+        const redirectUrl = new URL('/', req.url)
+        redirectUrl.searchParams.set('error', 'admin_check_failed')
+        return NextResponse.redirect(redirectUrl)
       }
     }
 
