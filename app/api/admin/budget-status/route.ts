@@ -19,13 +19,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    import { isUserAdmin } from '@/lib/admin-auth'
 
-    if (profile?.role !== 'admin') {
+    const isAdmin = await isUserAdmin(supabase, user.id)
+
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
     }
 
