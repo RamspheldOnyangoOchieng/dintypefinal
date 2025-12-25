@@ -1,9 +1,21 @@
+"use client"
+
 import type React from "react"
+import { usePathname } from "next/navigation"
 import AdminSidebar from "@/components/admin-sidebar"
 import { AdminHeader } from "@/components/admin-header"
 import { AdminGuard } from "@/components/admin-guard"
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname()
+
+  // Public admin routes that don't need the sidebar or guard
+  const isPublicAdminRoute = pathname === '/admin/login' || pathname === '/admin/signup'
+
+  if (isPublicAdminRoute) {
+    return <main className="min-h-screen bg-background">{children}</main>
+  }
+
   return (
     <AdminGuard>
       <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
