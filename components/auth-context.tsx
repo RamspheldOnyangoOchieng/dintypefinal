@@ -2,9 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import supabase from "@/lib/supabase"
+import { createClient } from "@/utils/supabase/client"
 import { signIn, signUp, signOut, getCurrentUser, getCurrentSession, refreshAuthSession, isAdmin } from "@/lib/auth"
-import { createClient as createCookieClient } from "@/utils/supabase/client"
 
 export type User = {
   id: string
@@ -38,6 +37,9 @@ function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (..
     timeout = setTimeout(() => func(...args), wait)
   }
 }
+
+// ... (debounce)
+const supabase = createClient()
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -156,12 +158,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // Create client dynamically if import fails or just assume I'll fix import next
-      // But for now let's restore the structure
-      const cookieClient = createCookieClient()
+      // Create client dynamically
+      const supabase = createClient()
       
       // 1. Sign in with Cookie Client (Sets HttpOnly Cookie for Middleware)
-      const { data, error } = await cookieClient.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -172,13 +173,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data?.user && data?.session) {
-        // 2. Sync to Legacy Client (Sets LocalStorage for AuthProvider state)
-        const { error: syncError } = await supabase.auth.setSession(data.session)
-        if (syncError) console.error("Session sync error:", syncError)
-        
-        // 3. Force a refresh of the legacy session to ensure it sticks
-        await supabase.auth.refreshSession()
-
         // Check admin status directly with error handling
         let adminStatus = false
         try {
