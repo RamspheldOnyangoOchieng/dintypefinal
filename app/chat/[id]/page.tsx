@@ -1013,8 +1013,16 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             <Button
               variant="ghost"
               size="icon"
+              className="md:hidden mr-2 text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation"
+              onClick={() => toggle()}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               className="mr-2 text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation"
-              onClick={() => router.back()}
+              onClick={() => router.push('/chat')}
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>

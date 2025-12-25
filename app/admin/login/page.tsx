@@ -10,25 +10,13 @@ import { useAuth } from "@/components/auth-context"
 import { AlertCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/utils/supabase/client"
+import legacySupabase from "@/lib/supabase"
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("admin@example.com")
-  const [password, setPassword] = useState("admin")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [loginStatus, setLoginStatus] = useState("")
-  const router = useRouter()
-  const { login, user } = useAuth()
-  
-  // Create Supabase client that uses cookies
-  const supabase = createClient()
+  // ... (keep state) ...
 
-  // If already logged in as admin, redirect to dashboard
-  useEffect(() => {
-    if (user?.isAdmin) {
-      router.push("/admin/dashboard")
-    }
-  }, [user, router])
+  // ... (keep useEffect) ...
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,7 +27,7 @@ export default function AdminLoginPage() {
     try {
       setLoginStatus("Authenticating...")
 
-      // First, sign in directly with Supabase
+      // First, sign in directly with Supabase (Cookie Client)
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -52,7 +40,7 @@ export default function AdminLoginPage() {
         return
       }
 
-      if (!data?.user) {
+      if (!data?.user || !data?.session) {
         setError("Failed to sign in")
         setIsLoading(false)
         return
@@ -61,17 +49,9 @@ export default function AdminLoginPage() {
       setLoginStatus("Checking admin status...")
 
       try {
-        // Use the Server Action to check admin status securely
-        // We import this dynamically or rely on the fact that we can fetch an API route
-        // But since we can't easily import 'isUserAdmin' if not already imported and it's a client component...
-        // Let's use the API route /api/admin/check which uses the server-side logic
-        
         const response = await fetch('/api/admin/check')
         
         if (!response.ok) {
-           // If request failed (e.g. 401/403), try to see if it's because cookies aren't ready?
-           // Actually, fetch from client might not send cookies by default unless credentials: 'include' is set?
-           // But same-origin requests usually do.
            throw new Error("Admin check failed")
         }
         
@@ -86,21 +66,22 @@ export default function AdminLoginPage() {
 
         setLoginStatus("Login successful! Redirecting...")
         
-        // Clean up any legacy local storage hacks
-        localStorage.removeItem("currentUser") 
-        localStorage.removeItem("isAdmin:" + data.user.id)
+        // SYNC FIX: Set the session on the legacy client that AuthProvider uses (LocalStorage)
+        // This ensures the client-side AuthProvider and AdminGuard see the user immediately
+        const { error: syncError } = await legacySupabase.auth.setSession(data.session)
+        if (syncError) console.error("Session sync error:", syncError)
 
-        // Redirect to dashboard
-        router.refresh() // Refresh to ensure cookies are picked up
-        setTimeout(() => {
-          router.push("/admin/dashboard")
-        }, 500)
+        // Hard redirect to dashboard to ensure Middleware sees the new Cookies
+        window.location.href = "/admin/dashboard"
+        
       } catch (adminCheckError) {
+        // ... (keep error handling) ...
         console.error("Admin check error:", adminCheckError)
         setError("Error validating admin privileges.")
         setIsLoading(false)
       }
     } catch (err) {
+       // ... (keep outer error handling) ...
       console.error("Login error:", err)
       setError(`An error occurred during login: ${err instanceof Error ? err.message : "Unknown error"}`)
       setIsLoading(false)
