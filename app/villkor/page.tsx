@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   description: "Läs våra regler och villkor för att förstå hur Dintyp.se fungerar, vad som gäller för användning och hur vi skyddar din integritet.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function VillkorPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

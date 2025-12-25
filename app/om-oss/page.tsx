@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   description: "Lär känna oss bakom Dintyp.se. Vår vision är att skapa en trygg, personlig och innovativ AI-upplevelse för alla användare.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function OmOssPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

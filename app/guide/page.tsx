@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description: "Komplett guide för att komma igång med Dintyp.se. Lär dig hur du skapar AI-karaktärer, chattar, genererar bilder och mycket mer.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function GuidePage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">

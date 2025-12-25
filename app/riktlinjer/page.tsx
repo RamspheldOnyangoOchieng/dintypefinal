@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   description: "Ta del av våra riktlinjer för hur du förväntas använda Dintyp.se. Vi främjar respekt, säkerhet och en positiv upplevelse för alla användare.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function RiktlinjerPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

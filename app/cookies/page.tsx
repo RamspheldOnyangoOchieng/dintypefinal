@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   description: "Dintyp.se använder cookies för att förbättra din upplevelse. Läs mer om vilka typer av kakor vi använder och hur du kan hantera dina inställningar.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function CookiesPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

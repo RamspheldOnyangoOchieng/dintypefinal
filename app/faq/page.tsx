@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   description: "Behöver du hjälp eller har du frågor? Besök vår supportsektion och FAQ där du hittar svar på vanliga frågor och användbara guider för att optimera din upplevelse.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function FAQPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

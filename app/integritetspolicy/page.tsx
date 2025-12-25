@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   description: "Din integritet är viktig för oss. Läs hur Dintyp.se samlar in, använder och skyddar dina personuppgifter enligt GDPR.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function IntegritetspolicyPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

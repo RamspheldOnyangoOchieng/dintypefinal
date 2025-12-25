@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   description: "Har du frågor eller behöver hjälp? Tveka inte att kontakta oss! Vi finns här för att ge dig support, svara på dina frågor och hjälpa dig att få ut det bästa av din upplevelse.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function KontaktaPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
