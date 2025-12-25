@@ -22,7 +22,7 @@ const poppins = Poppins({
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseMeta = await getPageMetadata('/')
-  
+
   return {
     ...baseMeta,
     icons: {
@@ -44,7 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-  <html lang="sv" suppressHydrationWarning>
+    <html lang="sv" suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -53,11 +53,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={cn("bg-background font-sans antialiased overflow-x-hidden", poppins.variable)} style={{ margin: 0, padding: 0, position: 'relative', top: 0 }}>
-  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <AuthProvider>
             <AuthModalProvider>
               <ClientRootLayout>
                 {children}
+                <MobileNav />
                 <AuthModals />
                 <Toaster />
                 <SonnerToaster />
