@@ -26,13 +26,13 @@ const navigation = [
   { name: "Legal", href: "/admin/dashboard/documents", icon: FileText },
 ]
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
 
   return (
     <div className="flex h-full flex-col bg-card border-r border-border">
       <div className="flex h-16 items-center border-b border-border px-6">
-        <Link href="/admin/dashboard" className="flex items-center gap-2">
+        <Link href="/admin/dashboard" className="flex items-center gap-2" onClick={onNavigate}>
           <span className="font-semibold text-xl">Admin Panel</span>
         </Link>
       </div>
@@ -43,6 +43,7 @@ export default function AdminSidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 "group flex items-center px-3 py-2 text-sm font-medium rounded-md",
                 isActive
@@ -63,7 +64,11 @@ export default function AdminSidebar() {
         })}
       </nav>
       <div className="border-t border-border p-4">
-        <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link 
+          href="/" 
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          onClick={onNavigate}
+        >
           <Home className="h-4 w-4" />
           Back to Site
         </Link>

@@ -405,16 +405,16 @@ export default function AdminDashboardPage() {
                           {activity.user?.username ? activity.user.username.charAt(0).toUpperCase() : '?'}
                         </span>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                           {activity.user?.username || 'Unknown User'}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                           {activity.description || `${activity.type}: ${activity.amount > 0 ? '+' : ''}${activity.amount} tokens`}
                         </p>
                       </div>
-                      <div className="ml-auto text-xs text-slate-500 dark:text-slate-400">
-                        {new Date(activity.created_at).toLocaleTimeString()}
+                      <div className="ml-auto text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        {new Date(activity.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </li>
                   ))}

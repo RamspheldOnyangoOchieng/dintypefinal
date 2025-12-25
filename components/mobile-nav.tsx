@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { Home, ImageIcon, Crown, Moon, Sun, User, Users } from "lucide-react"
+import { Home, ImageIcon, Crown, User, Users, MessageSquare, Star, FolderOpen, Heart } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
 import { useTheme } from "next-themes"
 
@@ -47,48 +47,65 @@ export function MobileNav() {
   // Normalize current path by stripping any leading /sv or /en so active states still work.
   const normalizedPath = (pathname || "/").replace(/^\/(sv|en)(?=\/|$)/, "") || "/"
   const homeHref = "/"
-  const isActive = (p: string) => normalizedPath === p || normalizedPath.startsWith(`${p}/`)
+  
+  const isActive = (p: string) => {
+    if (p === "/") return normalizedPath === "/"
+    return normalizedPath === p || normalizedPath.startsWith(`${p}/`)
+  }
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark")
   }
 
+  const navItems = [
+    { name: "Hem", href: "/", icon: Home },
+    { name: "Skapa", href: "/generate", icon: ImageIcon },
+    { name: "Flickvän", href: "/create-character", icon: Heart },
+    { name: "Karaktärer", href: "/characters", icon: Users },
+    { name: "Prompter", href: "/prompts", icon: MessageSquare },
+    { name: "Favoriter", href: "/favorites", icon: Star },
+    { name: "Galleri", href: "/collections", icon: FolderOpen },
+    { name: "Affiliate", href: "/affiliate", icon: Users },
+    { name: "Premium", href: "/premium", icon: Crown },
+    { name: "Profil", href: "/profile", icon: User },
+  ]
+
   return (
     <div 
-      className={`fixed bottom-0 left-0 right-0 z-50 md:hidden transition-all duration-300 ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
+      className={`fixed bottom-0 left-0 right-0 z-50 md:hidden transition-transform duration-300 ease-in-out ${
+        isVisible ? "translate-y-0" : "translate-y-full"
       }`}
     >
-      <div className="bg-card border-t border-border p-2">
-        <div className="flex justify-around items-center">
-          <Link href={homeHref} className="flex flex-col items-center p-2">
-            <Home className={`h-5 w-5 ${pathname === homeHref ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={`text-[10px] ${pathname === homeHref ? "text-primary" : "text-muted-foreground"} mt-1`}>Hem</span>
-          </Link>
-          <Link href="/generate" className="flex flex-col items-center p-2">
-            <ImageIcon className={`h-5 w-5 ${isActive("/generate") ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={`text-[10px] ${isActive("/generate") ? "text-primary" : "text-muted-foreground"} mt-1`}>
-              Skapa
-            </span>
-          </Link>
-          <Link href="/create-character" className="flex flex-col items-center p-2">
-            <Users className={`h-5 w-5 ${isActive("/create-character") ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={`text-[10px] ${isActive("/create-character") ? "text-primary" : "text-muted-foreground"} mt-1`}>
-              Flickvän
-            </span>
-          </Link>
-          <Link href="/premium" className="flex flex-col items-center p-2">
-            <Crown className={`h-5 w-5 ${isActive("/premium") ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={`text-[10px] ${isActive("/premium") ? "text-primary" : "text-muted-foreground"} mt-1`}>Premium</span>
-          </Link>
-          <Link href="/profile" className="flex flex-col items-center p-2">
-            <User className={`h-5 w-5 ${isActive("/profile") ? "text-primary" : "text-muted-foreground"}`} />
-            <span className={`text-[10px] ${isActive("/profile") ? "text-primary" : "text-muted-foreground"} mt-1`}>
-              Profil
-            </span>
-          </Link>
+      <div className="bg-card/95 backdrop-blur-sm border-t border-border shadow-[0_-5px_10px_rgba(0,0,0,0.1)] pb-safe-area-bottom">
+        <div className="flex overflow-x-auto no-scrollbar py-2 px-1 gap-1">
+          {navItems.map((item) => (
+            <Link 
+              key={item.href}
+              href={item.href} 
+              className={`flex flex-col items-center justify-center min-w-[68px] p-2 rounded-lg flex-shrink-0 transition-colors ${
+                isActive(item.href) 
+                  ? "text-primary bg-primary/10" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+              }`}
+            >
+              <item.icon className={`h-5 w-5 mb-1 ${isActive(item.href) ? "text-primary" : "text-current"}`} />
+              <span className="text-[10px] font-medium whitespace-nowrap">{item.name}</span>
+            </Link>
+          ))}
         </div>
       </div>
+      <style jsx global>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .pb-safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+      `}</style>
     </div>
   )
 }
