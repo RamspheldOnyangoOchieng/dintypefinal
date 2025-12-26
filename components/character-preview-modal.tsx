@@ -127,7 +127,7 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader className="space-y-3">
                     <DialogTitle className="text-3xl font-bold text-foreground flex items-center gap-3">
                         <Heart className="h-8 w-8 text-primary" />
@@ -141,7 +141,7 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
                     {/* Character Card */}
                     <Card className="overflow-hidden border-2 hover:border-primary/50 transition-colors bg-card h-full flex flex-col">
-                        <div className="relative h-64 bg-secondary/20">
+                        <div className="relative h-48 sm:h-64 bg-secondary/20">
                             {character.image_url ? (
                                 <Image
                                     src={character.image_url}

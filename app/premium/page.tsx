@@ -31,35 +31,35 @@ export default function PremiumPage() {
   const [isPremium, setIsPremium] = useState(false)
   const [tokenBalance, setTokenBalance] = useState(0)
   const [selectedTokenPackageId, setSelectedTokenPackageId] = useState<string | null>(null)
-  
+
   const router = useRouter()
   const { user } = useAuth()
   const statusCheckRef = useRef<boolean>(false)
 
   useEffect(() => {
     const checkPremiumStatus = async () => {
-        if (statusCheckRef.current) return
-        statusCheckRef.current = true
+      if (statusCheckRef.current) return
+      statusCheckRef.current = true
 
-        try {
-            setIsCheckingStatus(true)
-            if (!user) {
-                setIsPremium(false)
-                setTokenBalance(0)
-                setIsCheckingStatus(false)
-                return
-            }
-
-            const response = await fetch("/api/check-premium-status")
-            const data = await response.json()
-            setIsPremium(!!data.isPremium)
-            setTokenBalance(data.tokenBalance || 0)
-        } catch (error) {
-            console.error("Error checking premium status:", error)
-        } finally {
-            setIsCheckingStatus(false)
-            statusCheckRef.current = false
+      try {
+        setIsCheckingStatus(true)
+        if (!user) {
+          setIsPremium(false)
+          setTokenBalance(0)
+          setIsCheckingStatus(false)
+          return
         }
+
+        const response = await fetch("/api/check-premium-status")
+        const data = await response.json()
+        setIsPremium(!!data.isPremium)
+        setTokenBalance(data.tokenBalance || 0)
+      } catch (error) {
+        console.error("Error checking premium status:", error)
+      } finally {
+        setIsCheckingStatus(false)
+        statusCheckRef.current = false
+      }
     }
 
     checkPremiumStatus()
@@ -119,8 +119,8 @@ export default function PremiumPage() {
 
     // Double check premium logic if needed, but UI hides/disables it mostly.
     if (!isPremium) {
-        toast.error("Endast Premium-användare kan köpa tokens")
-        return
+      toast.error("Endast Premium-användare kan köpa tokens")
+      return
     }
 
     try {
@@ -181,7 +181,7 @@ export default function PremiumPage() {
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Uppgradera din upplevelse med Premium eller fyll på med tokens för mer innehåll.
         </p>
-        
+
         {/* Display current status and balance */}
         {user && (
           <div className="flex items-center justify-center gap-4 pt-4">
@@ -206,50 +206,50 @@ export default function PremiumPage() {
       {/* ISSUE 1: Pricing Comparison Table */}
       <Card className="border-border/50 shadow-sm">
         <CardHeader className="text-center">
-            <CardTitle className="text-3xl">Jämför Planer</CardTitle>
+          <CardTitle className="text-3xl">Jämför Planer</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-[600px]">
-                <thead>
-                    <tr className="border-b">
-                        <th className="text-left p-4 font-bold text-lg">Function</th>
-                        <th className="text-center p-4 font-bold text-lg">Free User</th>
-                        <th className="text-center p-4 font-bold text-lg text-primary bg-primary/5 rounded-t-lg">Premium User<br/><span className="text-sm font-normal text-muted-foreground">1 month subscription</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr className="border-b hover:bg-muted/20 transition-colors">
-                        <td className="p-4 font-medium">Pris (Price)</td>
-                        <td className="p-4 text-center">0 EUR / 0 SEK</td>
-                        <td className="p-4 text-center font-bold bg-primary/5">11 EUR / 110 SEK month</td>
-                    </tr>
-                    <tr className="border-b hover:bg-muted/20 transition-colors">
-                        <td className="p-4 font-medium">Textmeddelanden (text messages)</td>
-                        <td className="p-4 text-center">3 fria meddelanden</td>
-                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">Obegränsat</td>
-                    </tr>
-                    <tr className="border-b hover:bg-muted/20 transition-colors">
-                        <td className="p-4 font-medium">Skapa AI flickvän (Create AI girlfriend)</td>
-                        <td className="p-4 text-center text-muted-foreground">Inte möjligt</td>
-                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">Obegränsat</td>
-                    </tr>
-                    <tr className="border-b hover:bg-muted/20 transition-colors">
-                        <td className="p-4 font-medium">Skapa bilder (Create images)</td>
-                        <td className="p-4 text-center">1 gratis SFW</td>
-                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">Obegränsat (NSFW & SFW)</td>
-                    </tr>
-                    <tr className="border-b hover:bg-muted/20 transition-colors">
-                        <td className="p-4 font-medium">Gratis tokens (Free tokens)</td>
-                        <td className="p-4 text-center text-muted-foreground">Ingår ej</td>
-                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">100 gratis tokens</td>
-                    </tr>
-                    <tr className="hover:bg-muted/20 transition-colors">
-                        <td className="p-4 font-medium">Köpa tokens (buy tokens)</td>
-                        <td className="p-4 text-center text-red-500">Nej</td>
-                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">Ja</td>
-                    </tr>
-                </tbody>
-            </table>
+          <table className="w-full border-collapse min-w-[600px]">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-2 sm:p-4 font-bold text-lg">Function</th>
+                <th className="text-center p-2 sm:p-4 font-bold text-lg">Free User</th>
+                <th className="text-center p-2 sm:p-4 font-bold text-lg text-primary bg-primary/5 rounded-t-lg">Premium User<br /><span className="text-sm font-normal text-muted-foreground">1 month subscription</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b hover:bg-muted/20 transition-colors">
+                <td className="p-2 sm:p-4 font-medium">Pris (Price)</td>
+                <td className="p-2 sm:p-4 text-center">0 EUR / 0 SEK</td>
+                <td className="p-2 sm:p-4 text-center font-bold bg-primary/5">11 EUR / 110 SEK month</td>
+              </tr>
+              <tr className="border-b hover:bg-muted/20 transition-colors">
+                <td className="p-2 sm:p-4 font-medium">Textmeddelanden (text messages)</td>
+                <td className="p-2 sm:p-4 text-center">3 fria meddelanden</td>
+                <td className="p-2 sm:p-4 text-center font-bold text-green-600 bg-primary/5">Obegränsat</td>
+              </tr>
+              <tr className="border-b hover:bg-muted/20 transition-colors">
+                <td className="p-2 sm:p-4 font-medium">Skapa AI flickvän (Create AI girlfriend)</td>
+                <td className="p-2 sm:p-4 text-center text-muted-foreground">Inte möjligt</td>
+                <td className="p-2 sm:p-4 text-center font-bold text-green-600 bg-primary/5">Obegränsat</td>
+              </tr>
+              <tr className="border-b hover:bg-muted/20 transition-colors">
+                <td className="p-2 sm:p-4 font-medium">Skapa bilder (Create images)</td>
+                <td className="p-2 sm:p-4 text-center">1 gratis SFW</td>
+                <td className="p-2 sm:p-4 text-center font-bold text-green-600 bg-primary/5">Obegränsat (NSFW & SFW)</td>
+              </tr>
+              <tr className="border-b hover:bg-muted/20 transition-colors">
+                <td className="p-2 sm:p-4 font-medium">Gratis tokens (Free tokens)</td>
+                <td className="p-2 sm:p-4 text-center text-muted-foreground">Ingår ej</td>
+                <td className="p-2 sm:p-4 text-center font-bold text-green-600 bg-primary/5">100 gratis tokens</td>
+              </tr>
+              <tr className="hover:bg-muted/20 transition-colors">
+                <td className="p-2 sm:p-4 font-medium">Köpa tokens (buy tokens)</td>
+                <td className="p-2 sm:p-4 text-center text-red-500">Nej</td>
+                <td className="p-2 sm:p-4 text-center font-bold text-green-600 bg-primary/5">Ja</td>
+              </tr>
+            </tbody>
+          </table>
         </CardContent>
         <CardFooter className="justify-center p-8 bg-muted/20">
           {!isPremium ? (
@@ -272,135 +272,135 @@ export default function PremiumPage() {
         </CardFooter>
       </Card>
 
-      {/* ISSUE 2: Token Usage Table */}
-      <Card className="h-full">
-        <CardHeader>
-           <CardTitle>Hur tokens används</CardTitle>
-           <CardDescription>Kostnad för att använda olika funktioner</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <table className="w-full border-collapse">
-                <thead>
-                    <tr className="border-b">
-                        <th className="text-left p-4 font-bold">Funktion</th>
-                        <th className="text-right p-4 font-bold">Token Kostnad</th>
-                    </tr>
+        {/* ISSUE 2: Token Usage Table */}
+        <Card className="h-full">
+          <CardHeader>
+            <CardTitle>Hur tokens används</CardTitle>
+            <CardDescription>Kostnad för att använda olika funktioner</CardDescription>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[300px]">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2 sm:p-4 font-bold">Funktion</th>
+                  <th className="text-right p-2 sm:p-4 font-bold">Token Kostnad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b hover:bg-muted/20 transition-colors">
+                  <td className="p-2 sm:p-4 font-medium">Textmeddelanden (text messages)</td>
+                  <td className="p-2 sm:p-4 text-right">5 tokens per message</td>
+                </tr>
+                <tr className="border-b hover:bg-muted/20 transition-colors">
+                  <td className="p-2 sm:p-4 font-medium">Skapa AI flickvän (Create AI girlfriend)</td>
+                  <td className="p-2 sm:p-4 text-right">2 tokens per flickvän</td>
+                </tr>
+                <tr className="hover:bg-muted/20 transition-colors">
+                  <td className="p-2 sm:p-4 font-medium">Skapa bilder (Create images)</td>
+                  <td className="p-2 sm:p-4 text-right">5–10 tokens (Stability: 5, Flux: 10)</td>
+                </tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+
+        {/* ISSUE 3: Buy Tokens Section */}
+        <Card className="h-full border-primary/20 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Buy tokens for premium users only
+            </CardTitle>
+            <CardDescription>
+              If you use all your tokens before your subscription period ends, you can purchase additional token packs as needed.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            {/* Information Table */}
+            <div className="rounded-md border overflow-x-auto">
+              <table className="w-full border-collapse text-sm min-w-[300px]">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-left p-2 sm:p-3 font-semibold">Köpa Tokens</th>
+                    <th className="text-right p-2 sm:p-3 font-semibold">Kostnad</th>
+                  </tr>
                 </thead>
                 <tbody>
-                    <tr className="border-b hover:bg-muted/20 transition-colors">
-                        <td className="p-4 font-medium">Textmeddelanden (text messages)</td>
-                        <td className="p-4 text-right">5 tokens per message</td>
+                  {/* Note: The '100 tokens' row had no price key in the prompt examples except inferred, leaving blank or 'Ingår' */}
+                  <tr className="border-b">
+                    <td className="p-2 sm:p-3">100 tokens</td>
+                    <td className="p-2 sm:p-3 text-right text-muted-foreground">-</td>
+                  </tr>
+                  {tokenPackages.map(pkg => (
+                    <tr key={pkg.id} className="border-b last:border-0 hover:bg-muted/20">
+                      <td className="p-2 sm:p-3 font-medium">{pkg.name}</td>
+                      <td className="p-2 sm:p-3 text-right">{pkg.priceDisplay}</td>
                     </tr>
-                    <tr className="border-b hover:bg-muted/20 transition-colors">
-                        <td className="p-4 font-medium">Skapa AI flickvän (Create AI girlfriend)</td>
-                        <td className="p-4 text-right">2 tokens per flickvän</td>
-                    </tr>
-                    <tr className="hover:bg-muted/20 transition-colors">
-                        <td className="p-4 font-medium">Skapa bilder (Create images)</td>
-                        <td className="p-4 text-right">5–10 tokens (Stability: 5, Flux: 10)</td>
-                    </tr>
+                  ))}
                 </tbody>
-            </table>
-        </CardContent>
-      </Card>
+              </table>
+            </div>
 
-      {/* ISSUE 3: Buy Tokens Section */}
-      <Card className="h-full border-primary/20 shadow-lg">
-           <CardHeader>
-             <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Buy tokens for premium users only
-             </CardTitle>
-             <CardDescription>
-                If you use all your tokens before your subscription period ends, you can purchase additional token packs as needed.
-             </CardDescription>
-           </CardHeader>
-           
-           <CardContent className="space-y-6">
-                {/* Information Table */}
-                <div className="rounded-md border">
-                    <table className="w-full border-collapse text-sm">
-                        <thead className="bg-muted/50">
-                            <tr>
-                                <th className="text-left p-3 font-semibold">Köpa Tokens</th>
-                                <th className="text-right p-3 font-semibold">Kostnad</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {/* Note: The '100 tokens' row had no price key in the prompt examples except inferred, leaving blank or 'Ingår' */}
-                            <tr className="border-b">
-                                <td className="p-3">100 tokens</td>
-                                <td className="p-3 text-right text-muted-foreground">-</td> 
-                            </tr>
-                            {tokenPackages.map(pkg => (
-                                <tr key={pkg.id} className="border-b last:border-0 hover:bg-muted/20">
-                                    <td className="p-3 font-medium">{pkg.name}</td>
-                                    <td className="p-3 text-right">{pkg.priceDisplay}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {/* Purchase Functional Block - Only if Premium */}
+            {isPremium ? (
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">Välj paket att köpa:</h3>
+                  <Badge variant="outline" className="text-base px-3 py-1">
+                    <Coins className="w-4 h-4 mr-2" />
+                    Current: {tokenBalance} tokens
+                  </Badge>
                 </div>
-
-                {/* Purchase Functional Block - Only if Premium */}
-                {isPremium ? (
-                    <div className="space-y-4 pt-4 border-t">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-lg">Välj paket att köpa:</h3>
-                          <Badge variant="outline" className="text-base px-3 py-1">
-                            <Coins className="w-4 h-4 mr-2" />
-                            Current: {tokenBalance} tokens
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {tokenPackages.map((pkg) => (
-                                <div
-                                key={pkg.id}
-                                onClick={() => setSelectedTokenPackageId(pkg.id)}
-                                className={`
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {tokenPackages.map((pkg) => (
+                    <div
+                      key={pkg.id}
+                      onClick={() => setSelectedTokenPackageId(pkg.id)}
+                      className={`
                                     cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 text-center
-                                    ${selectedTokenPackageId === pkg.id 
-                                        ? "border-primary bg-primary/5 shadow-md scale-[1.02]" 
-                                        : "border-border hover:border-primary/50 hover:bg-muted/50"}
+                                    ${selectedTokenPackageId === pkg.id
+                          ? "border-primary bg-primary/5 shadow-md scale-[1.02]"
+                          : "border-border hover:border-primary/50 hover:bg-muted/50"}
                                 `}
-                                >
-                                    <div className="font-bold text-lg mb-1">{pkg.tokens} Tokens</div>
-                                    <div className="text-sm font-medium text-muted-foreground">{pkg.price} kr</div>
-                                    {selectedTokenPackageId === pkg.id && <div className="mt-2 text-primary flex justify-center"><Check className="w-4 h-4"/></div>}
-                                </div>
-                            ))}
-                        </div>
-                        <Button 
-                            onClick={handleTokenPurchase} 
-                            className="w-full bg-gradient-to-r from-primary to-purple-600" 
-                            size="lg"
-                            disabled={!selectedTokenPackageId || isLoading}
-                        >
-                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Gå till betalning"}
-                        </Button>
+                    >
+                      <div className="font-bold text-lg mb-1">{pkg.tokens} Tokens</div>
+                      <div className="text-sm font-medium text-muted-foreground">{pkg.price} kr</div>
+                      {selectedTokenPackageId === pkg.id && <div className="mt-2 text-primary flex justify-center"><Check className="w-4 h-4" /></div>}
                     </div>
-                ) : (
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded-r-md">
-                        <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 flex items-center gap-2">
-                             <Lock className="h-4 w-4" />
-                             Du måste vara Premium-medlem för att köpa tokens.
-                        </p>
-                    </div>
-                )}
-           </CardContent>
-      </Card>
+                  ))}
+                </div>
+                <Button
+                  onClick={handleTokenPurchase}
+                  className="w-full bg-gradient-to-r from-primary to-purple-600"
+                  size="lg"
+                  disabled={!selectedTokenPackageId || isLoading}
+                >
+                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Gå till betalning"}
+                </Button>
+              </div>
+            ) : (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded-r-md">
+                <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Du måste vara Premium-medlem för att köpa tokens.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-       {/* Trust Badges */}
-       <div className="flex justify-center gap-8 py-8 text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-          <span className="text-sm font-medium">Säker betalning</span>
+        {/* Trust Badges */}
+        <div className="flex justify-center gap-8 py-8 text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            <span className="text-sm font-medium">Säker betalning</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            <span className="text-sm font-medium">SSL-krypterad</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Lock className="h-5 w-5" />
-          <span className="text-sm font-medium">SSL-krypterad</span>
-        </div>
-      </div>
     </div>
   )
 }
