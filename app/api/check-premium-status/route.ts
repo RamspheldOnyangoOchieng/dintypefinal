@@ -15,74 +15,61 @@ export async function GET() {
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      return NextResponse.json({ authenticated: false, isPremium: false }, { status: 200 })
+      return NextResponse.json({ authenticated: false, isPremium: false, tokenBalance: 0 }, { status: 200 })
     }
 
     const userId = user.id
 
-    // Direct query to profiles table
-    // Fixed: changed user_id to id
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("is_premium")
-      .eq("id", userId)
+    // Check cache first
+    const cached = cache.get(userId)
+    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+      return NextResponse.json(cached.data)
+    }
+
+    // Check premium_profiles table for active premium status
+    const { data: premiumProfile, error: premiumError } = await supabase
+      .from("premium_profiles")
+      .select("expires_at")
+      .eq("user_id", userId)
       .maybeSingle()
 
-    if (profileError && profileError.code !== "PGRST116") {
-      console.error("Error fetching profile:", profileError)
-      return NextResponse.json(
-        {
-          authenticated: true,
-          isPremium: false,
-          error: "profile_fetch_failed",
-          details: profileError
-        },
-        { status: 200 },
-      )
+    let isPremium = false
+
+    if (premiumProfile && !premiumError) {
+      // Check if premium has not expired
+      const expiresAt = new Date((premiumProfile as any).expires_at)
+      isPremium = expiresAt > new Date()
     }
 
-    // If profile not found, try to create one
-    if (!profile) {
-      try {
-        const { data: newProfile, error: insertError } = await supabase
-          .from("profiles")
-          .insert([{ id: userId, is_premium: false }])
-          .select()
+    // Get token balance
+    const { data: tokenData, error: tokenError } = await supabase
+      .from("user_tokens")
+      .select("balance")
+      .eq("user_id", userId)
+      .maybeSingle()
 
-        if (insertError) {
-          console.error("Error creating profile:", insertError)
-          return NextResponse.json(
-            {
-              authenticated: true,
-              isPremium: false,
-              error: "profile_creation_failed",
-            },
-            { status: 200 },
-          )
-        }
+    const tokenBalance = (tokenData as any)?.balance || 0
 
-        return NextResponse.json({
-          authenticated: true,
-          isPremium: false,
-          profileStatus: "created",
-        })
-      } catch (err) {
-        console.error("Exception creating profile:", err)
-        return NextResponse.json(
-          {
-            authenticated: true,
-            isPremium: false,
-            error: "profile_creation_exception",
-          },
-          { status: 200 },
-        )
-      }
+    // Update profile.is_premium to match premium_profiles status
+    try {
+      await supabase
+        .from("profiles")
+        .upsert({ id: userId, is_premium: isPremium } as any, { onConflict: "id" })
+    } catch (e) {
+      // Ignore profile update errors
+      console.log("Profile update skipped:", e)
     }
 
-    return NextResponse.json({
+    const response = {
       authenticated: true,
-      isPremium: !!profile?.is_premium,
-    })
+      isPremium,
+      tokenBalance,
+    }
+
+    // Cache the result
+    cache.set(userId, { data: response, timestamp: Date.now() })
+
+    return NextResponse.json(response)
   } catch (error) {
     console.error("Server error:", error)
     return NextResponse.json(
@@ -91,6 +78,7 @@ export async function GET() {
         error: "server_error",
         message: error instanceof Error ? error.message : "Unknown error",
         isPremium: false,
+        tokenBalance: 0,
       },
       { status: 200 },
     )

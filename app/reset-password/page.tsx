@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { Home, Eye, EyeOff } from "lucide-react"
 
 export default function ResetPasswordPage() {
   const search = useSearchParams()
@@ -28,6 +28,7 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
 
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [updated, setUpdated] = useState(false)
 
@@ -88,12 +89,20 @@ export default function ResetPasswordPage() {
     }
     setUpdating(true)
     try {
+      // Update the password
       const { data, error: supaError } = await supabase.auth.updateUser({ password })
       if (supaError) throw supaError
+
       setUpdated(true)
-      toast.success(t("reset.updatedTitle"))
-      // After a short delay, route to home/login
-      setTimeout(() => router.push("/"), 1200)
+      toast.success("Password updated successfully! Please login with your new password.")
+
+      // Sign out the user to ensure they login with new credentials
+      await supabase.auth.signOut()
+
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        router.push("/login?message=Password reset successful. Please login with your new password.")
+      }, 1500)
     } catch (err: any) {
       console.error(err)
       const errorMessage = err?.message || t("reset.errorGeneric")
@@ -106,9 +115,11 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="mx-auto max-w-md w-full px-4 py-10">
-      <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        {t("navigation.home") || "Back to Home"}
+      <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors group">
+        <div className="p-1.5 rounded-full bg-muted group-hover:bg-muted-foreground/10 transition-colors">
+          <Home className="h-4 w-4" />
+        </div>
+        <span>{t("navigation.home") || "Back to Home"}</span>
       </Link>
       <h1 className="text-2xl font-bold text-foreground mb-6">{t("reset.title")}</h1>
 
@@ -146,14 +157,28 @@ export default function ResetPasswordPage() {
             <label htmlFor="new-password" className="block text-sm text-muted-foreground">
               {t("reset.newPasswordLabel")}
             </label>
-            <Input
-              id="new-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t("reset.newPasswordPlaceholder")}
-              className="bg-card border-border"
-            />
+            <div className="relative">
+              <Input
+                id="new-password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("reset.newPasswordPlaceholder")}
+                className="bg-card border-border pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           {error && <p className="text-destructive text-sm">{error}</p>}

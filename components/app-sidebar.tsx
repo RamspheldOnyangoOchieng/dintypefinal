@@ -23,10 +23,11 @@ import { useAuthModal } from "@/components/auth-modal-context"
 import { useSidebar } from "@/components/sidebar-context"
 import { cn } from "@/lib/utils"
 import { useSite } from "@/components/site-context"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { UserAvatar } from "./user-avatar"
 import { useTranslations } from "@/lib/use-translations"
 import { LanguageSelector } from "./language-selector"
+import { CharacterPreviewModal } from "@/components/character-preview-modal"
 
 export default function AppSidebar() {
   const pathname = usePathname()
@@ -35,6 +36,10 @@ export default function AppSidebar() {
   const { openLoginModal, openLogoutModal } = useAuthModal()
   const { settings } = useSite()
   const { t } = useTranslations()
+
+  // Modal state for character preview
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
+  const [previewModalPath, setPreviewModalPath] = useState("")
 
   const isAdminPage = pathname?.startsWith("/admin")
   if (isAdminPage) {
@@ -165,8 +170,17 @@ export default function AppSidebar() {
                     <Link
                       href={item.href}
                       onClick={(e) => {
-                        const protectedRoutes = ["/generate", "/create-character", "/collections", "/my-ai"]
-                        if (protectedRoutes.includes(item.href) && !user) {
+                        // Show preview modal for character/collection routes
+                        if ((item.href === "/my-ai" || item.href === "/collections") && !user) {
+                          e.preventDefault()
+                          setPreviewModalPath(item.href)
+                          setShowPreviewModal(true)
+                          return
+                        }
+
+                        // For other protected routes, just show login
+                        const otherProtectedRoutes = ["/generate", "/create-character"]
+                        if (otherProtectedRoutes.includes(item.href) && !user) {
                           e.preventDefault()
                           openLoginModal()
                         }
@@ -274,6 +288,13 @@ export default function AppSidebar() {
           )}
         </div>
       </div>
+
+      {/* Character Preview Modal */}
+      <CharacterPreviewModal
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        redirectPath={previewModalPath}
+      />
     </>
   )
 }

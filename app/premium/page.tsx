@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Check, Shield, Lock, Sparkles, Loader2 } from "lucide-react"
+import { Check, Shield, Lock, Sparkles, Loader2, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { toast } from "sonner"
@@ -29,6 +29,7 @@ export default function PremiumPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingStatus, setIsCheckingStatus] = useState(true)
   const [isPremium, setIsPremium] = useState(false)
+  const [tokenBalance, setTokenBalance] = useState(0)
   const [selectedTokenPackageId, setSelectedTokenPackageId] = useState<string | null>(null)
   
   const router = useRouter()
@@ -44,6 +45,7 @@ export default function PremiumPage() {
             setIsCheckingStatus(true)
             if (!user) {
                 setIsPremium(false)
+                setTokenBalance(0)
                 setIsCheckingStatus(false)
                 return
             }
@@ -51,6 +53,7 @@ export default function PremiumPage() {
             const response = await fetch("/api/check-premium-status")
             const data = await response.json()
             setIsPremium(!!data.isPremium)
+            setTokenBalance(data.tokenBalance || 0)
         } catch (error) {
             console.error("Error checking premium status:", error)
         } finally {
@@ -178,6 +181,26 @@ export default function PremiumPage() {
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Uppgradera din upplevelse med Premium eller fyll på med tokens för mer innehåll.
         </p>
+        
+        {/* Display current status and balance */}
+        {user && (
+          <div className="flex items-center justify-center gap-4 pt-4">
+            <Badge variant={isPremium ? "default" : "secondary"} className="text-base px-4 py-2">
+              {isPremium ? (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Premium Active
+                </>
+              ) : (
+                "Free User"
+              )}
+            </Badge>
+            <Badge variant="outline" className="text-base px-4 py-2">
+              <Coins className="w-4 h-4 mr-2" />
+              {tokenBalance} Tokens
+            </Badge>
+          </div>
+        )}
       </div>
 
       {/* ISSUE 1: Pricing Comparison Table */}
@@ -229,14 +252,23 @@ export default function PremiumPage() {
             </table>
         </CardContent>
         <CardFooter className="justify-center p-8 bg-muted/20">
-          <Button 
-            size="lg" 
-            onClick={handlePremiumPurchase} 
-            disabled={isLoading}
-            className="w-full md:w-auto min-w-[200px] text-lg bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
-          >
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><Sparkles className="mr-2 h-5 w-5" /> Bli Premium Nu</>}
-          </Button>
+          {!isPremium ? (
+            <Button 
+              size="lg" 
+              onClick={handlePremiumPurchase} 
+              disabled={isLoading}
+              className="w-full md:w-auto min-w-[200px] text-lg bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
+            >
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><Sparkles className="mr-2 h-5 w-5" /> Bli Premium Nu</>}
+            </Button>
+          ) : (
+            <div className="text-center">
+              <Badge className="text-lg px-6 py-3 bg-green-500">
+                <Check className="w-5 h-5 mr-2" />
+                You are Premium!
+              </Badge>
+            </div>
+          )}
         </CardFooter>
       </Card>
 
@@ -313,7 +345,13 @@ export default function PremiumPage() {
                 {/* Purchase Functional Block - Only if Premium */}
                 {isPremium ? (
                     <div className="space-y-4 pt-4 border-t">
-                        <h3 className="font-semibold text-lg">Välj paket att köpa:</h3>
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-lg">Välj paket att köpa:</h3>
+                          <Badge variant="outline" className="text-base px-3 py-1">
+                            <Coins className="w-4 h-4 mr-2" />
+                            Current: {tokenBalance} tokens
+                          </Badge>
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {tokenPackages.map((pkg) => (
                                 <div

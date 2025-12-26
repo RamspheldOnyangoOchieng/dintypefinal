@@ -160,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Create client dynamically
       const supabase = createClient()
-      
+
       // 1. Sign in with Cookie Client (Sets HttpOnly Cookie for Middleware)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -213,7 +213,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.error("Failed to clear anonymous user ID on login", e)
         }
 
-        // Force a reload to ensure session/user state is refreshed and only correct images are shown
+        // Check for post-login redirect
+        const postLoginRedirect = sessionStorage.getItem('postLoginRedirect')
+        if (postLoginRedirect) {
+          sessionStorage.removeItem('postLoginRedirect')
+
+          // Check if user is new (no characters)
+          try {
+            const charCountResponse = await fetch('/api/user-characters-count')
+            const charData = await charCountResponse.json()
+
+            if (charData.isNewUser) {
+              // New user - redirect to create character
+              window.location.href = '/create-character'
+              return true
+            } else {
+              // Existing user - go to their intended destination
+              window.location.href = postLoginRedirect
+              return true
+            }
+          } catch (e) {
+            console.error('Error checking user status:', e)
+            // Fallback to intended path
+            window.location.href = postLoginRedirect
+            return true
+          }
+        }
+
+        // No specific redirect - force reload to ensure session/user state is refreshed
         window.location.reload()
         return true
       }

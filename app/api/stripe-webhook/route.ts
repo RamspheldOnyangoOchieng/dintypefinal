@@ -156,8 +156,30 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
         { onConflict: "user_id" }
       )
 
+    // Grant 100 free tokens for new premium subscribers
+    const { data: currentTokens } = await supabase
+      .from("user_tokens")
+      .select("balance")
+      .eq("user_id", userId)
+      .maybeSingle()
+
+    const bonusTokens = 100
+    const newTokenBalance = (currentTokens?.balance || 0) + bonusTokens
+
+    await supabase.from("user_tokens").upsert({ user_id: userId, balance: newTokenBalance }, { onConflict: "user_id" })
+
+    // Record token transaction
+    await supabase.from("token_transactions").insert({
+      user_id: userId,
+      amount: bonusTokens,
+      type: "bonus",
+      description: `Premium subscription bonus: ${bonusTokens} tokens`,
+    })
+
+    console.log(`✅ Granted ${bonusTokens} bonus tokens to new premium user ${userId}. New balance: ${newTokenBalance}`)
+
     itemName = session.metadata.planName || "Premium Plan"
-    purchaseDetails = `Your premium membership is now active until ${new Date(expiresAt).toLocaleDateString()}. Enjoy unlimited character creation, advanced AI features, and priority support!`
+    purchaseDetails = `Your premium membership is now active until ${new Date(expiresAt).toLocaleDateString()}. You've received ${bonusTokens} bonus tokens! Enjoy unlimited character creation, advanced AI features, and priority support!`
     purchaseType = "premium"
 
     console.log(`✅ Created premium profile for user ${userId}, expires ${expiresAt}`)
