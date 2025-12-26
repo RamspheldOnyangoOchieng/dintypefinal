@@ -6,11 +6,13 @@ import Link from "next/link"
 import { Home, Sparkles, Crown, Users, MessageSquare, Heart, FolderHeart, DollarSign } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
 import { useTheme } from "next-themes"
+import { useAuthModal } from "@/components/auth-modal-context"
 import { CharacterPreviewModal } from "@/components/character-preview-modal"
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
   const { user } = useAuth()
+  const { openLoginModal } = useAuthModal()
   const pathname = usePathname()
   const router = useRouter()
   const { resolvedTheme, setTheme } = useTheme()
@@ -52,7 +54,6 @@ export function MobileNav() {
   // Always point to non-localized routes (landing page is "/").
   // Normalize current path by stripping any leading /sv or /en so active states still work.
   const normalizedPath = (pathname || "/").replace(/^\/(sv|en)(?=\/|$)/, "") || "/"
-  const homeHref = "/"
 
   const isActive = (p: string) => {
     if (p === "/") return normalizedPath === "/"
@@ -70,8 +71,18 @@ export function MobileNav() {
         e.preventDefault()
         setPreviewModalPath(href)
         setShowPreviewModal(true)
+        return
       }
-      // If user is logged in, let normal navigation happen
+    }
+
+    // Check for other protected routes
+    if ((href === "/generate" || href === "/create-character") && !user) {
+      e.preventDefault()
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('postLoginRedirect', href)
+      }
+      openLoginModal()
+      return
     }
   }
 

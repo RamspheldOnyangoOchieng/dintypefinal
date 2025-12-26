@@ -182,6 +182,9 @@ export default function AppSidebar() {
                         const otherProtectedRoutes = ["/generate", "/create-character"]
                         if (otherProtectedRoutes.includes(item.href) && !user) {
                           e.preventDefault()
+                          if (typeof window !== 'undefined') {
+                            sessionStorage.setItem('postLoginRedirect', item.href)
+                          }
                           openLoginModal()
                         }
                       }}
