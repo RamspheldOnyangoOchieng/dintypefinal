@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import supabase, { hasSupabaseConfig } from "@/lib/supabase"
+import { createClient } from "@/utils/supabase/client"
+
+const supabase = createClient()
+const hasSupabaseConfig = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 import { useTranslations } from "@/lib/use-translations"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"

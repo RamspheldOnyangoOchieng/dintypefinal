@@ -10,7 +10,9 @@ import { useTranslations } from "@/lib/use-translations"
 import { useAuth } from "@/components/auth-context"
 import ConfirmEmailModal from "@/components/confirm-email-modal"
 import { useAuthModal } from "./auth-modal-context"
-import supabase from "@/lib/supabase"
+import { createClient } from "@/utils/supabase/client"
+
+const supabase = createClient()
 import { toast } from "sonner"
 
 export function SignupModal() {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/utils/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +32,7 @@ export default function AdminPremiumPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [editingPackage, setEditingPackage] = useState<TokenPackage | null>(null);
     const [editingCost, setEditingCost] = useState<TokenCost | null>(null);
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
 
     useEffect(() => {
         fetchData();

@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ImageModal } from "@/components/image-modal"
 import { useAuth } from "@/components/auth-context"
 import { useSidebar } from "@/components/sidebar-context"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/utils/supabase/client"
 import { useRouter } from "next/navigation"
 import {
   getImageSuggestions,

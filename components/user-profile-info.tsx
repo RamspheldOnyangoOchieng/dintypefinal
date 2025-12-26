@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { useAuth } from "@/components/auth-context"
 import { toast } from "sonner"
 import { useTranslations } from "@/lib/use-translations"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/utils/supabase/client"
 
 interface UserProfileInfoProps {
   userId: string

@@ -5,7 +5,7 @@ import { CheckCircle, ChevronLeft, ChevronRight, Loader2, ChevronDown } from "lu
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-context";
 import { getCharacters, type Character } from "@/lib/characters";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 const steps = [
     { label: "Choose Style" },

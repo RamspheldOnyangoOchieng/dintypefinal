@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createClient } from "@/utils/supabase/client"
 
 export function SupabaseDebug() {
   const [tables, setTables] = useState<string[]>([])
@@ -17,7 +17,7 @@ export function SupabaseDebug() {
     setError(null)
 
     try {
-      const supabase = createClientComponentClient()
+      const supabase = createClient()
 
       // Test a simple insert to a public table
       const testData = {

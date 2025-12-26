@@ -6,7 +6,7 @@ import Image from "next/image"
 import { useTranslations } from "@/lib/use-translations"
 import { useAuth } from "@/components/auth-context"
 import { Pencil, Save, X, Plus, Trash } from "lucide-react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createClient } from "@/utils/supabase/client"
 
 export function SiteFooter() {
   const { t, language } = useTranslations()
@@ -16,7 +16,7 @@ export function SiteFooter() {
   // @ts-ignore optional chaining depending on Supabase user structure
   const isAdmin = user?.user_metadata?.role === 'admin' || user?.role === 'admin'
   const [isEditing, setIsEditing] = useState(false)
-  
+
   const defaultData = useMemo(() => ({
     companyName: "Dintyp.se",
     companyDescription: "AI Karaktärsutforskare ger uppslukande upplevelser med AI-flickvänner som känns verkliga, vilket gör att användarna kan skapa bilder och chatta.",
@@ -46,7 +46,7 @@ export function SiteFooter() {
 
   const [footerData, setFooterData] = useState(defaultData)
   const [tempData, setTempData] = useState(defaultData)
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   useEffect(() => {
     const loadFooterData = async () => {
@@ -219,9 +219,9 @@ export function SiteFooter() {
             <ul className="space-y-2">
               {tempData.aboutUs.map((item: any) => (
                 <li key={item.id}>
-                  <Link 
-                    href={item.url} 
-                    target={item.url.startsWith("http") ? "_blank" : undefined} 
+                  <Link
+                    href={item.url}
+                    target={item.url.startsWith("http") ? "_blank" : undefined}
                     rel={item.url.startsWith("http") ? "noopener noreferrer" : undefined}
                     className="text-muted-foreground hover:text-foreground text-sm transition-colors block"
                   >

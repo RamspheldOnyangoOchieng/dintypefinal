@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/components/auth-context"
 import { useEffect, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/utils/supabase/client"
 
 export function AdminDebug() {
   const { user } = useAuth()

@@ -1,6 +1,6 @@
 "use server";
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+
 import { createAdminClient } from '@/lib/supabase-admin';
 import { isUserAdmin, getAdminPrivileges } from '@/lib/admin-privileges';
 

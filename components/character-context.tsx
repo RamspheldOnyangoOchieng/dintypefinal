@@ -1,7 +1,9 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, useMemo, useRef, type ReactNode } from "react"
-import supabase from "@/lib/supabase"
+import { createClient } from "@/utils/supabase/client"
+
+const supabase = createClient()
 import type { Character, CharacterInsert, CharacterUpdate } from "@/lib/types"
 import { checkTableExists, initializeDatabase, checkStorageBucket } from "@/lib/db-init"
 

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-context";
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import DeleteFeedbackModal from "@/components/delete-feedback-modal";
@@ -190,16 +190,16 @@ export default function SettingsPage() {
   // Modal state for delete confirmation
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [pendingDeleteFeedback, setPendingDeleteFeedback] = useState<{reason:string; description:string} | null>(null);
+  const [pendingDeleteFeedback, setPendingDeleteFeedback] = useState<{ reason: string; description: string } | null>(null);
 
   // Delete account handler
   const handleDeleteAccount = async () => {
     if (!user) return;
     setLoading(true);
     try {
-      await fetch('/api/delete-account', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userId: user.id, reason: pendingDeleteFeedback?.reason, description: pendingDeleteFeedback?.description }) })
+      await fetch('/api/delete-account', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id, reason: pendingDeleteFeedback?.reason, description: pendingDeleteFeedback?.description }) })
       toast.success('Account deletion submitted');
-    } catch (e:any) {
+    } catch (e: any) {
       toast.error('Failed to submit deletion');
     } finally {
       setLoading(false);
@@ -281,11 +281,11 @@ export default function SettingsPage() {
             open={showDeleteModal && !showDeleteConfirm}
             onClose={() => setShowDeleteModal(false)}
             lang={language as any}
-            onNext={(reason, description) => { setPendingDeleteFeedback({reason, description}); setShowDeleteConfirm(true); }}
+            onNext={(reason, description) => { setPendingDeleteFeedback({ reason, description }); setShowDeleteConfirm(true); }}
           />
           <DeleteConfirmationModal
             open={showDeleteConfirm}
-            onClose={()=> setShowDeleteConfirm(false)}
+            onClose={() => setShowDeleteConfirm(false)}
             lang={language as any}
             onDelete={handleDeleteAccount}
           />

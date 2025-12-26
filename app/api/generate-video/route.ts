@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/utils/supabase/server"
 import { uploadImageToBunny } from "@/lib/cloudinary-upload"
 import { getUnifiedNovitaKey } from "@/lib/unified-api-keys"
 
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data: { user }, error } = await supabase.auth.getUser(token);
       if (error || !user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

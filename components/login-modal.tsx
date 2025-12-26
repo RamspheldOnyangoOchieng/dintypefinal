@@ -11,7 +11,9 @@ import Link from "next/link"
 import { useAuthModal } from "./auth-modal-context"
 import Image from "next/image"
 import { useTranslations } from "@/lib/use-translations"
-import supabase from "@/lib/supabase"
+import { createClient } from "@/utils/supabase/client"
+
+const supabase = createClient()
 import { toast } from "sonner"
 
 export function LoginModal() {

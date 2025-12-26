@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-context";
 import { useCharacters } from "@/components/character-context";
@@ -38,7 +38,7 @@ export default function CreateCharacterGrouped() {
     const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
     const [stylePreviewImages, setStylePreviewImages] = useState<{ realistic?: string; anime?: string }>({});
 
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
     const router = useRouter();
 
     // Check authentication on mount

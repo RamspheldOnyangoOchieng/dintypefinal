@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase-admin"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/utils/supabase/server"
 import { getAnonymousUserId } from "@/lib/anonymous-user"
 import { uploadImageToCloudinary } from "@/lib/cloudinary-upload"
 
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     console.log("   Novita URL:", imageUrl);
 
     // Get user ID (authenticated or anonymous)
-    const supabase = createClient()
+    const supabase = await createClient()
     const {
       data: { session },
     } = await supabase.auth.getSession()
