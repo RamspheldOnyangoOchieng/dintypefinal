@@ -36,7 +36,10 @@ export default function MyAIPage() {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        openLoginModal();
+        // Don't show login modal - let navigation handle it
+        // Just show empty state or redirect
+        setIsLoading(false);
+        router.push('/');
         return;
       }
 
@@ -50,9 +53,9 @@ export default function MyAIPage() {
   async function fetchCharacters() {
     try {
       const response = await fetch('/api/my-characters');
-      
+
       if (response.status === 401) {
-        openLoginModal();
+        router.push('/');
         return;
       }
 
@@ -124,7 +127,7 @@ export default function MyAIPage() {
                 Min AI flickvän
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
-                {characters.length === 0 
+                {characters.length === 0
                   ? 'Du har inga AI flickvänner ännu. Skapa din första!'
                   : `${characters.length} AI flickvän${characters.length !== 1 ? 'ner' : ''}`
                 }
@@ -182,7 +185,7 @@ export default function MyAIPage() {
                       <Heart className="h-16 w-16 text-pink-300" />
                     </div>
                   )}
-                  
+
                   {/* Hover Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                     <div className="w-full space-y-2">
@@ -219,7 +222,7 @@ export default function MyAIPage() {
                   <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-1 truncate">
                     {character.name}
                   </h3>
-                  
+
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
                     {character.age && (
                       <span>{character.age} år</span>
