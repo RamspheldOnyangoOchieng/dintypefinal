@@ -7,20 +7,20 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/components/auth-context"
-import { AlertCircle, Loader2 } from "lucide-react"
+import { AlertCircle, Loader2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/utils/supabase/client"
 import legacySupabase from "@/lib/supabase"
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState("admin@example.com")
-  const [password, setPassword] = useState("admin")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [loginStatus, setLoginStatus] = useState("")
   const router = useRouter()
   const { login, user } = useAuth()
-  
+
   // Create Supabase client that uses cookies
   const supabase = createClient()
 
@@ -63,13 +63,13 @@ export default function AdminLoginPage() {
 
       try {
         const response = await fetch('/api/admin/check')
-        
+
         if (!response.ok) {
-           throw new Error("Admin check failed")
+          throw new Error("Admin check failed")
         }
-        
+
         const checkData = await response.json()
-        
+
         if (!checkData.isAdmin) {
           setError("You don't have admin privileges")
           await supabase.auth.signOut()
@@ -78,7 +78,7 @@ export default function AdminLoginPage() {
         }
 
         setLoginStatus("Login successful! Redirecting...")
-        
+
         // SYNC FIX: Set the session on the legacy client that AuthProvider uses (LocalStorage)
         // This ensures the client-side AuthProvider and AdminGuard see the user immediately
         const { error: syncError } = await legacySupabase.auth.setSession(data.session)
@@ -86,7 +86,7 @@ export default function AdminLoginPage() {
 
         // Hard redirect to dashboard to ensure Middleware sees the new Cookies
         window.location.href = "/admin/dashboard"
-        
+
       } catch (adminCheckError) {
         console.error("Admin check error:", adminCheckError)
         setError("Error validating admin privileges.")
@@ -166,24 +166,18 @@ export default function AdminLoginPage() {
             </div>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>Default admin credentials: email: admin@example.com, password: admin</p>
-          </div>
-          <div className="mt-6 text-center text-sm">
-            <p className="text-gray-400">
-              Need an admin account?{" "}
-              <Link href="/admin/signup" className="text-primary hover:underline">
-                Sign up
+          <div className="mt-6 text-center text-sm space-y-4">
+            <div>
+              <Link href="/reset-password" className="text-muted-foreground hover:text-white transition-colors">
+                Forgot Password?
               </Link>
-            </p>
-          </div>
-          <div className="mt-2 text-center text-sm">
-            <p className="text-gray-400">
-              Having trouble?{" "}
-              <Link href="/admin/manual-setup" className="text-primary hover:underline">
-                Manual Setup
+            </div>
+            <div>
+              <Link href="/" className="text-muted-foreground hover:text-white transition-colors inline-flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Site
               </Link>
-            </p>
+            </div>
           </div>
         </div>
       </div>

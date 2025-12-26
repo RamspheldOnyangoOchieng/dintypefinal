@@ -35,15 +35,13 @@ export default function MyAIPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
-      if (!session) {
-        // Don't show login modal - let navigation handle it
-        // Just show empty state or redirect
+      // If logged in, fetch characters
+      if (session) {
+        await fetchCharacters();
+      } else {
+        // Not logged in - just show empty state
         setIsLoading(false);
-        router.push('/');
-        return;
       }
-
-      await fetchCharacters();
     } catch (error) {
       console.error('Error checking auth:', error);
       setIsLoading(false);
@@ -55,7 +53,8 @@ export default function MyAIPage() {
       const response = await fetch('/api/my-characters');
 
       if (response.status === 401) {
-        router.push('/');
+        // Unauthorized - show empty state
+        setIsLoading(false);
         return;
       }
 

@@ -8,6 +8,7 @@ import { Plus, Heart, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-context"
 import { useAuthModal } from "@/components/auth-modal-context"
+import { createClient } from "@/utils/supabase/client"
 import Image from "next/image"
 
 interface CharacterPreviewModalProps {
@@ -16,19 +17,57 @@ interface CharacterPreviewModalProps {
     redirectPath: string // "/my-ai" or "/collections"
 }
 
+interface Character {
+    name: string
+    description: string
+    image_url: string
+    personality: string
+}
+
 export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: CharacterPreviewModalProps) {
     const router = useRouter()
     const { user } = useAuth()
     const { openLoginModal } = useAuthModal()
     const [isRedirecting, setIsRedirecting] = useState(false)
-
-    // Sample character data
-    const sampleCharacter = {
+    const [character, setCharacter] = useState<Character>({
         name: "Luna",
         description: "En vänlig och uppmärksam AI-kompanjon",
-        image: "/placeholder-character.png", // You can replace with actual image
-        tags: ["Vänlig", "Rolig", "Omtänksam"]
-    }
+        image_url: "",
+        personality: "Vänlig, Rolig, Omtänksam"
+    })
+    const [loadingCharacter, setLoadingCharacter] = useState(true)
+
+    // Fetch character "Ellie" on mount
+    useEffect(() => {
+        if (isOpen) {
+            const fetchCharacter = async () => {
+                setLoadingCharacter(true)
+                try {
+                    const supabase = createClient()
+                    const { data, error } = await supabase
+                        .from('characters')
+                        .select('name, description, image_url, personality')
+                        .ilike('name', 'Ellie%')
+                        .limit(1)
+                        .maybeSingle()
+
+                    if (data) {
+                        setCharacter({
+                            name: data.name,
+                            description: data.description || "En fantastisk AI-vän",
+                            image_url: data.image_url || "",
+                            personality: data.personality || "Vänlig, Smart"
+                        })
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch character Ellie", e)
+                } finally {
+                    setLoadingCharacter(false)
+                }
+            }
+            fetchCharacter()
+        }
+    }, [isOpen])
 
     const handleCreateClick = () => {
         if (!user) {
@@ -83,26 +122,37 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
                 </DialogHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                    {/* Sample Character Card */}
-                    <Card className="overflow-hidden border-2 hover:border-primary/50 transition-colors">
+                    {/* Character Card */}
+                    <Card className="overflow-hidden border-2 hover:border-primary/50 transition-colors bg-card">
                         <div className="relative h-48 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-4xl font-bold">
-                                    {sampleCharacter.name[0]}
+                            {character.image_url ? (
+                                <Image
+                                    src={character.image_url}
+                                    alt={character.name}
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-4xl font-bold">
+                                        {character.name[0]}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                         <CardContent className="p-4">
-                            <h3 className="font-bold text-lg mb-2">{sampleCharacter.name}</h3>
-                            <p className="text-sm text-muted-foreground mb-3">{sampleCharacter.description}</p>
-                            <div className="flex flex-wrap gap-1">
-                                {sampleCharacter.tags.map((tag) => (
-                                    <span key={tag} className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
-                                        {tag}
+                            <h3 className="font-bold text-lg mb-2">{character.name}</h3>
+                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                                {character.description}
+                            </p>
+                            <div className="flex flex-wrap gap-1 mb-3">
+                                {character.personality?.split(',').slice(0, 3).map((tag) => (
+                                    <span key={tag} className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full truncate max-w-[80px]">
+                                        {tag.trim()}
                                     </span>
                                 ))}
                             </div>
-                            <Button variant="outline" className="w-full mt-4" disabled>
+                            <Button variant="outline" className="w-full mt-auto" disabled>
                                 <Sparkles className="w-4 h-4 mr-2" />
                                 Exempel
                             </Button>
