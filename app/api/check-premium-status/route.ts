@@ -21,10 +21,11 @@ export async function GET() {
     const userId = user.id
 
     // Direct query to profiles table
+    // Fixed: changed user_id to id
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("is_premium")
-      .eq("user_id", userId)
+      .eq("id", userId)
       .maybeSingle()
 
     if (profileError && profileError.code !== "PGRST116") {
@@ -34,6 +35,7 @@ export async function GET() {
           authenticated: true,
           isPremium: false,
           error: "profile_fetch_failed",
+          details: profileError
         },
         { status: 200 },
       )
@@ -44,7 +46,7 @@ export async function GET() {
       try {
         const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
-          .insert([{ user_id: userId, is_premium: false }])
+          .insert([{ id: userId, is_premium: false }])
           .select()
 
         if (insertError) {
