@@ -72,6 +72,19 @@ export default function ResetPasswordPage() {
     }
   }
 
+  // Check for session validity when in update mode
+  useEffect(() => {
+    if (isUpdate) {
+      const checkSession = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          setError(t("reset.sessionExpired") || "Session expired or invalid. Please request a new password reset link.")
+        }
+      }
+      checkSession()
+    }
+  }, [isUpdate, t])
+
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -89,6 +102,12 @@ export default function ResetPasswordPage() {
     }
     setUpdating(true)
     try {
+      // Check session before attempting update
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error("Session expired. Please try requesting a new reset link.")
+      }
+
       // Update the password
       const { data, error: supaError } = await supabase.auth.updateUser({ password })
       if (supaError) throw supaError
@@ -106,7 +125,12 @@ export default function ResetPasswordPage() {
     } catch (err: any) {
       console.error(err)
       const errorMessage = err?.message || t("reset.errorGeneric")
-      setError(errorMessage)
+      // Handle the specific "Auth session missing!" error locally if it slips through
+      if (errorMessage.includes("Auth session missing")) {
+        setError("Your session has expired. Please request a new password reset link.")
+      } else {
+        setError(errorMessage)
+      }
       toast.error(errorMessage)
     } finally {
       setUpdating(false)
