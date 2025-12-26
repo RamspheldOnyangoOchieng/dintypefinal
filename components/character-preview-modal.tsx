@@ -127,13 +127,13 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 border-purple-500/20 text-white">
+            <DialogContent className="max-w-2xl">
                 <DialogHeader className="space-y-3">
-                    <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3">
-                        <Heart className="h-8 w-8 text-pink-500" />
+                    <DialogTitle className="text-3xl font-bold text-foreground flex items-center gap-3">
+                        <Heart className="h-8 w-8 text-primary" />
                         Upptäck AI-vänner
                     </DialogTitle>
-                    <DialogDescription className="text-base text-gray-400">
+                    <DialogDescription className="text-base text-muted-foreground">
                         Skapa din egen AI-vän eller upptäck befintliga
                     </DialogDescription>
                 </DialogHeader>
@@ -141,7 +141,7 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
                     {/* Character Card */}
                     <Card className="overflow-hidden border-2 hover:border-primary/50 transition-colors bg-card h-full flex flex-col">
-                        <div className="relative h-64 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                        <div className="relative h-64 bg-secondary/20">
                             {character.image_url ? (
                                 <Image
                                     src={character.image_url}
@@ -151,7 +151,7 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
                                 />
                             ) : (
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-4xl font-bold">
+                                    <div className="w-32 h-32 rounded-full bg-primary/20 flex items-center justify-center text-primary text-4xl font-bold">
                                         {character.name[0]}
                                     </div>
                                 </div>
@@ -164,7 +164,7 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
                             </p>
                             <div className="flex flex-wrap gap-1 mb-3">
                                 {character.personality?.split(',').slice(0, 3).map((tag) => (
-                                    <span key={tag} className="text-xs px-2 py-1 bg-pink-500/10 text-pink-500 rounded-full truncate max-w-[80px] border border-pink-500/20">
+                                    <span key={tag} className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full truncate max-w-[80px]">
                                         {tag.trim()}
                                     </span>
                                 ))}
@@ -178,19 +178,19 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
 
                     {/* Create New Card */}
                     <Card
-                        className="overflow-hidden border-2 border-dashed border-pink-500/30 hover:border-pink-500/60 hover:bg-pink-500/5 transition-all cursor-pointer group bg-transparent h-full flex flex-col"
+                        className="overflow-hidden border-2 border-dashed border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer group bg-transparent h-full flex flex-col"
                         onClick={handleCreateClick}
                     >
                         <CardContent className="p-6 h-full flex flex-col items-center justify-center text-center">
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-500/10 to-purple-600/10 group-hover:from-pink-500/20 group-hover:to-purple-600/20 flex items-center justify-center mb-4 transition-colors">
-                                <Plus className="w-12 h-12 text-pink-500" />
+                            <div className="w-24 h-24 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center mb-4 transition-colors">
+                                <Plus className="w-12 h-12 text-primary" />
                             </div>
                             <h3 className="font-bold text-xl mb-2 text-foreground">Skapa din AI-vän</h3>
-                            <p className="text-sm text-gray-400 mb-6">
+                            <p className="text-sm text-muted-foreground mb-6">
                                 Designa din perfekta AI-kompanjon med unika egenskaper och personlighet
                             </p>
                             <Button
-                                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white border-0"
+                                className="w-full"
                                 disabled={isRedirecting}
                             >
                                 {isRedirecting ? (
