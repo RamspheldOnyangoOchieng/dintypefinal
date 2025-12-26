@@ -61,7 +61,7 @@ export function UserNav() {
             <Button variant="outline" onClick={openLoginModal}>
                 {t("auth.login")}
             </Button>
-            <Button onClick={openSignupModal}>Skapa gratis konto</Button>
+            <Button onClick={openSignupModal} className="hidden sm:inline-flex">Skapa gratis konto</Button>
         </div>
     )
 }

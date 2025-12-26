@@ -25,7 +25,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex flex-col">
           <AdminHeader />
           {/* key={pathname} forces remount on navigation to prevent hydration errors from extensions like Google Translate */}
-          <main className="flex-1 p-4 sm:p-6" key={pathname}>{children}</main>
+          <main className="flex-1 p-4 sm:p-6 w-full overflow-x-auto" key={pathname}>{children}</main>
         </div>
       </div>
     </AdminGuard>

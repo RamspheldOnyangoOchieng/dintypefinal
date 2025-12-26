@@ -223,12 +223,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const charCountResponse = await fetch('/api/user-characters-count')
             const charData = await charCountResponse.json()
 
-            if (charData.isNewUser) {
-              // New user - redirect to create character
+            if (charData.isNewUser && postLoginRedirect === '/my-ai') {
+              // New user specifically trying to access My AI - redirect to create character
               window.location.href = '/create-character'
               return true
             } else {
-              // Existing user - go to their intended destination
+              // Existing user OR new user accessing other pages (like collections) - go to intended destination
               window.location.href = postLoginRedirect
               return true
             }
