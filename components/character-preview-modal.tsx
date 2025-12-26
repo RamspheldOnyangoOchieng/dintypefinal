@@ -46,16 +46,33 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
                     const supabase = createClient()
                     const { data, error } = await supabase
                         .from('characters')
-                        .select('name, description, image_url, personality')
+                        .select('name, description, image, image_url, personality')
                         .ilike('name', 'Ellie%')
                         .limit(1)
-                        .maybeSingle()
+                        .maybeSingle() as any
 
                     if (data) {
+                        // Determine the correct image source
+                        let finalImageUrl = data.image_url || ""
+
+                        // If no image_url, check the 'image' column
+                        if (!finalImageUrl && data.image) {
+                            if (data.image.startsWith('http')) {
+                                finalImageUrl = data.image
+                            } else {
+                                // Assume it's a storage path, generate public URL
+                                const { data: publicUrlData } = supabase
+                                    .storage
+                                    .from('images') // The bucket name is 'images'
+                                    .getPublicUrl(data.image)
+                                finalImageUrl = publicUrlData.publicUrl
+                            }
+                        }
+
                         setCharacter({
                             name: data.name,
                             description: data.description || "En fantastisk AI-vän",
-                            image_url: data.image_url || "",
+                            image_url: finalImageUrl,
                             personality: data.personality || "Vänlig, Smart"
                         })
                     }
@@ -110,13 +127,13 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle className="text-2xl flex items-center gap-2">
-                        <Heart className="w-6 h-6 text-primary" />
+            <DialogContent className="max-w-2xl bg-[#0f0f16] border-gray-800 text-white">
+                <DialogHeader className="space-y-3">
+                    <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3">
+                        <Heart className="h-8 w-8 text-pink-500" />
                         Upptäck AI-vänner
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-base text-gray-400">
                         Skapa din egen AI-vän eller upptäck befintliga
                     </DialogDescription>
                 </DialogHeader>
@@ -147,7 +164,7 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
                             </p>
                             <div className="flex flex-wrap gap-1 mb-3">
                                 {character.personality?.split(',').slice(0, 3).map((tag) => (
-                                    <span key={tag} className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full truncate max-w-[80px]">
+                                    <span key={tag} className="text-xs px-2 py-1 bg-pink-500/10 text-pink-500 rounded-full truncate max-w-[80px] border border-pink-500/20">
                                         {tag.trim()}
                                     </span>
                                 ))}
@@ -161,18 +178,21 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
 
                     {/* Create New Card */}
                     <Card
-                        className="overflow-hidden border-2 border-dashed border-primary hover:bg-primary/5 transition-all cursor-pointer group"
+                        className="overflow-hidden border-2 border-dashed border-pink-500/30 hover:border-pink-500/60 hover:bg-pink-500/5 transition-all cursor-pointer group bg-transparent"
                         onClick={handleCreateClick}
                     >
                         <CardContent className="p-6 h-full flex flex-col items-center justify-center text-center">
-                            <div className="w-24 h-24 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center mb-4 transition-colors">
-                                <Plus className="w-12 h-12 text-primary" />
+                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-500/10 to-purple-600/10 group-hover:from-pink-500/20 group-hover:to-purple-600/20 flex items-center justify-center mb-4 transition-colors">
+                                <Plus className="w-12 h-12 text-pink-500" />
                             </div>
-                            <h3 className="font-bold text-xl mb-2">Skapa din AI-vän</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
+                            <h3 className="font-bold text-xl mb-2 text-foreground">Skapa din AI-vän</h3>
+                            <p className="text-sm text-gray-400 mb-6">
                                 Designa din perfekta AI-kompanjon med unika egenskaper och personlighet
                             </p>
-                            <Button className="w-full" disabled={isRedirecting}>
+                            <Button
+                                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white border-0"
+                                disabled={isRedirecting}
+                            >
                                 {isRedirecting ? (
                                     "Laddar..."
                                 ) : user ? (
