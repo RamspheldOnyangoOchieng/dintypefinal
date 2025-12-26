@@ -7,73 +7,60 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { toast } from "sonner"
 import { useAuth } from "@/components/auth-context"
-import { createClient } from "@/utils/supabase/client"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 
 interface TokenPackage {
   id: string
   name: string
   tokens: number
   price: number
-  description: string
-  active: boolean
-}
-
-interface TokenCost {
-  id: string
-  feature_key: string
-  feature_name_sv: string
-  cost_tokens: number
-  description_sv: string
-  active: boolean
+  priceDisplay: string
 }
 
 export default function PremiumPage() {
-  const [tokenPackages, setTokenPackages] = useState<TokenPackage[]>([])
-  const [tokenCosts, setTokenCosts] = useState<TokenCost[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isProcessing, setIsProcessing] = useState(false)
+  // Hardcoded packages to match the specific text request
+  const tokenPackages: TokenPackage[] = [
+    { id: 'pack_200', name: '200 tokens', tokens: 200, price: 99, priceDisplay: '9,99 € / 99 kr' },
+    { id: 'pack_550', name: '550 tokens', tokens: 550, price: 249, priceDisplay: '€24.99 / 249 kr' },
+    { id: 'pack_1550', name: '1,550 tokens', tokens: 1550, price: 499, priceDisplay: '€49.99 / 499 kr' },
+    { id: 'pack_5800', name: '5,800 tokens', tokens: 5800, price: 1499, priceDisplay: '€149.99 / 1,499 kr' },
+  ]
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true)
+  const [isPremium, setIsPremium] = useState(false)
   const [selectedTokenPackageId, setSelectedTokenPackageId] = useState<string | null>(null)
+  
   const router = useRouter()
   const { user } = useAuth()
-  const supabase = createClient()
-  const fetchedRef = useRef(false)
+  const statusCheckRef = useRef<boolean>(false)
 
   useEffect(() => {
-    if (fetchedRef.current) return
-    fetchedRef.current = true
-    
-    const fetchData = async () => {
-      try {
-        const [packagesResult, costsResult] = await Promise.all([
-           supabase
-            .from('token_packages')
-            .select('*')
-            .eq('active', true)
-            .order('tokens', { ascending: true }),
-           supabase
-            .from('token_costs')
-            .select('*')
-            .eq('active', true)
-            .order('feature_name_sv', { ascending: true })
-        ])
+    const checkPremiumStatus = async () => {
+        if (statusCheckRef.current) return
+        statusCheckRef.current = true
 
-        if (packagesResult.error) throw packagesResult.error
-        if (costsResult.error) throw costsResult.error
+        try {
+            setIsCheckingStatus(true)
+            if (!user) {
+                setIsPremium(false)
+                setIsCheckingStatus(false)
+                return
+            }
 
-        setTokenPackages(packagesResult.data || [])
-        setTokenCosts(costsResult.data || [])
-      } catch (error) {
-        console.error("Error fetching premium data:", error)
-        toast.error("Kunde inte ladda premiumdata")
-      } finally {
-        setIsLoading(false)
-      }
+            const response = await fetch("/api/check-premium-status")
+            const data = await response.json()
+            setIsPremium(!!data.isPremium)
+        } catch (error) {
+            console.error("Error checking premium status:", error)
+        } finally {
+            setIsCheckingStatus(false)
+            statusCheckRef.current = false
+        }
     }
 
-    fetchData()
-  }, [supabase])
+    checkPremiumStatus()
+  }, [user])
 
   const handlePremiumPurchase = async () => {
     if (!user) {
@@ -83,7 +70,7 @@ export default function PremiumPage() {
     }
 
     try {
-      setIsProcessing(true)
+      setIsLoading(true)
 
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
@@ -111,7 +98,7 @@ export default function PremiumPage() {
       console.error("Payment error:", error)
       toast.error("Kunde inte genomföra köpet. Försök igen.")
     } finally {
-      setIsProcessing(false)
+      setIsLoading(false)
     }
   }
 
@@ -127,8 +114,14 @@ export default function PremiumPage() {
       return
     }
 
+    // Double check premium logic if needed, but UI hides/disables it mostly.
+    if (!isPremium) {
+        toast.error("Endast Premium-användare kan köpa tokens")
+        return
+    }
+
     try {
-      setIsProcessing(true)
+      setIsLoading(true)
 
       const selectedPackage = tokenPackages.find((pkg) => pkg.id === selectedTokenPackageId)
       if (!selectedPackage) {
@@ -141,7 +134,7 @@ export default function PremiumPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          planId: selectedTokenPackageId,
+          planId: selectedTokenPackageId, // Passing our hardcoded ID (e.g. 'pack_200')
           userId: user?.id,
           email: user?.email,
           metadata: {
@@ -163,11 +156,11 @@ export default function PremiumPage() {
       console.error("Payment error:", error)
       toast.error("Kunde inte genomföra token-köpet. Försök igen.")
     } finally {
-      setIsProcessing(false)
+      setIsLoading(false)
     }
   }
 
-  if (isLoading) {
+  if (isCheckingStatus) {
     return (
       <div className="container max-w-6xl mx-auto py-12 px-4 flex justify-center items-center min-h-[50vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -187,134 +180,177 @@ export default function PremiumPage() {
         </p>
       </div>
 
-      {/* Subscription Comparison */}
+      {/* ISSUE 1: Pricing Comparison Table */}
       <Card className="border-border/50 shadow-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl">Jämför Planer</CardTitle>
-          <CardDescription>Vad får du som Premium-medlem?</CardDescription>
+            <CardTitle className="text-3xl">Jämför Planer</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <div className="min-w-[600px]">
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="col-span-1 font-semibold p-4 text-left">Funktion</div>
-              <div className="col-span-1 font-semibold p-4 text-center bg-muted/50 rounded-t-lg">Gratis</div>
-              <div className="col-span-1 font-semibold p-4 text-center bg-primary/10 text-primary rounded-t-lg border-t-2 border-primary">Premium</div>
-            </div>
-            
-            <div className="space-y-2">
-              {[
-                { label: "Pris", free: "0 kr", premium: "110 kr / månad" },
-                { label: "Chattmeddelanden", free: "Begränsat (3/dag)", premium: "Obegränsat" },
-                { label: "AI Karaktärer", free: "Begränsat utbud", premium: "Tillgång till alla" },
-                { label: "Bildgenerering", free: "1 gratis SFW", premium: "Obegränsat (SFW & NSFW)" },
-                { label: "Startbonus", free: "-", premium: "100 Tokens" },
-                { label: "Köpa Tokens", free: "Ej tillgängligt", premium: "Tillgängligt" },
-              ].map((item, i) => (
-                <div key={i} className="grid grid-cols-3 gap-4 items-center border-b last:border-0 hover:bg-muted/20 transition-colors">
-                  <div className="col-span-1 p-4 font-medium">{item.label}</div>
-                  <div className="col-span-1 p-4 text-center text-muted-foreground">{item.free}</div>
-                  <div className="col-span-1 p-4 text-center font-bold bg-primary/5">{item.premium}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+            <table className="w-full border-collapse min-w-[600px]">
+                <thead>
+                    <tr className="border-b">
+                        <th className="text-left p-4 font-bold text-lg">Function</th>
+                        <th className="text-center p-4 font-bold text-lg">Free User</th>
+                        <th className="text-center p-4 font-bold text-lg text-primary bg-primary/5 rounded-t-lg">Premium User<br/><span className="text-sm font-normal text-muted-foreground">1 month subscription</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr className="border-b hover:bg-muted/20 transition-colors">
+                        <td className="p-4 font-medium">Pris (Price)</td>
+                        <td className="p-4 text-center">0 EUR / 0 SEK</td>
+                        <td className="p-4 text-center font-bold bg-primary/5">11 EUR / 110 SEK month</td>
+                    </tr>
+                    <tr className="border-b hover:bg-muted/20 transition-colors">
+                        <td className="p-4 font-medium">Textmeddelanden (text messages)</td>
+                        <td className="p-4 text-center">3 fria meddelanden</td>
+                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">Obegränsat</td>
+                    </tr>
+                    <tr className="border-b hover:bg-muted/20 transition-colors">
+                        <td className="p-4 font-medium">Skapa AI flickvän (Create AI girlfriend)</td>
+                        <td className="p-4 text-center text-muted-foreground">Inte möjligt</td>
+                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">Obegränsat</td>
+                    </tr>
+                    <tr className="border-b hover:bg-muted/20 transition-colors">
+                        <td className="p-4 font-medium">Skapa bilder (Create images)</td>
+                        <td className="p-4 text-center">1 gratis SFW</td>
+                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">Obegränsat (NSFW & SFW)</td>
+                    </tr>
+                    <tr className="border-b hover:bg-muted/20 transition-colors">
+                        <td className="p-4 font-medium">Gratis tokens (Free tokens)</td>
+                        <td className="p-4 text-center text-muted-foreground">Ingår ej</td>
+                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">100 gratis tokens</td>
+                    </tr>
+                    <tr className="hover:bg-muted/20 transition-colors">
+                        <td className="p-4 font-medium">Köpa tokens (buy tokens)</td>
+                        <td className="p-4 text-center text-red-500">Nej</td>
+                        <td className="p-4 text-center font-bold text-green-600 bg-primary/5">Ja</td>
+                    </tr>
+                </tbody>
+            </table>
         </CardContent>
         <CardFooter className="justify-center p-8 bg-muted/20">
           <Button 
             size="lg" 
             onClick={handlePremiumPurchase} 
-            disabled={isProcessing}
-            className="w-full md:w-auto min-w-[200px] text-lg"
+            disabled={isLoading}
+            className="w-full md:w-auto min-w-[200px] text-lg bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
           >
-            {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><Sparkles className="mr-2 h-5 w-5" /> Bli Premium Nu</>}
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <><Sparkles className="mr-2 h-5 w-5" /> Bli Premium Nu</>}
           </Button>
         </CardFooter>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Token Usage Table */}
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle>Vad kostar det?</CardTitle>
-            <CardDescription>Token-kostnader för olika funktioner</CardDescription>
-          </CardHeader>
-          <CardContent>
-             <div className="space-y-4">
-                {tokenCosts.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">Kunde inte ladda priser.</p>
-                ) : (
-                    tokenCosts.map((cost) => (
-                        <div key={cost.id} className="flex justify-between items-center p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
-                            <div className="flex flex-col">
-                                <span className="font-medium">{cost.feature_name_sv}</span>
-                                <span className="text-xs text-muted-foreground">{cost.description_sv}</span>
-                            </div>
-                            <Badge variant="secondary" className="ml-2 whitespace-nowrap">
-                                {cost.cost_tokens} tokens
-                            </Badge>
-                        </div>
-                    ))
-                )}
-             </div>
-          </CardContent>
-        </Card>
+      {/* ISSUE 2: Token Usage Table */}
+      <Card className="h-full">
+        <CardHeader>
+           <CardTitle>Hur tokens används</CardTitle>
+           <CardDescription>Kostnad för att använda olika funktioner</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <table className="w-full border-collapse">
+                <thead>
+                    <tr className="border-b">
+                        <th className="text-left p-4 font-bold">Funktion</th>
+                        <th className="text-right p-4 font-bold">Token Kostnad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr className="border-b hover:bg-muted/20 transition-colors">
+                        <td className="p-4 font-medium">Textmeddelanden (text messages)</td>
+                        <td className="p-4 text-right">5 tokens per message</td>
+                    </tr>
+                    <tr className="border-b hover:bg-muted/20 transition-colors">
+                        <td className="p-4 font-medium">Skapa AI flickvän (Create AI girlfriend)</td>
+                        <td className="p-4 text-right">2 tokens per flickvän</td>
+                    </tr>
+                    <tr className="hover:bg-muted/20 transition-colors">
+                        <td className="p-4 font-medium">Skapa bilder (Create images)</td>
+                        <td className="p-4 text-right">5–10 tokens (Stability: 5, Flux: 10)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </CardContent>
+      </Card>
 
-        {/* Buy Tokens Section */}
-        <Card className="h-full border-primary/20 shadow-lg">
+      {/* ISSUE 3: Buy Tokens Section */}
+      <Card className="h-full border-primary/20 shadow-lg">
            <CardHeader>
              <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                Köp Tokens
+                Buy tokens for premium users only
              </CardTitle>
              <CardDescription>
-                Fyll på ditt saldo. Endast för Premium-medlemmar.
+                If you use all your tokens before your subscription period ends, you can purchase additional token packs as needed.
              </CardDescription>
            </CardHeader>
-           <CardContent>
-             {tokenPackages.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                    Inga paket tillgängliga just nu.
+           
+           <CardContent className="space-y-6">
+                {/* Information Table */}
+                <div className="rounded-md border">
+                    <table className="w-full border-collapse text-sm">
+                        <thead className="bg-muted/50">
+                            <tr>
+                                <th className="text-left p-3 font-semibold">Köpa Tokens</th>
+                                <th className="text-right p-3 font-semibold">Kostnad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {/* Note: The '100 tokens' row had no price key in the prompt examples except inferred, leaving blank or 'Ingår' */}
+                            <tr className="border-b">
+                                <td className="p-3">100 tokens</td>
+                                <td className="p-3 text-right text-muted-foreground">-</td> 
+                            </tr>
+                            {tokenPackages.map(pkg => (
+                                <tr key={pkg.id} className="border-b last:border-0 hover:bg-muted/20">
+                                    <td className="p-3 font-medium">{pkg.name}</td>
+                                    <td className="p-3 text-right">{pkg.priceDisplay}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {tokenPackages.map((pkg) => (
-                        <div
-                          key={pkg.id}
-                          onClick={() => setSelectedTokenPackageId(pkg.id)}
-                          className={`
-                            cursor-pointer rounded-xl border-2 p-4 transition-all duration-200
-                            ${selectedTokenPackageId === pkg.id 
-                                ? "border-primary bg-primary/5 shadow-md scale-[1.02]" 
-                                : "border-border hover:border-primary/50 hover:bg-muted/50"}
-                          `}
-                        >
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="font-bold text-lg">{pkg.tokens} Tokens</span>
-                                {selectedTokenPackageId === pkg.id && <Check className="h-5 w-5 text-primary" />}
-                            </div>
-                            <div className="text-2xl font-bold text-primary mb-1">
-                                {pkg.price} kr
-                            </div>
-                            {pkg.description && (
-                                <p className="text-xs text-muted-foreground">{pkg.description}</p>
-                            )}
+
+                {/* Purchase Functional Block - Only if Premium */}
+                {isPremium ? (
+                    <div className="space-y-4 pt-4 border-t">
+                        <h3 className="font-semibold text-lg">Välj paket att köpa:</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {tokenPackages.map((pkg) => (
+                                <div
+                                key={pkg.id}
+                                onClick={() => setSelectedTokenPackageId(pkg.id)}
+                                className={`
+                                    cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 text-center
+                                    ${selectedTokenPackageId === pkg.id 
+                                        ? "border-primary bg-primary/5 shadow-md scale-[1.02]" 
+                                        : "border-border hover:border-primary/50 hover:bg-muted/50"}
+                                `}
+                                >
+                                    <div className="font-bold text-lg mb-1">{pkg.tokens} Tokens</div>
+                                    <div className="text-sm font-medium text-muted-foreground">{pkg.price} kr</div>
+                                    {selectedTokenPackageId === pkg.id && <div className="mt-2 text-primary flex justify-center"><Check className="w-4 h-4"/></div>}
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-             )}
+                        <Button 
+                            onClick={handleTokenPurchase} 
+                            className="w-full bg-gradient-to-r from-primary to-purple-600" 
+                            size="lg"
+                            disabled={!selectedTokenPackageId || isLoading}
+                        >
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Gå till betalning"}
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded-r-md">
+                        <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 flex items-center gap-2">
+                             <Lock className="h-4 w-4" />
+                             Du måste vara Premium-medlem för att köpa tokens.
+                        </p>
+                    </div>
+                )}
            </CardContent>
-           <CardFooter>
-             <Button 
-                onClick={handleTokenPurchase} 
-                className="w-full" 
-                size="lg"
-                disabled={!selectedTokenPackageId || isProcessing}
-             >
-                {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Gå till betalning"}
-             </Button>
-           </CardFooter>
-        </Card>
-      </div>
+      </Card>
 
        {/* Trust Badges */}
        <div className="flex justify-center gap-8 py-8 text-muted-foreground">
