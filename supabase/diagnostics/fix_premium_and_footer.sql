@@ -15,19 +15,19 @@ DROP POLICY IF EXISTS "Admins can update all profiles" ON profiles;
 CREATE POLICY "Users can view own profile" 
 ON profiles FOR SELECT 
 TO authenticated 
-USING (auth.uid() = user_id);
+USING (auth.uid() = id);
 
 -- 2. Users can update own profile
 CREATE POLICY "Users can update own profile" 
 ON profiles FOR UPDATE 
 TO authenticated 
-USING (auth.uid() = user_id);
+USING (auth.uid() = id);
 
 -- 3. Users can insert own profile (if not exists)
 CREATE POLICY "Users can insert own profile" 
 ON profiles FOR INSERT 
 TO authenticated 
-WITH CHECK (auth.uid() = user_id);
+WITH CHECK (auth.uid() = id);
 
 -- 4. Admins can view all profiles (assuming admin_users table exists and has the user)
 -- Note: This depends on how isAdmin is defined in SQL. 
