@@ -127,7 +127,7 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl bg-[#0f0f16] border-gray-800 text-white">
+            <DialogContent className="max-w-2xl bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 border-purple-500/20 text-white">
                 <DialogHeader className="space-y-3">
                     <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3">
                         <Heart className="h-8 w-8 text-pink-500" />
