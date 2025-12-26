@@ -2,12 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Save } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Label } from '@/components/ui/label';
 
 interface TokenPackage {
     id: string;
@@ -53,7 +63,6 @@ export default function AdminPremiumPage() {
 
     async function fetchData() {
         try {
-            // Fetch token packages
             const { data: packages, error: packagesError } = await supabase
                 .from('token_packages')
                 .select('*')
@@ -62,10 +71,8 @@ export default function AdminPremiumPage() {
             if (packagesError) throw packagesError;
             setTokenPackages(packages || []);
             
-            // Clear selections when refetching
             setSelectedPackages([]);
 
-            // Fetch token costs
             const { data: costs, error: costsError } = await supabase
                 .from('token_costs')
                 .select('*')
@@ -164,14 +171,19 @@ export default function AdminPremiumPage() {
     }
 
     return (
-        <div className="container max-w-7xl mx-auto py-8 px-4">
-            <h1 className="text-4xl font-bold mb-8">Premium Management</h1>
+        <div className="container max-w-7xl mx-auto py-8 px-4 space-y-8">
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold tracking-tight">Premium Management</h1>
+            </div>
 
             {/* Token Packages Section */}
-            <Card className="p-6 mb-8">
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-4">
-                        <h2 className="text-2xl font-bold">Token Packages</h2>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div className="space-y-1">
+                        <CardTitle className="text-2xl font-bold">Token Packages</CardTitle>
+                        <CardDescription>Manage available token packages for users.</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
                         {selectedPackages.length > 0 && (
                              <Button
                                 variant="destructive"
@@ -182,268 +194,260 @@ export default function AdminPremiumPage() {
                                 Delete Selected ({selectedPackages.length})
                              </Button>
                         )}
+                        <Button
+                            onClick={() => setEditingPackage({
+                                id: '',
+                                name: '',
+                                tokens: 0,
+                                price: 0,
+                                description: '',
+                                active: true
+                            })}
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Package
+                        </Button>
                     </div>
-                    <Button
-                        onClick={() => setEditingPackage({
-                            id: '',
-                            name: '',
-                            tokens: 0,
-                            price: 0,
-                            description: '',
-                            active: true
-                        })}
-                    >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Package
-                    </Button>
-                </div>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-muted">
-                            <tr>
-                                <th className="p-3 w-[50px]">
-                                    <Checkbox
-                                        checked={selectedPackages.length === tokenPackages.length && tokenPackages.length > 0}
-                                        onCheckedChange={(checked) => toggleSelectAll(!!checked)}
-                                    />
-                                </th>
-                                <th className="text-left p-3">Name</th>
-                                <th className="text-left p-3">Tokens</th>
-                                <th className="text-left p-3">Price (kr)</th>
-                                <th className="text-left p-3">Description</th>
-                                <th className="text-left p-3">Active</th>
-                                <th className="text-left p-3">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {tokenPackages.map((pkg) => (
-                                <tr key={pkg.id} className="border-b hover:bg-muted/50 transition-colors">
-                                    <td className="p-3">
+                </CardHeader>
+                <CardContent>
+                    <div className="rounded-md border">
+                        <table className="w-full text-sm">
+                            <thead className="bg-muted/50">
+                                <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[50px]">
                                         <Checkbox
-                                            checked={selectedPackages.includes(pkg.id)}
-                                            onCheckedChange={(checked) => toggleSelectOne(pkg.id, !!checked)}
+                                            checked={selectedPackages.length === tokenPackages.length && tokenPackages.length > 0}
+                                            onCheckedChange={(checked) => toggleSelectAll(!!checked)}
                                         />
-                                    </td>
-                                    <td className="p-3">{pkg.name}</td>
-                                    <td className="p-3">{pkg.tokens}</td>
-                                    <td className="p-3">{pkg.price} kr</td>
-                                    <td className="p-3">{pkg.description}</td>
-                                    <td className="p-3">
-                                        <span className={`px-2 py-1 rounded text-xs ${pkg.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {pkg.active ? 'Active' : 'Inactive'}
-                                        </span>
-                                    </td>
-                                    <td className="p-3 space-x-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => setEditingPackage(pkg)}
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            onClick={() => setPackageToDelete([pkg.id])}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </td>
+                                    </th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Tokens</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Price (kr)</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Description</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Actions</th>
                                 </tr>
-                            ))}
-                            {tokenPackages.length === 0 && (
-                                <tr>
-                                    <td colSpan={7} className="p-6 text-center text-muted-foreground">
-                                        No token packages found.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {tokenPackages.map((pkg) => (
+                                    <tr key={pkg.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                        <td className="p-4 align-middle">
+                                            <Checkbox
+                                                checked={selectedPackages.includes(pkg.id)}
+                                                onCheckedChange={(checked) => toggleSelectOne(pkg.id, !!checked)}
+                                            />
+                                        </td>
+                                        <td className="p-4 align-middle font-medium">{pkg.name}</td>
+                                        <td className="p-4 align-middle">{pkg.tokens}</td>
+                                        <td className="p-4 align-middle">{pkg.price} kr</td>
+                                        <td className="p-4 align-middle">{pkg.description}</td>
+                                        <td className="p-4 align-middle">
+                                            <Badge variant={pkg.active ? "default" : "secondary"} className={pkg.active ? "bg-green-600 hover:bg-green-700" : ""}>
+                                                {pkg.active ? 'Active' : 'Inactive'}
+                                            </Badge>
+                                        </td>
+                                        <td className="p-4 align-middle">
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    onClick={() => setEditingPackage(pkg)}
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                    onClick={() => setPackageToDelete([pkg.id])}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {tokenPackages.length === 0 && (
+                                    <tr>
+                                        <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                                            No token packages found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </CardContent>
             </Card>
 
             {/* Token Costs Section */}
-            <Card className="p-6">
-                <h2 className="text-2xl font-bold mb-6">Token Costs per Feature</h2>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-muted">
-                            <tr>
-                                <th className="text-left p-3">Feature</th>
-                                <th className="text-left p-3">Cost (tokens)</th>
-                                <th className="text-left p-3">Description</th>
-                                <th className="text-left p-3">Active</th>
-                                <th className="text-left p-3">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {tokenCosts.map((cost) => (
-                                <tr key={cost.id} className="border-b">
-                                    <td className="p-3 font-medium">{cost.feature_name_sv}</td>
-                                    <td className="p-3 font-bold">{cost.cost_tokens}</td>
-                                    <td className="p-3">{cost.description_sv}</td>
-                                    <td className="p-3">
-                                        <span className={`px-2 py-1 rounded text-xs ${cost.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {cost.active ? 'Active' : 'Inactive'}
-                                        </span>
-                                    </td>
-                                    <td className="p-3">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => setEditingCost(cost)}
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                    </td>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-2xl font-bold">Token Costs</CardTitle>
+                    <CardDescription>Configure token costs for individual features.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="rounded-md border">
+                        <table className="w-full text-sm">
+                            <thead className="bg-muted/50">
+                                <tr className="border-b transition-colors hover:bg-muted/50">
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Feature</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Cost</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Description</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {tokenCosts.map((cost) => (
+                                    <tr key={cost.id} className="border-b transition-colors hover:bg-muted/50">
+                                        <td className="p-4 align-middle font-medium">{cost.feature_name_sv}</td>
+                                        <td className="p-4 align-middle font-bold">{cost.cost_tokens} tokens</td>
+                                        <td className="p-4 align-middle text-muted-foreground">{cost.description_sv}</td>
+                                        <td className="p-4 align-middle">
+                                            <Badge variant={cost.active ? "default" : "secondary"} className={cost.active ? "bg-green-600 hover:bg-green-700" : ""}>
+                                                {cost.active ? 'Active' : 'Inactive'}
+                                            </Badge>
+                                        </td>
+                                        <td className="p-4 align-middle">
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => setEditingCost(cost)}
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </CardContent>
             </Card>
 
-            {/* Edit Package Modal */}
-            {editingPackage && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-                    <Card className="p-6 max-w-md w-full">
-                        <h3 className="text-xl font-bold mb-4">
-                            {editingPackage.id ? 'Edit Token Package' : 'Add Token Package'}
-                        </h3>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Name</label>
+            {/* Edit Package Dialog */}
+            <Dialog open={!!editingPackage} onOpenChange={(open) => !open && setEditingPackage(null)}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>{editingPackage?.id ? 'Edit Token Package' : 'Add Token Package'}</DialogTitle>
+                        <DialogDescription>
+                            Configure the details for this token package.
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    {editingPackage && (
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Name</Label>
                                 <Input
+                                    id="name"
                                     value={editingPackage.name}
                                     onChange={(e) => setEditingPackage({ ...editingPackage, name: e.target.value })}
-                                    placeholder="Small Package"
                                 />
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Tokens</label>
-                                <Input
-                                    type="number"
-                                    value={editingPackage.tokens}
-                                    onChange={(e) => setEditingPackage({ ...editingPackage, tokens: parseInt(e.target.value) || 0 })}
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="tokens">Tokens</Label>
+                                    <Input
+                                        id="tokens"
+                                        type="number"
+                                        value={editingPackage.tokens}
+                                        onChange={(e) => setEditingPackage({ ...editingPackage, tokens: parseInt(e.target.value) || 0 })}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="price">Price (kr)</Label>
+                                    <Input
+                                        id="price"
+                                        type="number"
+                                        value={editingPackage.price}
+                                        onChange={(e) => setEditingPackage({ ...editingPackage, price: parseInt(e.target.value) || 0 })}
+                                    />
+                                </div>
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Price (kr)</label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Description</Label>
                                 <Input
-                                    type="number"
-                                    value={editingPackage.price}
-                                    onChange={(e) => setEditingPackage({ ...editingPackage, price: parseInt(e.target.value) || 0 })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Description</label>
-                                <Input
+                                    id="description"
                                     value={editingPackage.description}
                                     onChange={(e) => setEditingPackage({ ...editingPackage, description: e.target.value })}
-                                    placeholder="100 tokens för mindre projekt"
                                 />
                             </div>
-
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="active"
                                     checked={editingPackage.active}
                                     onCheckedChange={(checked) => setEditingPackage({ ...editingPackage, active: !!checked })}
                                 />
-                                <label htmlFor="active" className="text-sm font-medium">Active</label>
-                            </div>
-
-                            <div className="flex gap-2 pt-4">
-                                <Button
-                                    className="flex-1"
-                                    onClick={() => savePackage(editingPackage)}
-                                >
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Save
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="flex-1"
-                                    onClick={() => setEditingPackage(null)}
-                                >
-                                    Cancel
-                                </Button>
+                                <Label htmlFor="active">Active Status</Label>
                             </div>
                         </div>
-                    </Card>
-                </div>
-            )}
+                    )}
 
-            {/* Edit Cost Modal */}
-            {editingCost && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-                    <Card className="p-6 max-w-md w-full">
-                        <h3 className="text-xl font-bold mb-4">Edit Token Cost</h3>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setEditingPackage(null)}>Cancel</Button>
+                        <Button onClick={() => editingPackage && savePackage(editingPackage)}>Save Changes</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Feature Name (Swedish)</label>
+            {/* Edit Cost Dialog */}
+            <Dialog open={!!editingCost} onOpenChange={(open) => !open && setEditingCost(null)}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Edit Token Cost</DialogTitle>
+                        <DialogDescription>
+                            Update the cost for this feature.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {editingCost && (
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="feature_name">Feature Name (SV)</Label>
                                 <Input
+                                    id="feature_name"
                                     value={editingCost.feature_name_sv}
                                     onChange={(e) => setEditingCost({ ...editingCost, feature_name_sv: e.target.value })}
                                 />
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Cost (tokens)</label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="cost_tokens">Cost (Tokens)</Label>
                                 <Input
+                                    id="cost_tokens"
                                     type="number"
                                     value={editingCost.cost_tokens}
                                     onChange={(e) => setEditingCost({ ...editingCost, cost_tokens: parseInt(e.target.value) || 0 })}
                                 />
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Description (Swedish)</label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description_sv">Description (SV)</Label>
                                 <Input
+                                    id="description_sv"
                                     value={editingCost.description_sv}
                                     onChange={(e) => setEditingCost({ ...editingCost, description_sv: e.target.value })}
                                 />
                             </div>
-
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center space-x-2">
                                 <Checkbox
-                                    id="cost-active"
+                                    id="cost_active"
                                     checked={editingCost.active}
                                     onCheckedChange={(checked) => setEditingCost({ ...editingCost, active: !!checked })}
                                 />
-                                <label htmlFor="cost-active" className="text-sm font-medium">Active</label>
-                            </div>
-
-                            <div className="flex gap-2 pt-4">
-                                <Button
-                                    className="flex-1"
-                                    onClick={() => saveCost(editingCost)}
-                                >
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Save
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="flex-1"
-                                    onClick={() => setEditingCost(null)}
-                                >
-                                    Cancel
-                                </Button>
+                                <Label htmlFor="cost_active">Active Status</Label>
                             </div>
                         </div>
-                    </Card>
-                </div>
-            )}
+                    )}
 
-            {/* Delete Confirmation Modal using AlertDialog */}
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setEditingCost(null)}>Cancel</Button>
+                        <Button onClick={() => editingCost && saveCost(editingCost)}>Save Changes</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Alert */}
             <AlertDialog open={!!packageToDelete} onOpenChange={(open) => !open && setPackageToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -459,7 +463,7 @@ export default function AdminPremiumPage() {
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction 
-                            className="bg-red-600 hover:bg-red-700" 
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90" 
                             onClick={() => packageToDelete && executeDelete(packageToDelete)}
                         >
                             Delete
