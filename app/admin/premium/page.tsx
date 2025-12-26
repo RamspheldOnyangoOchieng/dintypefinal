@@ -7,6 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Save } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface TokenPackage {
     id: string;
@@ -32,6 +43,8 @@ export default function AdminPremiumPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [editingPackage, setEditingPackage] = useState<TokenPackage | null>(null);
     const [editingCost, setEditingCost] = useState<TokenCost | null>(null);
+    const [selectedPackages, setSelectedPackages] = useState<string[]>([]);
+    const [packageToDelete, setPackageToDelete] = useState<string[] | null>(null);
     const supabase = createClient();
 
     useEffect(() => {
@@ -48,6 +61,9 @@ export default function AdminPremiumPage() {
 
             if (packagesError) throw packagesError;
             setTokenPackages(packages || []);
+            
+            // Clear selections when refetching
+            setSelectedPackages([]);
 
             // Fetch token costs
             const { data: costs, error: costsError } = await supabase
@@ -85,18 +101,17 @@ export default function AdminPremiumPage() {
         }
     }
 
-    async function deletePackage(id: string) {
-        if (!confirm('Are you sure you want to delete this package?')) return;
-
+    async function executeDelete(ids: string[]) {
         try {
             const { error } = await supabase
                 .from('token_packages')
                 .delete()
-                .eq('id', id);
+                .in('id', ids);
 
             if (error) throw error;
 
-            toast.success('Package deleted!');
+            toast.success(`${ids.length} package(s) deleted!`);
+            setPackageToDelete(null);
             fetchData();
         } catch (error) {
             console.error('Error deleting package:', error);
@@ -124,6 +139,22 @@ export default function AdminPremiumPage() {
         }
     }
 
+    const toggleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedPackages(tokenPackages.map(p => p.id));
+        } else {
+            setSelectedPackages([]);
+        }
+    };
+
+    const toggleSelectOne = (id: string, checked: boolean) => {
+        if (checked) {
+            setSelectedPackages(prev => [...prev, id]);
+        } else {
+            setSelectedPackages(prev => prev.filter(pId => pId !== id));
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -139,7 +170,19 @@ export default function AdminPremiumPage() {
             {/* Token Packages Section */}
             <Card className="p-6 mb-8">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold">Token Packages</h2>
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-2xl font-bold">Token Packages</h2>
+                        {selectedPackages.length > 0 && (
+                             <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => setPackageToDelete(selectedPackages)}
+                             >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Selected ({selectedPackages.length})
+                             </Button>
+                        )}
+                    </div>
                     <Button
                         onClick={() => setEditingPackage({
                             id: '',
@@ -159,6 +202,12 @@ export default function AdminPremiumPage() {
                     <table className="w-full">
                         <thead className="bg-muted">
                             <tr>
+                                <th className="p-3 w-[50px]">
+                                    <Checkbox
+                                        checked={selectedPackages.length === tokenPackages.length && tokenPackages.length > 0}
+                                        onCheckedChange={(checked) => toggleSelectAll(!!checked)}
+                                    />
+                                </th>
                                 <th className="text-left p-3">Name</th>
                                 <th className="text-left p-3">Tokens</th>
                                 <th className="text-left p-3">Price (kr)</th>
@@ -169,7 +218,13 @@ export default function AdminPremiumPage() {
                         </thead>
                         <tbody>
                             {tokenPackages.map((pkg) => (
-                                <tr key={pkg.id} className="border-b">
+                                <tr key={pkg.id} className="border-b hover:bg-muted/50 transition-colors">
+                                    <td className="p-3">
+                                        <Checkbox
+                                            checked={selectedPackages.includes(pkg.id)}
+                                            onCheckedChange={(checked) => toggleSelectOne(pkg.id, !!checked)}
+                                        />
+                                    </td>
                                     <td className="p-3">{pkg.name}</td>
                                     <td className="p-3">{pkg.tokens}</td>
                                     <td className="p-3">{pkg.price} kr</td>
@@ -190,13 +245,20 @@ export default function AdminPremiumPage() {
                                         <Button
                                             size="sm"
                                             variant="destructive"
-                                            onClick={() => deletePackage(pkg.id)}
+                                            onClick={() => setPackageToDelete([pkg.id])}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </td>
                                 </tr>
                             ))}
+                            {tokenPackages.length === 0 && (
+                                <tr>
+                                    <td colSpan={7} className="p-6 text-center text-muted-foreground">
+                                        No token packages found.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -246,7 +308,7 @@ export default function AdminPremiumPage() {
 
             {/* Edit Package Modal */}
             {editingPackage && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
                     <Card className="p-6 max-w-md w-full">
                         <h3 className="text-xl font-bold mb-4">
                             {editingPackage.id ? 'Edit Token Package' : 'Add Token Package'}
@@ -258,7 +320,7 @@ export default function AdminPremiumPage() {
                                 <Input
                                     value={editingPackage.name}
                                     onChange={(e) => setEditingPackage({ ...editingPackage, name: e.target.value })}
-                                    placeholder="200 tokens"
+                                    placeholder="Small Package"
                                 />
                             </div>
 
@@ -285,17 +347,15 @@ export default function AdminPremiumPage() {
                                 <Input
                                     value={editingPackage.description}
                                     onChange={(e) => setEditingPackage({ ...editingPackage, description: e.target.value })}
-                                    placeholder="200 tokens för 99kr"
+                                    placeholder="100 tokens för mindre projekt"
                                 />
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
+                                <Checkbox
                                     id="active"
                                     checked={editingPackage.active}
-                                    onChange={(e) => setEditingPackage({ ...editingPackage, active: e.target.checked })}
-                                    className="w-4 h-4"
+                                    onCheckedChange={(checked) => setEditingPackage({ ...editingPackage, active: !!checked })}
                                 />
                                 <label htmlFor="active" className="text-sm font-medium">Active</label>
                             </div>
@@ -323,7 +383,7 @@ export default function AdminPremiumPage() {
 
             {/* Edit Cost Modal */}
             {editingCost && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
                     <Card className="p-6 max-w-md w-full">
                         <h3 className="text-xl font-bold mb-4">Edit Token Cost</h3>
 
@@ -354,12 +414,10 @@ export default function AdminPremiumPage() {
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
+                                <Checkbox
                                     id="cost-active"
                                     checked={editingCost.active}
-                                    onChange={(e) => setEditingCost({ ...editingCost, active: e.target.checked })}
-                                    className="w-4 h-4"
+                                    onCheckedChange={(checked) => setEditingCost({ ...editingCost, active: !!checked })}
                                 />
                                 <label htmlFor="cost-active" className="text-sm font-medium">Active</label>
                             </div>
@@ -384,6 +442,31 @@ export default function AdminPremiumPage() {
                     </Card>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal using AlertDialog */}
+            <AlertDialog open={!!packageToDelete} onOpenChange={(open) => !open && setPackageToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete 
+                            {packageToDelete && packageToDelete.length > 1 
+                                ? ` ${packageToDelete.length} packages` 
+                                : ' this package'} 
+                            from the database.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                            className="bg-red-600 hover:bg-red-700" 
+                            onClick={() => packageToDelete && executeDelete(packageToDelete)}
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
