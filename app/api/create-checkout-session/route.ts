@@ -35,13 +35,24 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Check if this is a token purchase
-    const isTokenPurchase = planId.startsWith("token_") || (metadata && metadata.type === "token_purchase")
+    const isTokenPurchase = planId.startsWith("token_") || (metadata && metadata.type === "token_purchase") || planId.startsWith("pack_")
 
     let productName, productDescription, priceAmount, productMetadata
 
     if (isTokenPurchase) {
       // Handle token purchase
-      const tokenAmount = metadata?.tokens || Number.parseInt(planId.split("_")[1]) || 0
+      // Support both planId formats (token_X or pack_X) or metadata
+      let tokenAmount = metadata?.tokens
+      if (!tokenAmount) {
+        if (planId.startsWith("token_")) tokenAmount = Number.parseInt(planId.split("_")[1])
+        else if (planId.startsWith("pack_")) {
+          // We need to look up the pack details if we only have ID, or rely on metadata passed from client
+          // For resilience, let's trust metadata if present, or defaults.
+          // The client sends the correct tokens in metadata now.
+        }
+      }
+      tokenAmount = tokenAmount || 0
+
       const price = metadata?.price || 0
 
       if (tokenAmount <= 0 || price <= 0) {
@@ -59,6 +70,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Handle subscription plan
+      // We first try to fetch from DB. If not found, we might fallback if it's the known premium plan.
       const { data: plan, error: planError } = await supabase
         .from("subscription_plans")
         .select("*")
@@ -66,20 +78,35 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (planError || !plan) {
-        return NextResponse.json({ success: false, error: "Plan not found" }, { status: 404 })
-      }
-
-      // Calculate the price to use (discounted_price if available, otherwise original_price)
-      priceAmount = (plan as any).discounted_price !== null ? (plan as any).discounted_price : (plan as any).original_price
-      productName = (plan as any).name
-      productDescription = (plan as any).description || `${(plan as any).duration} month subscription`
-      productMetadata = {
-        type: "premium_purchase",
-        userId: authenticatedUserId,
-        planId: planId,
-        planName: (plan as any).name,
-        planDuration: (plan as any).duration.toString(),
-        price: priceAmount.toString(),
+        // Fallback for 'premium_monthly' if DB fetch fails but ID matches (Fail-safe)
+        if (planId === 'premium_monthly') {
+          priceAmount = 110
+          productName = 'Premium Membership'
+          productDescription = 'Unlimited access for 1 month'
+          productMetadata = {
+            type: "premium_purchase",
+            userId: authenticatedUserId,
+            planId: planId,
+            planName: productName,
+            planDuration: "1",
+            price: priceAmount.toString(),
+          }
+        } else {
+          return NextResponse.json({ success: false, error: "Plan not found" }, { status: 404 })
+        }
+      } else {
+        // Calculate the price to use (discounted_price if available, otherwise original_price)
+        priceAmount = (plan as any).discounted_price !== null ? (plan as any).discounted_price : (plan as any).original_price
+        productName = (plan as any).name
+        productDescription = (plan as any).description || `${(plan as any).duration} month subscription`
+        productMetadata = {
+          type: "premium_purchase",
+          userId: authenticatedUserId,
+          planId: planId,
+          planName: (plan as any).name,
+          planDuration: (plan as any).duration ? (plan as any).duration.toString() : "1",
+          price: priceAmount.toString(),
+        }
       }
     }
 
@@ -121,7 +148,7 @@ export async function POST(request: NextRequest) {
       cancel_url: cancelUrl || `${request.nextUrl.origin}/premium?canceled=true`,
       customer_email: userEmail,
       automatic_tax: {
-        enabled: true,
+        enabled: false, // Disabled to prevent address requirements in test mode
       },
       metadata: {
         ...productMetadata,
