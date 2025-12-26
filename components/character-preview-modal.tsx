@@ -140,14 +140,14 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
                     {/* Character Card */}
-                    <Card className="overflow-hidden border-2 hover:border-primary/50 transition-colors bg-card">
-                        <div className="relative h-48 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                    <Card className="overflow-hidden border-2 hover:border-primary/50 transition-colors bg-card h-full flex flex-col">
+                        <div className="relative h-64 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
                             {character.image_url ? (
                                 <Image
                                     src={character.image_url}
                                     alt={character.name}
                                     fill
-                                    className="object-cover"
+                                    className="object-cover object-top"
                                 />
                             ) : (
                                 <div className="absolute inset-0 flex items-center justify-center">
@@ -178,7 +178,7 @@ export function CharacterPreviewModal({ isOpen, onClose, redirectPath }: Charact
 
                     {/* Create New Card */}
                     <Card
-                        className="overflow-hidden border-2 border-dashed border-pink-500/30 hover:border-pink-500/60 hover:bg-pink-500/5 transition-all cursor-pointer group bg-transparent"
+                        className="overflow-hidden border-2 border-dashed border-pink-500/30 hover:border-pink-500/60 hover:bg-pink-500/5 transition-all cursor-pointer group bg-transparent h-full flex flex-col"
                         onClick={handleCreateClick}
                     >
                         <CardContent className="p-6 h-full flex flex-col items-center justify-center text-center">
