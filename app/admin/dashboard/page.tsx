@@ -31,6 +31,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function AdminDashboardPage() {
   const { user, isLoading } = useAuth()
@@ -54,6 +55,13 @@ export default function AdminDashboardPage() {
   const [yearlyDiscount, setYearlyDiscount] = useState(settings.pricing.yearly.discount.toString())
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
+
+  // Budget state
+  const [budgetLimits, setBudgetLimits] = useState({
+    apiCost: 1000,
+    messages: 4000000,
+    images: 2500,
+  })
 
   // Real stats from actual data
   const [monthlyRevenue, setMonthlyRevenue] = useState<number | undefined>(undefined)
@@ -127,6 +135,19 @@ export default function AdminDashboardPage() {
       } catch (error) {
         console.error("Failed to fetch recent activity:", error)
         setRecentActivity([])
+      }
+
+      try {
+        const budgetResponse = await fetch("/api/admin/settings")
+        if (budgetResponse.ok) {
+          const budgetData = await budgetResponse.json()
+          const limits = budgetData.settings.find((s: any) => s.key === 'budget_limits')
+          if (limits) {
+            setBudgetLimits(prev => ({ ...prev, ...limits.value }))
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch budget limits")
       }
     }
 
@@ -225,6 +246,21 @@ export default function AdminDashboardPage() {
           },
         },
       })
+
+      // Save budget to DB
+      try {
+        await fetch("/api/admin/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            key: "budget_limits",
+            value: budgetLimits
+          })
+        })
+      } catch (e) {
+        console.error("Failed to save budget limits to DB")
+      }
+
       setSaveMessage("Settings saved successfully!")
       setIsSaving(false)
 
@@ -296,6 +332,7 @@ export default function AdminDashboardPage() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="settings">Site Settings</TabsTrigger>
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
+          <TabsTrigger value="budget">Budget</TabsTrigger>
           <TabsTrigger value="footer">Footer</TabsTrigger>
         </TabsList>
 
@@ -691,6 +728,63 @@ export default function AdminDashboardPage() {
                 >
                   <Save className="mr-2 h-4 w-4" />
                   {isSaving ? "Saving..." : "Save Pricing"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="budget" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Global Budget Limits</CardTitle>
+              <CardDescription>
+                Set monthly limits to prevent runaway costs from API usage.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="apiCostLimit">Monthly API Cost Limit (SEK)</Label>
+                  <Input
+                    id="apiCostLimit"
+                    type="number"
+                    value={budgetLimits.apiCost}
+                    onChange={(e) => setBudgetLimits({ ...budgetLimits, apiCost: Number(e.target.value) })}
+                  />
+                  <p className="text-xs text-muted-foreground">Approx. $100 USD = 1050 SEK</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="messagesLimit">Monthly Messages Limit</Label>
+                  <Input
+                    id="messagesLimit"
+                    type="number"
+                    value={budgetLimits.messages}
+                    onChange={(e) => setBudgetLimits({ ...budgetLimits, messages: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="imagesLimit">Monthly Images Limit</Label>
+                  <Input
+                    id="imagesLimit"
+                    type="number"
+                    value={budgetLimits.images}
+                    onChange={(e) => setBudgetLimits({ ...budgetLimits, images: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+              
+              <Alert>
+                <Activity className="h-4 w-4" />
+                <AlertDescription>
+                  When a limit is reached, AI processing will be temporarily disabled for all users until the next month or until limits are increased.
+                </AlertDescription>
+              </Alert>
+
+              <div className="pt-4">
+                <Button onClick={handleSave} disabled={isSaving}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isSaving ? "Saving..." : "Save Budget Limits"}
                 </Button>
               </div>
             </CardContent>

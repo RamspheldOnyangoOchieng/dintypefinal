@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase-server"
 
-// Simple in-memory cache with expiration
-const cache = new Map<string, { data: any; timestamp: number }>()
-const CACHE_TTL = 60 * 1000 // 1 minute cache
+// Removed in-memory cache to ensure real-time status updates after payment
 
 export const dynamic = "force-dynamic"
 
@@ -20,11 +18,6 @@ export async function GET() {
 
     const userId = user.id
 
-    // Check cache first
-    const cached = cache.get(userId)
-    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
-      return NextResponse.json(cached.data)
-    }
 
     // Check premium_profiles table for active premium status
     const { data: premiumProfile, error: premiumError } = await supabase
@@ -76,8 +69,6 @@ export async function GET() {
       creditBalance,
     }
 
-    // Cache the result
-    cache.set(userId, { data: response, timestamp: Date.now() })
 
     return NextResponse.json(response)
   } catch (error) {

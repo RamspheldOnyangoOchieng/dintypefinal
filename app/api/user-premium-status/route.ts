@@ -55,7 +55,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify the requested userId matches the authenticated user (for security)
-    if (!authenticatedUserId || authenticatedUserId !== userId) {
+    // ADMIN BYPASS: Allow admins to view any user's status
+    let isRequestingSelf = authenticatedUserId === userId;
+    let isAdminUser = false;
+
+    if (authenticatedUserId && !isRequestingSelf) {
+        const { isUserAdmin } = await import("@/lib/admin-auth");
+        const supabase = await createClient();
+        isAdminUser = await isUserAdmin(supabase, authenticatedUserId);
+    }
+
+    if (!authenticatedUserId || (!isRequestingSelf && !isAdminUser)) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
@@ -102,7 +112,7 @@ export async function GET(request: NextRequest) {
                     const gracePeriodDays = 3;
                     const graceDate = new Date(expiryDate);
                     graceDate.setDate(graceDate.getDate() + gracePeriodDays);
-                    
+
                     isPremium = new Date() < graceDate;
                     console.log(`📅 Premium expires: ${expiresAt}, Grace until: ${graceDate.toISOString()}, isPremium: ${isPremium}`);
                 }

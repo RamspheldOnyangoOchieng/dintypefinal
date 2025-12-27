@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { UserTokenBalance } from "@/components/user-token-balance"
 import { UserNav } from "@/components/user-nav"
 import { useAuth } from "./auth-context"
+import { Badge } from "@/components/ui/badge"
 
 export function SiteHeader() {
   const { user } = useAuth()
@@ -24,6 +25,11 @@ export function SiteHeader() {
           {user ? (
             <div className="flex items-center gap-2">
               <span className="text-sm text-foreground/90 hidden lg:inline">Hej, {user.username || ""}!</span>
+              {user.isPremium && (
+                <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600 text-[10px] h-5 px-1.5 uppercase font-bold">
+                  Pro
+                </Badge>
+              )}
               <UserNav />
             </div>
           ) : (

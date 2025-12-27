@@ -173,6 +173,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
       description: `Premium subscription credit: ${creditAmount} credits`,
     })
 
+    // Sync with profiles table
+    await supabase
+      .from("profiles")
+      .update({ is_premium: true } as any)
+      .eq("id", userId)
+
     console.log(`✅ Granted ${creditAmount} credits to new premium user ${userId}.`)
 
     itemName = session.metadata.planName || "Premium Plan"

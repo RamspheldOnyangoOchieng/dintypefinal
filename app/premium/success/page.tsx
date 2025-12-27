@@ -7,10 +7,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { useAuth } from "@/components/auth-context";
 
 export default function SuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { refreshUser } = useAuth();
   const sessionId = searchParams.get("session_id");
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState<string>("Verifying your payment, please wait...");
@@ -31,10 +33,18 @@ export default function SuccessPage() {
         }
         return res.json();
       })
-      .then((data) => {
+      .then(async (data) => {
         if (data.isPaid) {
           setStatus("success");
           setMessage("Your payment was successful! Your account has been updated.");
+
+          // Refresh user state globally
+          try {
+            await refreshUser();
+          } catch (e) {
+            console.error("Failed to refresh user after success", e);
+          }
+
           setTimeout(() => router.push("/profile"), 3000);
         } else {
           setStatus("error");

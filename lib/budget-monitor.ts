@@ -1,8 +1,7 @@
 import { createAdminClient } from './supabase-admin'
 
-// Monthly limits to prevent surprise bills
-// Note: API costs are still in USD (Novita/Groq), but displayed in SEK for admin
-const MONTHLY_LIMITS = {
+// Default monthly limits to prevent surprise bills
+const DEFAULT_MONTHLY_LIMITS = {
   apiCost: 1000, // ~1000 SEK (~100 USD) max spend per month
   messages: 4_000_000, // 4M messages = ~100 USD at Novita pricing
   images: 2500, // Flux-Pro equivalent (conservative)
@@ -10,6 +9,27 @@ const MONTHLY_LIMITS = {
 
 // Exchange rate USD to SEK (approximate, update as needed)
 const USD_TO_SEK = 10.5
+
+/**
+ * Get current budget limits from settings table or return defaults
+ */
+export async function getBudgetLimits(): Promise<typeof DEFAULT_MONTHLY_LIMITS> {
+  try {
+    const supabase = await createAdminClient()
+    const { data } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'budget_limits')
+      .maybeSingle()
+
+    if (data?.value) {
+      return { ...DEFAULT_MONTHLY_LIMITS, ...(data.value as any) }
+    }
+  } catch (e) {
+    console.error('Failed to fetch budget limits:', e)
+  }
+  return DEFAULT_MONTHLY_LIMITS
+}
 
 export interface MonthlyUsage {
   messages: number
@@ -51,6 +71,8 @@ export async function checkMonthlyBudget(): Promise<BudgetStatus> {
     .select('action, tokens_used, api_cost, created_at')
     .gte('created_at', monthStart.toISOString())
 
+  const limits = await getBudgetLimits()
+
   if (!logs) {
     return {
       allowed: true,
@@ -62,7 +84,7 @@ export async function checkMonthlyBudget(): Promise<BudgetStatus> {
         apiCostUSD: 0,
         tokenRevenue: 0,
       },
-      limits: MONTHLY_LIMITS,
+      limits: limits,
       percentUsed: { cost: 0, messages: 0, images: 0 },
     }
   }
@@ -83,39 +105,39 @@ export async function checkMonthlyBudget(): Promise<BudgetStatus> {
 
   // Calculate percentage used
   const percentUsed = {
-    cost: (usage.apiCost / MONTHLY_LIMITS.apiCost) * 100,
-    messages: (usage.messages / MONTHLY_LIMITS.messages) * 100,
-    images: (usage.images / MONTHLY_LIMITS.images) * 100,
+    cost: (usage.apiCost / limits.apiCost) * 100,
+    messages: (usage.messages / limits.messages) * 100,
+    images: (usage.images / limits.images) * 100,
   }
 
   // Check if any limit exceeded
-  if (usage.apiCost >= MONTHLY_LIMITS.apiCost) {
+  if (usage.apiCost >= limits.apiCost) {
     return {
       allowed: false,
       current: usage,
-      limits: MONTHLY_LIMITS,
+      limits: limits,
       percentUsed,
-      message: `Monthly budget limit reached (${MONTHLY_LIMITS.apiCost} SEK). Service temporarily disabled. Contact admin.`,
+      message: `Monthly budget limit reached (${limits.apiCost} SEK). Service temporarily disabled. Contact admin.`,
     }
   }
 
-  if (usage.messages >= MONTHLY_LIMITS.messages) {
+  if (usage.messages >= limits.messages) {
     return {
       allowed: false,
       current: usage,
-      limits: MONTHLY_LIMITS,
+      limits: limits,
       percentUsed,
-      message: `Monthly message limit reached (${MONTHLY_LIMITS.messages.toLocaleString()}). Service temporarily disabled.`,
+      message: `Monthly message limit reached (${limits.messages.toLocaleString()}). Service temporarily disabled.`,
     }
   }
 
-  if (usage.images >= MONTHLY_LIMITS.images) {
+  if (usage.images >= limits.images) {
     return {
       allowed: false,
       current: usage,
-      limits: MONTHLY_LIMITS,
+      limits: limits,
       percentUsed,
-      message: `Monthly image limit reached (${MONTHLY_LIMITS.images}). Service temporarily disabled.`,
+      message: `Monthly image limit reached (${limits.images}). Service temporarily disabled.`,
     }
   }
 
@@ -127,7 +149,7 @@ export async function checkMonthlyBudget(): Promise<BudgetStatus> {
     return {
       allowed: true,
       current: usage,
-      limits: MONTHLY_LIMITS,
+      limits: limits,
       percentUsed,
       warning: true,
       message: `Warning: Approaching monthly budget limit (${Math.max(
@@ -141,7 +163,7 @@ export async function checkMonthlyBudget(): Promise<BudgetStatus> {
   return {
     allowed: true,
     current: usage,
-    limits: MONTHLY_LIMITS,
+    limits: limits,
     percentUsed,
   }
 }
@@ -244,11 +266,13 @@ export async function projectMonthlyCost(): Promise<{
   const dailyAverage = daysElapsed > 0 ? currentCost / daysElapsed : 0
   const projected = dailyAverage * totalDaysInMonth
 
+  const limits = await getBudgetLimits()
+
   return {
     projected,
     daysElapsed,
     daysRemaining,
     currentCost,
-    onTrackToExceed: projected > MONTHLY_LIMITS.apiCost,
+    onTrackToExceed: projected > limits.apiCost,
   }
 }

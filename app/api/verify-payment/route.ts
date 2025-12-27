@@ -104,11 +104,13 @@ async function fulfillOrder(session: any) {
         console.error("❌ Exception in premium_profiles:", profileError);
       }
 
-      // Method 2: Record in payment_transactions (this is crucial for our status detection)
+
+
+      // Record in payment_transactions (this is crucial for our status detection)
       try {
         const { data: transactionData, error: transactionError } = await supabaseAdmin
           .from("payment_transactions")
-          .insert({
+          .upsert({
             user_id: userId,
             stripe_session_id: session.id,
             plan_id: session.metadata.planId,
@@ -117,7 +119,7 @@ async function fulfillOrder(session: any) {
             status: "completed",
             created_at: new Date().toISOString(),
             metadata: session.metadata
-          });
+          }, { onConflict: 'stripe_session_id' });
 
         if (transactionError) {
           console.error("❌ Error recording payment transaction:", JSON.stringify(transactionError, null, 2));
@@ -127,6 +129,37 @@ async function fulfillOrder(session: any) {
         }
       } catch (transactionError) {
         console.error("❌ Exception in payment_transactions:", transactionError);
+      }
+
+      // Grant credits for new premium subscribers (added for sync with webhook)
+      const creditAmount = 110
+      try {
+        await supabaseAdmin.from("user_credits").upsert({ 
+          user_id: userId, 
+          balance: creditAmount,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id" })
+
+        await supabaseAdmin.from("credit_transactions").insert({
+          user_id: userId,
+          amount: creditAmount,
+          type: "subscription_grant",
+          description: `Premium subscription credit: ${creditAmount} credits (via verify)`,
+        })
+        console.log(`✅ Granted ${creditAmount} credits via verify-payment`);
+      } catch (creditError) {
+        console.error("❌ Error granting credits in verify-payment:", creditError);
+      }
+
+      // Sync with profiles table
+      try {
+        await supabaseAdmin
+          .from("profiles")
+          .update({ is_premium: true } as any)
+          .eq("id", userId)
+        console.log(`✅ Synced profile is_premium=true for ${userId}`);
+      } catch (profileSyncError) {
+        console.error("❌ Error syncing profile in verify-payment:", profileSyncError);
       }
 
       // Method 3: Create a simple premium record as last resort

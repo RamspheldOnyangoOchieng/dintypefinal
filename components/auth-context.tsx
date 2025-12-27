@@ -10,6 +10,7 @@ export type User = {
   username: string
   email: string
   isAdmin: boolean
+  isPremium: boolean
   createdAt: string
   avatar?: string
 }
@@ -21,6 +22,7 @@ type AuthContextType = {
   signup: (username: string, email: string, password: string) => Promise<boolean>
   logout: () => void
   refreshSession: () => Promise<boolean>
+  refreshUser: () => Promise<void>
   isLoading: boolean
   deleteUser: (id: string) => Promise<{ success: boolean; error?: string; needsMigration?: boolean }>
   checkDeleteUserFunction: () => Promise<boolean>
@@ -90,11 +92,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Check if the user is an admin
         const adminStatus = await isAdmin(user.id)
 
+        // Check premium status
+        let isPremium = false
+        try {
+          const premiumResponse = await fetch(`/api/user-premium-status?userId=${user.id}`)
+          if (premiumResponse.ok) {
+            const premiumData = await premiumResponse.json()
+            isPremium = premiumData.isPremium
+          }
+        } catch (e) {
+          console.error("Failed to check premium status during load")
+        }
+
         setUser({
           id: user.id,
           username: user.user_metadata?.username || user.email?.split("@")[0] || "User",
           email: user.email || "",
           isAdmin: adminStatus,
+          isPremium: isPremium,
           createdAt: user.created_at || new Date().toISOString(),
           avatar: user.user_metadata?.avatar_url,
         })
@@ -184,11 +199,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           adminStatus = false
         }
 
+        // Check premium status
+        let isPremium = false
+        try {
+          const premiumResponse = await fetch(`/api/user-premium-status?userId=${data.user.id}`)
+          if (premiumResponse.ok) {
+            const premiumData = await premiumResponse.json()
+            isPremium = premiumData.isPremium
+          }
+        } catch (e) {
+          console.error("Failed to check premium status during login")
+        }
+
         setUser({
           id: data.user.id,
           username: data.user.user_metadata?.username || data.user.email?.split("@")[0] || "User",
           email: data.user.email || "",
           isAdmin: adminStatus,
+          isPremium: isPremium,
           createdAt: data.user.created_at || new Date().toISOString(),
           avatar: data.user.user_metadata?.avatar_url,
         })
@@ -382,6 +410,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const refreshUser = async () => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (authUser) {
+        const adminStatus = await isAdmin(authUser.id)
+
+        let isPremium = false
+        try {
+          const premiumResponse = await fetch(`/api/user-premium-status?userId=${authUser.id}`)
+          if (premiumResponse.ok) {
+            const premiumData = await premiumResponse.json()
+            isPremium = premiumData.isPremium
+          }
+        } catch (e) {
+          console.error("Failed to check premium status during refresh")
+        }
+
+        setUser({
+          id: authUser.id,
+          username: authUser.user_metadata?.username || authUser.email?.split("@")[0] || "User",
+          email: authUser.email || "",
+          isAdmin: adminStatus,
+          isPremium: isPremium,
+          createdAt: authUser.created_at || new Date().toISOString(),
+          avatar: authUser.user_metadata?.avatar_url,
+        })
+      }
+    } catch (error) {
+      console.error("Error refreshing user:", error)
+    }
+  }
+
   // Add this function to the AuthProvider component
   const refreshSession = async () => {
     try {
@@ -409,6 +469,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signup,
         logout,
         refreshSession,
+        refreshUser,
         isLoading,
         deleteUser,
         checkDeleteUserFunction,

@@ -11,14 +11,9 @@ import {
   Trash2,
   UserPlus,
   Edit,
-  Shield,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Check,
-  X,
-  Filter,
   Download,
+  Coins,
+  Zap
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -78,6 +73,17 @@ export default function AdminUsersPage() {
   const [checkingFunction, setCheckingFunction] = useState(true)
   const [deleteEnabled, setDeleteEnabled] = useState(true) // Set to true by default now that migration is done
   const [filterRole, setFilterRole] = useState<"all" | "admin" | "user">("all")
+
+  // Token & Subscription Management
+  const [showTokenDialog, setShowTokenDialog] = useState(false)
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false)
+  const [tokenAmount, setTokenAmount] = useState(0)
+  const [tokenDescription, setTokenDescription] = useState("")
+  const [subscriptionForm, setSubscriptionForm] = useState({
+    status: "active",
+    expiresAt: "",
+  })
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -443,6 +449,104 @@ export default function AdminUsersPage() {
     window.URL.revokeObjectURL(url)
   }
 
+  const openTokenDialog = (user: UserWithActions) => {
+    setSelectedUser(user)
+    setTokenAmount(0)
+    setTokenDescription("")
+    setShowTokenDialog(true)
+  }
+
+  const openSubscriptionDialog = async (user: UserWithActions) => {
+    setSelectedUser(user)
+    setIsProcessing(true)
+    setShowSubscriptionDialog(true)
+
+    try {
+      // Fetch current subscription status
+      const response = await fetch(`/api/user-premium-status?userId=${user.id}`)
+      const data = await response.json()
+
+      if (data.success) {
+        setSubscriptionForm({
+          status: data.isPremium ? "active" : "inactive",
+          expiresAt: data.expiresAt ? format(new Date(data.expiresAt), "yyyy-MM-dd") : format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd")
+        })
+      } else {
+        setSubscriptionForm({
+          status: "inactive",
+          expiresAt: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd")
+        })
+      }
+    } catch (error) {
+      setSubscriptionForm({
+        status: "inactive",
+        expiresAt: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd")
+      })
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleManageTokens = async () => {
+    if (!selectedUser) return
+    setIsProcessing(true)
+
+    try {
+      const response = await fetch("/api/admin/manage-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: selectedUser.id,
+          action: "grant-tokens",
+          amount: tokenAmount,
+          description: tokenDescription || "Admin manual grant"
+        })
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast({ title: "Tokens Granted", description: `${tokenAmount} tokens granted to ${selectedUser.username}` })
+        setShowTokenDialog(false)
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" })
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleManageSubscription = async () => {
+    if (!selectedUser) return
+    setIsProcessing(true)
+
+    try {
+      const response = await fetch("/api/admin/manage-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: selectedUser.id,
+          action: "update-subscription",
+          status: subscriptionForm.status,
+          expiresAt: new Date(subscriptionForm.expiresAt).toISOString()
+        })
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast({ title: "Subscription Updated", description: `Premium status updated for ${selectedUser.username}` })
+        setShowSubscriptionDialog(false)
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" })
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
   // Loading state
   if (isLoading || checkingFunction) {
     return (
@@ -663,6 +767,14 @@ export default function AdminUsersPage() {
                               <DropdownMenuItem className="cursor-pointer" onClick={() => openEditDialog(user)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer" onClick={() => openTokenDialog(user)}>
+                                <Coins className="mr-2 h-4 w-4" />
+                                Manage Tokens
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer" onClick={() => openSubscriptionDialog(user)}>
+                                <Zap className="mr-2 h-4 w-4" />
+                                Manage Subscription
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 className="cursor-pointer text-yellow-600 hover:text-yellow-700 focus:text-yellow-700"
@@ -951,6 +1063,98 @@ export default function AdminUsersPage() {
             <Button onClick={handleEditUser} className="bg-blue-600 hover:bg-blue-700">
               <Check className="mr-2 h-4 w-4" />
               Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Tokens Dialog */}
+      <Dialog open={showTokenDialog} onOpenChange={setShowTokenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Coins className="h-5 w-5 text-yellow-500" />
+              <span>Manage Tokens - {selectedUser?.username}</span>
+            </DialogTitle>
+            <DialogDescription>
+              Grant additional tokens to this user.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="tokenAmount">Amount (use negative to deduct)</Label>
+              <Input
+                id="tokenAmount"
+                type="number"
+                value={tokenAmount}
+                onChange={(e) => setTokenAmount(Number(e.target.value))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tokenDescription">Description</Label>
+              <Input
+                id="tokenDescription"
+                placeholder="Reason for adjustment"
+                value={tokenDescription}
+                onChange={(e) => setTokenDescription(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTokenDialog(false)}>Cancel</Button>
+            <Button disabled={isProcessing} onClick={handleManageTokens}>
+              {isProcessing ? "Updating..." : "Update Tokens"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Subscription Dialog */}
+      <Dialog open={showSubscriptionDialog} onOpenChange={setShowSubscriptionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Zap className="h-5 w-5 text-indigo-500" />
+              <span>Manage Subscription - {selectedUser?.username}</span>
+            </DialogTitle>
+            <DialogDescription>
+              Manually set the premium status and expiration for this user.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="subStatus">Premium Status</Label>
+              <Select 
+                value={subscriptionForm.status} 
+                onValueChange={(v) => setSubscriptionForm({...subscriptionForm, status: v})}
+              >
+                <SelectTrigger id="subStatus">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active (Premium)</SelectItem>
+                  <SelectItem value="inactive">Inactive (Regular)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expiresAt">Expiration Date</Label>
+              <Input
+                id="expiresAt"
+                type="date"
+                value={subscriptionForm.expiresAt}
+                onChange={(e) => setSubscriptionForm({...subscriptionForm, expiresAt: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSubscriptionDialog(false)}>Cancel</Button>
+            <Button disabled={isProcessing} onClick={handleManageSubscription}>
+              {isProcessing ? "Updating..." : "Update Subscription"}
             </Button>
           </DialogFooter>
         </DialogContent>
