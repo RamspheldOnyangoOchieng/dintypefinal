@@ -226,68 +226,67 @@ export default function PremiumPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
+    <div className="min-h-screen bg-background text-foreground pb-12">
       {/* Dynamic Background Effect */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]" />
-        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[50%] bg-purple-500/10 rounded-full blur-[120px]" />
-        <div className="absolute -bottom-[10%] left-[20%] w-[50%] h-[30%] bg-blue-500/10 rounded-full blur-[120px]" />
+        <div className="absolute -top-[5%] -left-[5%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px]" />
+        <div className="absolute top-[10%] -right-[5%] w-[25%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="container max-w-7xl mx-auto py-12 px-4 space-y-20 relative">
+      <div className="container max-w-6xl mx-auto py-8 px-4 space-y-12 relative">
         {/* Header Section */}
-        <div className="text-center space-y-6">
-          <Badge variant="outline" className="px-4 py-1.5 border-primary/20 text-primary bg-primary/5 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="text-center space-y-4">
+          <Badge variant="outline" className="px-3 py-1 border-primary/20 text-primary bg-primary/5 backdrop-blur-sm">
             DINTYP.SE PREMIUM
           </Badge>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-gradient-to-b from-foreground to-foreground/50 bg-clip-text text-transparent italic">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent italic leading-tight">
             Uppgradera din upplevelse
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            Lås upp obegränsad potential, exklusivt innehåll och månatliga krediter för att förgylla din digitala värld.
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            Lås upp obegränsad potential, exklusivt innehåll och månatliga krediter.
           </p>
 
-          {/* Balance Cards (Mobile & Desktop) */}
+          {/* Balance Cards (Compact) */}
           {user && (
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-6 animate-in zoom-in duration-1000">
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
               <div className={cn(
-                "group relative overflow-hidden flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all duration-300 backdrop-blur-md shadow-lg",
-                user.isAdmin ? "border-red-500/50 bg-red-500/5" : isPremium ? "border-primary/50 bg-primary/5" : "border-border bg-card/50"
+                "flex items-center gap-3 px-4 py-2.5 rounded-xl border backdrop-blur-md shadow-sm",
+                user.isAdmin ? "border-red-500/30 bg-red-500/5" : isPremium ? "border-primary/30 bg-primary/5" : "border-border bg-card/40"
               )}>
                 <div className={cn(
-                  "p-2 rounded-xl",
+                  "p-1.5 rounded-lg",
                   user.isAdmin ? "bg-red-500/10 text-red-500" : isPremium ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                 )}>
-                  {user.isAdmin ? <Lock className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+                  {user.isAdmin ? <Lock className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold leading-tight">Status</p>
-                  <p className="text-lg font-bold">
-                    {user.isAdmin ? "Administrator" : isPremium ? "Premium Active" : "Free User"}
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold leading-none mb-0.5">Status</p>
+                  <p className="text-sm font-bold leading-tight">
+                    {user.isAdmin ? "Administrator" : isPremium ? "Premium Aktiv" : "Gratisversion"}
                   </p>
                 </div>
               </div>
 
-              <div className="group relative overflow-hidden flex items-center gap-4 px-6 py-4 rounded-2xl border border-primary/30 bg-card/50 backdrop-blur-md shadow-lg transition-all duration-300 hover:border-primary/60">
-                <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                  <Shield className="w-5 h-5" />
+              <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-primary/20 bg-card/40 backdrop-blur-md shadow-sm">
+                <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                  <Shield className="w-4 h-4" />
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold leading-tight">Saldo</p>
-                  <p className="text-2xl font-black tracking-tighter">
-                    {user.isAdmin ? "∞" : creditBalance} <span className="text-xs font-medium text-muted-foreground italic">Credits</span>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold leading-none mb-0.5">Krediter</p>
+                  <p className="text-lg font-black tracking-tight leading-tight">
+                    {user.isAdmin ? "∞" : creditBalance} <span className="text-[10px] font-medium text-muted-foreground italic">Credits</span>
                   </p>
                 </div>
               </div>
 
-              <div className="group relative overflow-hidden flex items-center gap-4 px-6 py-4 rounded-2xl border border-yellow-500/30 bg-card/50 backdrop-blur-md shadow-lg transition-all duration-300 hover:border-yellow-500/60">
-                <div className="p-2 rounded-xl bg-yellow-500/10 text-yellow-500">
-                  <Coins className="w-5 h-5" />
+              <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-yellow-500/20 bg-card/40 backdrop-blur-md shadow-sm">
+                <div className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-500">
+                  <Coins className="w-4 h-4" />
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold leading-tight">Tokens</p>
-                  <p className="text-2xl font-black tracking-tighter">
-                    {tokenBalance} <span className="text-xs font-medium text-muted-foreground italic">Tokens</span>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold leading-none mb-0.5">Tokens</p>
+                  <p className="text-lg font-black tracking-tight leading-tight">
+                    {tokenBalance} <span className="text-[10px] font-medium text-muted-foreground italic">Tokens</span>
                   </p>
                 </div>
               </div>
@@ -295,30 +294,26 @@ export default function PremiumPage() {
           )}
         </div>
 
-        {/* Comparison Section - Redesigned Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+        {/* Comparison Section - Compact Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch max-w-5xl mx-auto">
           {/* Free Tier */}
-          <Card className="group relative overflow-hidden border-border/40 bg-card/40 backdrop-blur-xl transition-all duration-500 hover:translate-y-[-4px] hover:shadow-2xl flex flex-col">
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <ZapOff className="w-24 h-24" />
-            </div>
-            <CardHeader className="p-8 pb-4">
-              <CardTitle className="text-2xl font-bold italic">Free Plan</CardTitle>
-              <CardDescription className="text-3xl font-black text-foreground pt-2">
-                0 € <span className="text-sm font-medium text-muted-foreground italic">per månad</span>
+          <Card className="group relative overflow-hidden border-border/40 bg-card/30 backdrop-blur-lg flex flex-col transition-all hover:bg-card/40">
+            <CardHeader className="p-6 pb-2">
+              <CardTitle className="text-xl font-bold italic">Free Plan</CardTitle>
+              <CardDescription className="text-2xl font-black text-foreground pt-1">
+                0 € <span className="text-xs font-medium text-muted-foreground italic">per månad</span>
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-8 pt-6 space-y-6 flex-grow">
-              <div className="space-y-4">
+            <CardContent className="p-6 pt-4 space-y-4 flex-grow">
+              <div className="space-y-3">
                 {[
-                  { icon: <CreditCard className="w-4 h-4" />, text: "Inga månatliga krediter" },
-                  { icon: <MessageSquare className="w-4 h-4" />, text: "3 fria meddelanden per dag" },
-                  { icon: <Lock className="w-4 h-4" />, text: "Kan ej skapa AI flickvän" },
-                  { icon: <ImageIcon className="w-4 h-4" />, text: "Endast 1 gratis bild (SFW)" },
-                  { icon: <Shield className="w-4 h-4" />, text: "Ingen token-konvertering" }
+                  { icon: <CreditCard className="w-3.5 h-3.5" />, text: "Inga månatliga krediter" },
+                  { icon: <MessageSquare className="w-3.5 h-3.5" />, text: "3 fria meddelanden per dag" },
+                  { icon: <Lock className="w-3.5 h-3.5" />, text: "Kan ej skapa AI flickvän" },
+                  { icon: <ImageIcon className="w-3.5 h-3.5" />, text: "Endast 1 gratis bild (SFW)" }
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 text-muted-foreground/80 group-hover:text-muted-foreground transition-colors">
-                    <div className="p-1 rounded-full bg-muted/50 text-muted-foreground scale-75 group-hover:scale-100 transition-transform">
+                  <div key={i} className="flex items-center gap-2.5 text-muted-foreground/80">
+                    <div className="p-1 rounded-full bg-muted/50 text-muted-foreground">
                       {item.icon}
                     </div>
                     <span className="text-sm font-medium">{item.text}</span>
@@ -326,64 +321,59 @@ export default function PremiumPage() {
                 ))}
               </div>
             </CardContent>
-            <CardFooter className="p-8 pt-0">
-              <Button variant="outline" className="w-full h-12 rounded-xl text-lg font-bold grayscale opacity-50 cursor-default">
+            <CardFooter className="p-6 pt-0">
+              <Button variant="outline" disabled className="w-full h-10 rounded-lg text-sm font-bold opacity-50">
                 Nuvarande Plan
               </Button>
             </CardFooter>
           </Card>
 
           {/* Premium Tier */}
-          <Card className="group relative overflow-hidden border-primary/40 bg-gradient-to-br from-primary/10 via-card/50 to-purple-500/10 backdrop-blur-xl transition-all duration-500 hover:translate-y-[-8px] hover:shadow-[0_0_50px_-12px_rgba(var(--primary-rgb),0.3)] shadow-xl ring-1 ring-primary/20 flex flex-col">
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-[40px] animate-pulse" />
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <Star className="w-24 h-24 text-primary fill-primary" />
-            </div>
-            
-            <Badge className="absolute top-6 right-6 bg-primary text-primary-foreground font-black tracking-widest px-3 py-1 shadow-md">
-              MOST POPULAR
+          <Card className="group relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 via-card/40 to-purple-500/5 backdrop-blur-lg flex flex-col shadow-lg ring-1 ring-primary/10">
+            <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground font-black text-[10px] tracking-wider px-2 py-0.5">
+              MEST POPULÄR
             </Badge>
 
-            <CardHeader className="p-8 pb-4">
-              <CardTitle className="text-2xl font-bold flex items-center gap-2 italic">
-                Premium Plan <Sparkles className="w-5 h-5 text-primary animate-bounce shadow-glow" />
+            <CardHeader className="p-6 pb-2">
+              <CardTitle className="text-xl font-bold flex items-center gap-2 italic">
+                Premium Plan <Sparkles className="w-4 h-4 text-primary animate-pulse" />
               </CardTitle>
-              <CardDescription className="text-4xl font-black text-foreground pt-2 flex items-baseline gap-2">
-                11 € <span className="text-sm font-medium text-muted-foreground italic">/ 110 SEK per månad</span>
+              <CardDescription className="text-3xl font-black text-foreground pt-1 flex items-baseline gap-2">
+                11 € <span className="text-xs font-medium text-muted-foreground italic">/ 110 SEK per månad</span>
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="p-8 pt-6 space-y-6 flex-grow">
-              <div className="h-px bg-gradient-to-r from-primary/50 to-transparent mb-6" />
-              <div className="space-y-4">
+            <CardContent className="p-6 pt-4 space-y-4 flex-grow">
+              <div className="h-px bg-gradient-to-r from-primary/30 to-transparent mb-4" />
+              <div className="space-y-3">
                 {[
-                  { icon: <Shield className="w-4 h-4" />, text: "110 Krediter ingår varje månad", highlight: "text-primary" },
-                  { icon: <MessageSquare className="w-4 h-4" />, text: "Obegränsade textmeddelanden", highlight: "text-green-500" },
-                  { icon: <UserPlus className="w-4 h-4" />, text: "Skapa obegränsat med AI karaktärer", highlight: "text-green-500" },
-                  { icon: <ImageIcon className="w-4 h-4" />, text: "Alltid obegränsade bilder (NSFW/SFW)", highlight: "text-green-500" },
-                  { icon: <Zap className="w-4 h-4" />, text: "Möjlighet att köpa tokens med krediter", highlight: "text-primary" }
+                  { text: "110 Krediter ingår varje månad", highlight: "text-primary" },
+                  { text: "Obegränsade textmeddelanden", highlight: "text-emerald-500" },
+                  { text: "Skapa obegränsat med AI karaktärer", highlight: "text-emerald-500" },
+                  { text: "Obegränsade bilder (NSFW/SFW)", highlight: "text-emerald-500" },
+                  { text: "Köp tokens med dina krediter", highlight: "text-primary" }
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 animate-in slide-in-from-left duration-300" style={{ animationDelay: `${i * 100}ms` }}>
-                    <div className={cn("p-1.5 rounded-full bg-primary/20 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]", item.highlight)}>
-                      <Check className="w-4 h-4" />
+                  <div key={i} className="flex items-center gap-2.5">
+                    <div className={cn("p-1 rounded-full bg-primary/10", item.highlight)}>
+                      <Check className="w-3.5 h-3.5" />
                     </div>
-                    <span className={cn("text-base font-semibold tracking-tight", item.highlight || "text-foreground")}>{item.text}</span>
+                    <span className={cn("text-sm font-semibold tracking-tight", item.highlight || "text-foreground")}>{item.text}</span>
                   </div>
                 ))}
               </div>
             </CardContent>
 
-            <CardFooter className="p-8 pt-0">
+            <CardFooter className="p-6 pt-0">
               {user?.isAdmin ? (
-                <div className="w-full text-center py-4 bg-primary/5 rounded-xl border border-primary/20">
-                   <p className="text-primary font-bold italic flex items-center justify-center gap-2">
-                     <Shield className="w-4 h-4" /> Admin Access Locked
+                <div className="w-full text-center py-2.5 bg-primary/5 rounded-lg border border-primary/10">
+                   <p className="text-xs text-primary font-bold italic flex items-center justify-center gap-2">
+                     <Shield className="w-3.5 h-3.5" /> Admin-konto
                    </p>
                 </div>
               ) : isPremium ? (
-                <div className="w-full text-center py-4 bg-green-500/10 rounded-xl border border-green-500/20">
-                   <p className="text-green-500 font-bold italic flex items-center justify-center gap-2">
-                     <Check className="w-5 h-5" /> Din prenumeration är aktiv
+                <div className="w-full text-center py-2.5 bg-emerald-500/10 rounded-lg border border-emerald-500/10">
+                   <p className="text-xs text-emerald-500 font-bold italic flex items-center justify-center gap-2">
+                     <Check className="w-4 h-4" /> Prenumeration aktiv
                    </p>
                 </div>
               ) : (
@@ -391,111 +381,95 @@ export default function PremiumPage() {
                   size="lg"
                   onClick={handlePremiumPurchase}
                   disabled={isLoading}
-                  className="w-full h-14 rounded-xl text-xl font-black bg-gradient-to-r from-primary to-purple-600 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.4)] transition-all animate-shimmer"
+                  className="w-full h-11 rounded-lg text-base font-black bg-gradient-to-r from-primary to-purple-600 hover:shadow-lg transition-all"
                 >
-                  {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "BLI PREMIUM NU"}
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "BLI PREMIUM"}
                 </Button>
               )}
             </CardFooter>
           </Card>
         </div>
 
-        {/* Feature Highlights Grid */}
-        <div className="space-y-8 text-center">
-          <h2 className="text-3xl font-bold tracking-tight italic">Hur tokens används</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { title: "Texting", value: "5 Tokens", desc: "per sms", icon: <MessageSquare className="w-6 h-6 text-blue-500" /> },
-              { title: "Creation", value: "2 Tokens", desc: "per girlfriend", icon: <UserPlus className="w-6 h-6 text-pink-500" /> },
-              { title: "Images", value: "5-10 Tokens", desc: "per generation", icon: <ImageIcon className="w-6 h-6 text-purple-500" /> }
-            ].map((item, i) => (
-              <div key={i} className="group relative p-8 rounded-3xl bg-card/40 border border-border/50 backdrop-blur-md hover:border-primary/40 transition-all duration-300">
-                <div className="absolute top-4 right-4 text-xs font-mono text-muted-foreground opacity-30 tracking-tighter">0{i+1}</div>
-                <div className="mb-6 p-3 rounded-2xl bg-muted/50 w-fit mx-auto transition-transform group-hover:scale-110 group-hover:bg-primary/5">
-                  {item.icon}
-                </div>
-                <h4 className="text-lg font-bold text-muted-foreground group-hover:text-foreground transition-colors italic">{item.title}</h4>
-                <p className="text-3xl font-black tracking-tighter pt-1">{item.value}</p>
-                <p className="text-sm text-muted-foreground border-t border-border/30 mt-3 pt-3">{item.desc}</p>
+        {/* Feature Highlights - Very Compact */}
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { title: "Chatt", value: "5 Tokens", desc: "per sms", icon: <MessageSquare className="w-5 h-5 text-blue-500" /> },
+            { title: "Skapa AI", value: "2 Tokens", desc: "per profil", icon: <UserPlus className="w-5 h-5 text-pink-500" /> },
+            { title: "Bilder", value: "5-10 Tokens", desc: "per bild", icon: <ImageIcon className="w-5 h-5 text-purple-500" /> }
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-card/20 border border-border/40 backdrop-blur-sm">
+              <div className="p-2.5 rounded-xl bg-muted/40">
+                {item.icon}
               </div>
-            ))}
-          </div>
+              <div>
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{item.title}</h4>
+                <p className="text-lg font-black tracking-tight leading-none">{item.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{item.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Purchase Interface */}
-        <div className="max-w-4xl mx-auto space-y-8">
+        {/* Purchase Interface - Tighter Layout */}
+        <div className="max-w-4xl mx-auto space-y-6">
           <div className="text-center">
-            <h2 className="text-3xl font-bold italic">Tanka Tokens</h2>
-            <p className="text-muted-foreground pt-2 font-medium">Använd dina månatliga krediter för att fylla på din plånbok</p>
+            <h2 className="text-2xl font-bold italic">Tanka Tokens</h2>
+            <p className="text-sm text-muted-foreground font-medium">Omvandla dina krediter till tokens för specialfunktioner</p>
           </div>
 
-          <Card className="border-border/50 bg-card/60 backdrop-blur-2xl shadow-2xl relative overflow-hidden">
+          <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-xl relative overflow-hidden">
              {(!isPremium && !user?.isAdmin) && (
-               <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-[2px] flex flex-col items-center justify-center p-8 text-center space-y-4">
-                  <div className="p-4 rounded-full bg-amber-500/10 border border-amber-500/20">
-                    <Lock className="w-10 h-10 text-amber-500" />
+               <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                  <div className="p-3 rounded-full bg-amber-500/10 border border-amber-500/20 mb-3">
+                    <Lock className="w-6 h-6 text-amber-500" />
                   </div>
-                  <div className="max-w-xs">
-                    <h4 className="text-xl font-bold tracking-tight">Ett steg kvar...</h4>
-                    <p className="text-sm text-muted-foreground pt-1 pb-6">Du behöver Premium för att kunna köpa och använda tokens.</p>
-                    <Button onClick={handlePremiumPurchase} className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 font-bold">
-                       UPPGRADERA NU
-                    </Button>
-                  </div>
+                  <h4 className="text-lg font-bold">Premium Krävs</h4>
+                  <p className="text-xs text-muted-foreground mb-4">Du behöver Premium för att kunna använda tokens.</p>
+                  <Button onClick={handlePremiumPurchase} className="h-10 px-6 rounded-lg bg-primary font-bold text-sm">
+                     UPPGRADERA MER
+                  </Button>
                </div>
              )}
 
-             <CardHeader className="p-8 border-b border-border/10">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                   <div className="space-y-1">
-                      <p className="text-[10px] font-black tracking-[0.2em] text-primary">SELECT PACKAGE</p>
-                      <h3 className="text-2xl font-bold italic">Välj ett paket</h3>
-                   </div>
-                   <div className="flex items-center gap-6 p-4 rounded-2xl bg-muted/30 border border-border/50">
-                      <div>
-                        <p className="text-[9px] font-black text-muted-foreground tracking-widest leading-none pb-1">KREDITS</p>
-                        <p className="text-xl font-black italic">{user?.isAdmin ? "∞" : creditBalance}</p>
+             <CardHeader className="p-6 border-b border-border/10">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                   <h3 className="text-lg font-bold italic tracking-tight">Välj ett paket</h3>
+                   <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-muted/40 border border-border/40">
+                      <div className="text-center">
+                        <p className="text-[8px] font-black text-muted-foreground uppercase leading-none pb-0.5">Krediter</p>
+                        <p className="text-sm font-black italic leading-none">{user?.isAdmin ? "∞" : creditBalance}</p>
                       </div>
-                      <div className="w-px h-8 bg-border/50" />
-                      <div>
-                        <p className="text-[9px] font-black text-muted-foreground tracking-widest leading-none pb-1">TOKENS</p>
-                        <p className="text-xl font-black italic">{tokenBalance}</p>
+                      <div className="w-px h-6 bg-border/40" />
+                      <div className="text-center">
+                        <p className="text-[8px] font-black text-muted-foreground uppercase leading-none pb-0.5">Tokens</p>
+                        <p className="text-sm font-black italic leading-none">{tokenBalance}</p>
                       </div>
                    </div>
                 </div>
              </CardHeader>
 
-             <CardContent className="p-8 space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {tokenPackages.map((pkg) => (
+             <CardContent className="p-6 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                   {tokenPackages.map((pkg) => (
                     <div
                       key={pkg.id}
                       onClick={() => setSelectedTokenPackageId(pkg.id)}
                       className={cn(
-                        "group relative cursor-pointer rounded-3xl border-2 p-6 transition-all duration-300 overflow-hidden",
+                        "cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200",
                         selectedTokenPackageId === pkg.id
-                          ? "border-primary bg-primary/5 shadow-[0_0_30px_-5px_rgba(var(--primary-rgb),0.4)]"
-                          : "border-border hover:border-primary/30 hover:bg-muted/50"
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border/50 hover:border-primary/20 hover:bg-muted/30"
                       )}
                     >
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="p-2 rounded-xl bg-muted group-hover:bg-primary/10 transition-colors">
-                           <Coins className={cn("w-5 h-5", selectedTokenPackageId === pkg.id ? "text-primary" : "text-muted-foreground")} />
-                        </div>
-                        {selectedTokenPackageId === pkg.id && (
-                          <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center animate-in zoom-in duration-300">
-                             <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
+                      <div className="flex justify-between items-start mb-2">
+                        <Coins className={cn("w-4 h-4", selectedTokenPackageId === pkg.id ? "text-primary" : "text-muted-foreground")} />
+                        {selectedTokenPackageId === pkg.id && <Check className="w-3 h-3 text-primary" />}
                       </div>
-                      
-                      <p className="text-sm font-bold text-muted-foreground italic">{pkg.name}</p>
-                      <p className="text-3xl font-black tracking-tighter pt-1">{pkg.tokens.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground font-medium pb-4">Tokens total</p>
-                      
-                      <div className="pt-4 border-t border-border/50 flex justify-between items-center">
-                        <span className="text-[10px] font-black text-muted-foreground tracking-widest leading-none uppercase">Pris</span>
-                        <span className="text-lg font-black italic text-primary">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{pkg.name}</p>
+                      <p className="text-2xl font-black tracking-tighter py-1">{pkg.tokens.toLocaleString()}</p>
+                      <div className="pt-2 border-t border-border/20 mt-2 flex justify-between items-center">
+                        <span className="text-[9px] font-bold text-muted-foreground">PRIS</span>
+                        <span className="text-sm font-black text-primary italic">
                            {user?.isAdmin ? "GRATIS" : (pkg.priceDisplay || `${pkg.price} kr`)}
                         </span>
                       </div>
@@ -503,50 +477,32 @@ export default function PremiumPage() {
                   ))}
                 </div>
 
-                <div className="pt-4 space-y-4">
+                <div className="pt-2 space-y-3">
                   <Button
                     onClick={handleTokenPurchase}
                     className={cn(
-                      "w-full h-14 rounded-2xl text-xl font-black shadow-xl tracking-wide",
-                      user?.isAdmin ? "bg-blue-600 hover:bg-blue-700" : "bg-gradient-to-r from-primary to-purple-600 hover:shadow-primary/20"
+                      "w-full h-12 rounded-xl text-lg font-black tracking-wide",
+                      user?.isAdmin ? "bg-blue-600 hover:bg-blue-700" : "bg-gradient-to-r from-primary to-purple-600 shadow-md"
                     )}
                     disabled={!selectedTokenPackageId || isLoading}
                   >
-                    {isLoading ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    ) : (
-                      <div className="flex items-center gap-2">
-                         <Target className="w-5 h-5" />
-                         {user?.isAdmin ? "BEVILJA TOKENS" : (
-                           <>TANKA TOKENS <span className="text-sm opacity-50 px-2 font-medium">({tokenPackages.find(p => p.id === selectedTokenPackageId)?.price || 0} Credits)</span></>
-                         )}
-                      </div>
-                    )}
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : user?.isAdmin ? "BEVILJA TOKENS" : "KÖP TOKENS"}
                   </Button>
-                  <p className="text-[11px] text-center text-muted-foreground italic font-medium">
+                  <p className="text-[10px] text-center text-muted-foreground italic">
                      {user?.isAdmin 
-                      ? "Som administratör kan du lägga till tokens utan att spendera krediter." 
-                      : "Ditt kreditsaldo minskas med motsvarande belopp vid godkännande."}
+                      ? "Som administratör kan du lägga till tokens utan kostnad." 
+                      : "Krediter dras automatiskt från ditt saldo."}
                   </p>
                 </div>
              </CardContent>
           </Card>
         </div>
 
-        {/* Footer Trust Section */}
-        <div className="flex flex-wrap items-center justify-center gap-12 pt-12 opacity-50 hover:opacity-100 transition-opacity">
-           <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-green-500" />
-              <span className="text-sm font-bold tracking-tight">SECURE PAYMENTS</span>
-           </div>
-           <div className="flex items-center gap-3">
-              <Lock className="w-5 h-5 text-blue-500" />
-              <span className="text-sm font-bold tracking-tight">PRIVATE BILLING</span>
-           </div>
-           <div className="flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-purple-500" />
-              <span className="text-sm font-bold tracking-tight">LIMITLESS AI</span>
-           </div>
+        {/* Footer Trust - Minimalist */}
+        <div className="flex flex-wrap items-center justify-center gap-8 py-4 opacity-40 text-[10px] font-bold tracking-widest uppercase">
+           <div className="flex items-center gap-2"><Shield className="w-3 h-3" /> SECURE</div>
+           <div className="flex items-center gap-2"><Lock className="w-3 h-3" /> PRIVATE</div>
+           <div className="flex items-center gap-2"><Sparkles className="w-3 h-3" /> UNLIMITED</div>
         </div>
       </div>
     </div>
