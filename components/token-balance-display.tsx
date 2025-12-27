@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/components/auth-context"
-import { Coins } from "lucide-react"
+import { Coins, Shield } from "lucide-react"
 
 interface TokenBalanceDisplayProps {
   className?: string
@@ -19,48 +19,53 @@ export function TokenBalanceDisplay({
   textSize = "sm",
   refreshInterval = 60000, // 1 minute by default, null for no refresh
 }: TokenBalanceDisplayProps) {
-  const [balance, setBalance] = useState<number | null>(null)
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null)
+  const [creditBalance, setCreditBalance] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isPremium, setIsPremium] = useState(false)
   const { user } = useAuth()
 
-  const fetchBalance = async () => {
+  const fetchBalances = async () => {
     if (!user) {
-      setBalance(null)
+      setTokenBalance(null)
+      setCreditBalance(null)
       setIsLoading(false)
       return
     }
 
     try {
-      const response = await fetch("/api/user-token-balance")
+      // Use check-premium-status as it returns everything we need
+      const response = await fetch("/api/check-premium-status")
 
       if (!response.ok) {
-        throw new Error("Failed to fetch token balance")
+        throw new Error("Failed to fetch balance")
       }
 
       const data = await response.json()
 
-      if (data.success) {
-        setBalance(data.balance)
+      if (data.authenticated) {
+        setTokenBalance(data.tokenBalance)
+        setCreditBalance(data.creditBalance)
+        setIsPremium(data.isPremium)
       } else {
-        console.error("Error fetching token balance:", data.error)
-        setBalance(null)
+        setTokenBalance(null)
+        setCreditBalance(null)
       }
     } catch (error) {
-      console.error("Error fetching token balance:", error)
-      setBalance(null)
+      console.error("Error fetching balance:", error)
+      setTokenBalance(null)
+      setCreditBalance(null)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchBalance()
+    fetchBalances()
 
-    // Set up refresh interval if specified
     let intervalId: NodeJS.Timeout | null = null
-
     if (refreshInterval && user) {
-      intervalId = setInterval(fetchBalance, refreshInterval)
+      intervalId = setInterval(fetchBalances, refreshInterval)
     }
 
     return () => {
@@ -79,14 +84,26 @@ export function TokenBalanceDisplay({
     xl: "text-xl",
   }[textSize]
 
-  if (!user || balance === null) {
+  if (!user || (tokenBalance === null && creditBalance === null)) {
     return null
   }
 
   return (
-    <div className={`flex items-center gap-1 ${className}`}>
-  {showIcon && <Coins size={iconSize} className="text-primary" />}
-      <span className={`font-medium ${textSizeClass}`}>{isLoading ? "..." : balance} tokens</span>
+    <div className={`flex items-center gap-3 ${className}`}>
+      {isPremium && (
+        <div className="flex items-center gap-1 group cursor-help" title="Dina månatliga krediter">
+          <Shield size={iconSize} className="text-primary" />
+          <span className={`font-semibold ${textSizeClass} text-primary`}>
+            {isLoading ? "..." : creditBalance} cr
+          </span>
+        </div>
+      )}
+      <div className="flex items-center gap-1 group cursor-help" title="Dina tokens för generationer">
+        <Coins size={iconSize} className="text-yellow-500" />
+        <span className={`font-semibold ${textSizeClass}`}>
+          {isLoading ? "..." : tokenBalance} tk
+        </span>
+      </div>
     </div>
   )
 }

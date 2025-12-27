@@ -50,6 +50,15 @@ export async function GET() {
 
     const tokenBalance = (tokenData as any)?.balance || 0
 
+    // Get credit balance
+    const { data: creditData, error: creditError } = await supabase
+      .from("user_credits")
+      .select("balance")
+      .eq("user_id", userId)
+      .maybeSingle()
+
+    const creditBalance = (creditData as any)?.balance || 0
+
     // Update profile.is_premium to match premium_profiles status
     try {
       await supabase
@@ -64,6 +73,7 @@ export async function GET() {
       authenticated: true,
       isPremium,
       tokenBalance,
+      creditBalance,
     }
 
     // Cache the result
@@ -79,6 +89,7 @@ export async function GET() {
         message: error instanceof Error ? error.message : "Unknown error",
         isPremium: false,
         tokenBalance: 0,
+        creditBalance: 0,
       },
       { status: 200 },
     )

@@ -17,21 +17,29 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { data, error } = await supabase
+    const { data: tokenData, error: tokenError } = await supabase
       .from("user_tokens")
       .select("balance")
       .eq("user_id", finalUserId)
       .maybeSingle()
 
-    if (error) {
-      console.error("Error fetching token balance:", error)
-      return NextResponse.json({ success: false, error: "Failed to fetch token balance" }, { status: 500 })
+    const { data: creditData, error: creditError } = await supabase
+      .from("user_credits")
+      .select("balance")
+      .eq("user_id", finalUserId)
+      .maybeSingle()
+
+    if (tokenError || creditError) {
+      console.error("Error fetching balances:", tokenError || creditError)
+      return NextResponse.json({ success: false, error: "Failed to fetch balance" }, { status: 500 })
     }
 
-    const balance = data?.balance ?? 0
-    return NextResponse.json({ success: true, balance })
+    const tokenBalance = (tokenData as any)?.balance ?? 0
+    const creditBalance = (creditData as any)?.balance ?? 0
+    
+    return NextResponse.json({ success: true, balance: tokenBalance, creditBalance })
   } catch (error) {
-    console.error("Error fetching token balance:", error)
-    return NextResponse.json({ success: false, error: "Failed to fetch token balance" }, { status: 500 })
+    console.error("Error fetching balance:", error)
+    return NextResponse.json({ success: false, error: "Failed to fetch balance" }, { status: 500 })
   }
 }

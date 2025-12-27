@@ -156,30 +156,27 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
         { onConflict: "user_id" }
       )
 
-    // Grant 100 free tokens for new premium subscribers
-    const { data: currentTokens } = await supabase
-      .from("user_tokens")
-      .select("balance")
-      .eq("user_id", userId)
-      .maybeSingle()
+    // Grant credits for new premium subscribers
+    const creditAmount = 110 // Example: 110 credits for monthly premium
+    
+    await supabase.from("user_credits").upsert({ 
+      user_id: userId, 
+      balance: creditAmount,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id" })
 
-    const bonusTokens = 100
-    const newTokenBalance = (currentTokens?.balance || 0) + bonusTokens
-
-    await supabase.from("user_tokens").upsert({ user_id: userId, balance: newTokenBalance }, { onConflict: "user_id" })
-
-    // Record token transaction
-    await supabase.from("token_transactions").insert({
+    // Record credit transaction
+    await supabase.from("credit_transactions").insert({
       user_id: userId,
-      amount: bonusTokens,
-      type: "bonus",
-      description: `Premium subscription bonus: ${bonusTokens} tokens`,
+      amount: creditAmount,
+      type: "subscription_grant",
+      description: `Premium subscription credit: ${creditAmount} credits`,
     })
 
-    console.log(`✅ Granted ${bonusTokens} bonus tokens to new premium user ${userId}. New balance: ${newTokenBalance}`)
+    console.log(`✅ Granted ${creditAmount} credits to new premium user ${userId}.`)
 
     itemName = session.metadata.planName || "Premium Plan"
-    purchaseDetails = `Your premium membership is now active until ${new Date(expiresAt).toLocaleDateString()}. You've received ${bonusTokens} bonus tokens! Enjoy unlimited character creation, advanced AI features, and priority support!`
+    purchaseDetails = `Your premium membership is now active until ${new Date(expiresAt).toLocaleDateString()}. You've received ${creditAmount} credits! Use them to top up your tokens for character creation and advanced AI features.`
     purchaseType = "premium"
 
     console.log(`✅ Created premium profile for user ${userId}, expires ${expiresAt}`)

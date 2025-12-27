@@ -21,6 +21,7 @@ import {
   Eye,
   UserPlus,
   Database,
+  Sparkles,
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
@@ -58,9 +59,19 @@ export default function AdminDashboardPage() {
   const [totalOrders, setTotalOrders] = useState<number | undefined>(undefined)
   const [totalUsers, setTotalUsers] = useState<number | undefined>(undefined)
   const [recentActivity, setRecentActivity] = useState<any[]>([])
+  const [usageStats, setUsageStats] = useState<{ totalTokens: number, totalCredits: number, premiumCount: number } | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
+      try {
+        const response = await fetch("/api/admin/usage-stats")
+        if (response.ok) {
+          const data = await response.json()
+          setUsageStats(data)
+        }
+      } catch (e) {
+        console.error("Failed to fetch usage stats")
+      }
       try {
         const monthlyResponse = await fetch("/api/monthly-revenue", { next: { revalidate: 0 } })
         if (monthlyResponse.ok) {
@@ -161,6 +172,27 @@ export default function AdminDashboardPage() {
       change: "0%",
       changeType: "neutral",
       icon: CreditCard,
+    },
+    {
+      title: "Premium Members",
+      value: usageStats ? usageStats.premiumCount.toString() : "0",
+      change: "Active",
+      changeType: "positive",
+      icon: Sparkles,
+    },
+    {
+      title: "Credits Balance",
+      value: usageStats ? usageStats.totalCredits.toString() : "0",
+      change: "Issued",
+      changeType: "neutral",
+      icon: Shield,
+    },
+    {
+      title: "Tokens Balance",
+      value: usageStats ? usageStats.totalTokens.toString() : "0",
+      change: "In Circulation",
+      changeType: "neutral",
+      icon: Coins,
     },
   ]
 
