@@ -32,7 +32,7 @@ const imageOptions = [
 
 export default function GenerateImagePage() {
   const { toast } = useToast()
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, refreshUser } = useAuth()
   const { openLoginModal } = useAuthModal()
   const router = useRouter()
   const { setIsOpen } = useSidebar()
@@ -217,54 +217,9 @@ export default function GenerateImagePage() {
       return
     }
 
-    // Check token balance before generation
-    // IMPORTANT: First SFW image (when selectedCount === "1") is FREE for logged-in users!
+    // Check token balance logic has been moved to the backend to prevent double deduction
     const selectedOption = imageOptions.find((option) => option.value === selectedCount)
     const tokensRequired = selectedCount === "1" ? 0 : (selectedOption?.tokens || 5)
-
-    // Only deduct tokens if tokens are required (not for first free image)
-    // And skip deduction for admins
-    if (tokensRequired > 0 && !user?.isAdmin) {
-      try {
-        const response = await fetch("/api/deduct-token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId: user.id, amount: tokensRequired }),
-        })
-
-        const data = await response.json()
-
-        if (!response.ok) {
-          if (data.insufficientTokens) {
-            // Show insufficient tokens dialog and don't start generation
-            setTokenBalanceInfo({
-              currentBalance: data.currentBalance || 0,
-              requiredTokens: data.requiredTokens || tokensRequired
-            })
-            setShowInsufficientTokens(true)
-            return
-          } else {
-            console.error("Failed to deduct tokens:", data.error)
-            toast({
-              title: "Error",
-              description: data.error || "Failed to check token balance",
-              variant: "destructive",
-            })
-            return
-          }
-        }
-      } catch (error) {
-        console.error("Failed to check token balance:", error)
-        toast({
-          title: "Error",
-          description: "Failed to check token balance. Please try again.",
-          variant: "destructive",
-        })
-        return
-      }
-    }
 
     setIsGenerating(true)
     setError(null)
@@ -384,6 +339,17 @@ export default function GenerateImagePage() {
             try {
               const errorJson = JSON.parse(errorText)
               errorMessage = errorJson.error || errorJson.message || errorMessage
+              
+              // Handle insufficient tokens (402 Payment Required)
+              if (response.status === 402) {
+                setTokenBalanceInfo({
+                  currentBalance: errorJson.currentBalance || 0,
+                  requiredTokens: errorJson.requiredTokens || tokensRequired
+                })
+                setShowInsufficientTokens(true)
+                setIsGenerating(false)
+                return
+              }
 
               // Handle premium restriction error
               if (response.status === 403 && errorJson.upgradeUrl) {
@@ -437,6 +403,11 @@ export default function GenerateImagePage() {
       if (data.task_id) {
         setCurrentTaskId(data.task_id);
         startStatusCheck(data.task_id);
+        
+        // Refresh auth context user data to update token balance
+        if (typeof refreshUser === 'function') {
+          refreshUser().catch(e => console.error("Failed to refresh user after generation:", e))
+        }
       } else {
         throw new Error("No Task ID or direct images returned from the API.");
       }

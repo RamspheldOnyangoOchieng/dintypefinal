@@ -212,7 +212,24 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
   // Record revenue
   const price = fromStripeAmount(session.amount_total || 0)
   if (price > 0) {
-    await supabase.from("revenue_transactions").insert({ amount: price })
+    const { error: revError } = await supabase.from("revenue_transactions").insert({
+      user_id: userId,
+      transaction_type: "stripe_payment",
+      amount: price,
+      currency: "SEK",
+      description: session.metadata?.planName || (tokensToAdd > 0 ? `${tokensToAdd} Tokens` : "Purchase"),
+      metadata: {
+        stripe_session_id: session.id,
+        plan_id: session.metadata?.planId,
+        type: session.metadata?.type
+      }
+    })
+    
+    if (revError) {
+      console.error("❌ Error recording revenue in webhook:", revError)
+    } else {
+      console.log(`💰 Recorded revenue: ${price} SEK for user ${userId}`)
+    }
   }
 
   // Send payment confirmation email

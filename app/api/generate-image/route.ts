@@ -258,15 +258,23 @@ export async function POST(req: NextRequest) {
         const deductionResult = await deductTokens(userId, tokenCost, `Image generation (${model}, ${image_num} images)`)
         if (!deductionResult) {
           console.error("❌ Token deduction failed")
+          const { getUserTokenBalance } = await import("@/lib/token-utils")
+          const currentBalance = await getUserTokenBalance(userId)
           return NextResponse.json({
-            error: "Failed to deduct tokens. Please check your token balance."
+            error: "Failed to deduct tokens. Please check your token balance.",
+            currentBalance,
+            requiredTokens: tokenCost
           }, { status: 402 })
         }
         console.log(`✅ Successfully deducted ${tokenCost} tokens`)
       } catch (error: any) {
         console.error("❌ Token deduction error:", error.message)
+        const { getUserTokenBalance } = await import("@/lib/token-utils")
+        const currentBalance = await getUserTokenBalance(userId)
         return NextResponse.json({
-          error: error.message || "Insufficient tokens or token deduction failed"
+          error: error.message || "Insufficient tokens or token deduction failed",
+          currentBalance,
+          requiredTokens: tokenCost
         }, { status: 402 })
       }
     } else {
