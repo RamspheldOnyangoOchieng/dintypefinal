@@ -47,15 +47,15 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at creating detailed, vivid image generation prompts for anime and realistic woman characters. Create a complete, descriptive prompt suitable for image generation that captures the character visually and creatively. Focus on visual details like appearance, pose, lighting, setting, and artistic style. Keep it under 100 words and make it very descriptive.'
+            content: 'You are an elite prompt engineer for state-of-the-art AI image generators. Your specialty is creating masterpiece-quality prompts for characters. You focus on: 1) Physical features with micro-details (skin texture, eye highlights). 2) Composition and cinematic lighting (rim lighting, volumetric rays). 3) High-fashion or thematic attire with fabric details. 4) Dynamic, emotive poses. 5) Atmospheric settings. Use artistic keywords like "hyper-detailed", "8k resolution", "cinematic", "unreal engine 5 render style". Keep it poetic yet technically precise. Under 100 words.'
           },
           {
             role: 'user',
-            content: `Create a detailed image generation prompt for this character: ${description}. The style should be ${characterDetails.style === 'anime' ? 'anime/manga art style with vibrant colors and expressive features' : 'photorealistic with natural lighting and lifelike details'}. Make it vivid and suitable for an AI image generator.`
+            content: `Masterpiece request for a ${gender} character: ${description}. Style: ${characterDetails.style === 'anime' ? 'High-end modern anime art/illustration with saturated colors and intricate linework' : 'Ultra-photorealistic photography, 85mm lens, f/1.8, bokeh background'}. Enhance this into a breathtaking, fine-detailed prompt.`
           }
         ],
-        max_tokens: 200,
-        temperature: 0.8,
+        max_tokens: 250,
+        temperature: 0.75,
         response_format: { type: 'text' }
       }),
     });
@@ -100,12 +100,12 @@ export async function POST(request: NextRequest) {
 
     // Generate the image
     const generatedImage = await generateImage({
-      prompt: enhancedPrompt + (style === 'realistic' ? ", photorealistic, 8k, highly detailed, dslr, soft lighting, high quality" : ", masterwork, best quality, highly detailed"),
+      prompt: enhancedPrompt + (style === 'realistic' ? ", masterpiece, professional photography, high-end fashion editorial, highly detailed skin texture, sharp focus, 8k, cinematic lighting" : ", masterpiece, trending on pixiv, high-quality anime illustration, sharp lines, hyper-detailed, high-resolution style"),
       negativePrompt: selectedNegativePrompt,
       style: style,
       width: width,
       height: height,
-      steps: 50, // Increased steps for quality
+      steps: 60, // Boosted for masterpiece quality
       model: selectedModel
     });
 

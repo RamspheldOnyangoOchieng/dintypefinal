@@ -275,6 +275,53 @@ export async function POST(req: NextRequest) {
 
     const [width, height] = (size || "512x1024").split("x").map(Number)
 
+    // --- START PROMPT ENHANCEMENT ---
+    console.log("✨ Enhancing prompt for high-end results...");
+    let finalPrompt = prompt;
+
+    try {
+      const { key: novitaApiKey } = await getUnifiedNovitaKey();
+      if (novitaApiKey) {
+        const enhancementResponse = await fetch('https://api.novita.ai/v3/openai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${novitaApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'deepseek/deepseek-v3.1',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a master of visual arts and prompt engineering for AI image generation. Your goal is to take a simple prompt and expand it into a "very fine", masterpiece-quality description. Focus on: Cinematic lighting (rim light, volumetric rays), intricate textures (skin pores, fabric weaves), professional photography standards (depth of field, high-speed shutter), and atmosphere. If the prompt describes a character, make them lifelike and evocative. Keep the core subject but surround it with artistic richness. Output only the enhanced prompt text, no meta-talk. Keep it under 150 words.'
+              },
+              {
+                role: 'user',
+                content: `Masterpiece refinement for prompt: "${prompt}". Style: ${actualModel.includes('anime') || actualModel.includes('dreamshaper') ? 'High-end stylized anime/illustration' : 'Breathtaking photorealistic photography'}.`
+              }
+            ],
+            max_tokens: 300,
+            temperature: 0.75,
+          }),
+        });
+
+        if (enhancementResponse.ok) {
+          const enhancementData = await enhancementResponse.json();
+          const enhancedText = enhancementData.choices?.[0]?.message?.content;
+          if (enhancedText) {
+            console.log("✅ Prompt enhanced successfully");
+            finalPrompt = enhancedText;
+          }
+        } else {
+          console.warn("⚠️ Prompt enhancement failed (response not ok), using original prompt");
+        }
+      }
+    } catch (e) {
+      console.error("❌ Error during prompt enhancement:", e);
+      // Fallback to original prompt silently
+    }
+    // --- END PROMPT ENHANCEMENT ---
+
     // Get webhook URL for automatic result processing
     const webhookUrl = getWebhookUrl()
     console.log(`📞 Webhook URL: ${webhookUrl}`)
@@ -296,7 +343,7 @@ export async function POST(req: NextRequest) {
         },
       },
       request: {
-        prompt: prompt,
+        prompt: finalPrompt,
         model_name: apiModelName,
         negative_prompt: negativePrompt,
         width,

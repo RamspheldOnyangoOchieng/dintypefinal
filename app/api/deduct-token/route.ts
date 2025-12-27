@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server'
 export async function POST(req: Request) {
     try {
         const supabase = await createClient()
-        const { userId, amount } = await req.json()
+        const body = await req.json()
+        const { userId, amount } = body
 
         if (!userId) {
             return new NextResponse(JSON.stringify({ error: 'User ID is required' }), { status: 400 })
@@ -19,17 +20,17 @@ export async function POST(req: Request) {
 
         const { deductTokens } = await import("@/lib/token-utils")
         const success = await deductTokens(
-          userId, 
-          deductionAmount, 
-          body.description || `Token usage (${deductionAmount} tokens)`,
-          body.metadata || {}
+            userId,
+            deductionAmount,
+            body.description || `Token usage (${deductionAmount} tokens)`,
+            body.metadata || {}
         )
 
         if (!success) {
             // Check balance again to give specific error if it was insufficient
             const { getUserTokenBalance } = await import("@/lib/token-utils")
             const currentBalance = await getUserTokenBalance(userId)
-            
+
             if (currentBalance < deductionAmount) {
                 return new NextResponse(JSON.stringify({
                     error: 'Insufficient tokens',
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
                     requiredTokens: deductionAmount
                 }), { status: 400 })
             }
-            
+
             return new NextResponse(JSON.stringify({ error: 'Failed to deduct tokens' }), { status: 500 })
         }
 

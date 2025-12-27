@@ -207,6 +207,135 @@ export interface Database {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          id: string
+          username: string | null
+          full_name: string | null
+          avatar_url: string | null
+          is_admin: boolean | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          username?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
+          is_admin?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          username?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
+          is_admin?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      generation_tasks: {
+        Row: {
+          id: string
+          user_id: string
+          task_id: string
+          prompt: string
+          negative_prompt: string | null
+          model: string
+          image_count: number
+          width: number
+          height: number
+          status: string
+          tokens_deducted: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          task_id?: string
+          prompt: string
+          negative_prompt?: string | null
+          model: string
+          image_count?: number
+          width?: number
+          height?: number
+          status?: string
+          tokens_deducted?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          task_id?: string
+          prompt?: string
+          negative_prompt?: string | null
+          model?: string
+          image_count?: number
+          width?: number
+          height?: number
+          status?: string
+          tokens_deducted?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      premium_profiles: {
+        Row: {
+          id: string
+          user_id: string
+          plan_id: string
+          expires_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          plan_id: string
+          expires_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          plan_id?: string
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_credits: {
+        Row: {
+          id: string
+          user_id: string
+          balance: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          balance?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          balance?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       [key: string]: {
         Row: Record<string, any>
         Insert: Record<string, any>
