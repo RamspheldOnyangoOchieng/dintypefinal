@@ -15,7 +15,7 @@ BEGIN
 
     -- Record token transaction
     INSERT INTO token_transactions (user_id, amount, type, description)
-    VALUES (p_user_id, p_amount, 'admin_adjustment', p_description);
+    VALUES (p_user_id, p_amount, 'bonus', p_description);
 
     RETURN TRUE;
 END;

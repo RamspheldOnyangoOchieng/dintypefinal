@@ -29,18 +29,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Invalid token amount" }, { status: 400 })
         }
 
-        // Grant tokens to the admin user
-        const { data, error } = await supabase
-            .from("user_tokens")
-            .upsert({
-                user_id: user.id,
-                balance: 0, // Will be incremented below if the table allows it or handled by DB logic
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' })
-            .select()
-
-        // Actually, we should probably just increment the balance.
-        // Let's use a RPC or a manual update
+        // Grant tokens to the admin user using the specialized RPC
         const { error: updateError } = await supabase.rpc('admin_add_tokens', {
             p_user_id: user.id,
             p_amount: tokenAmount,

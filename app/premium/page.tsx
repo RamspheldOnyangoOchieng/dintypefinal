@@ -18,7 +18,9 @@ import {
   Star,
   ZapOff,
   CreditCard,
-  Target
+  Target,
+  Trophy,
+  PartyPopper
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -26,6 +28,14 @@ import { toast } from "sonner"
 import { useAuth } from "@/components/auth-context"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 interface TokenPackage {
   id: string
@@ -43,6 +53,8 @@ export default function PremiumPage() {
   const [tokenBalance, setTokenBalance] = useState(0)
   const [creditBalance, setCreditBalance] = useState(0)
   const [selectedTokenPackageId, setSelectedTokenPackageId] = useState<string | null>(null)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [lastGrantedAmount, setLastGrantedAmount] = useState(0)
 
   const router = useRouter()
   const { user } = useAuth()
@@ -170,6 +182,8 @@ export default function PremiumPage() {
         if (response.ok) {
           toast.success(`Administratör! Du har lagt till ${selectedPackage.tokens} tokens till ditt konto.`)
           setTokenBalance(prev => prev + selectedPackage.tokens)
+          setLastGrantedAmount(selectedPackage.tokens)
+          setShowSuccessDialog(true)
         } else {
           throw new Error(data.error || "Misslyckades att lägga till tokens")
         }
@@ -505,6 +519,58 @@ export default function PremiumPage() {
            <div className="flex items-center gap-2"><Sparkles className="w-3 h-3" /> UNLIMITED</div>
         </div>
       </div>
+
+      {/* Admin Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md border-primary/20 bg-card/95 backdrop-blur-xl">
+          <DialogHeader className="flex flex-col items-center justify-center pt-4">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 ring-4 ring-primary/5 animate-bounce">
+              <PartyPopper className="w-8 h-8 text-primary" />
+            </div>
+            <DialogTitle className="text-2xl font-black text-center tracking-tight italic">
+              TOKENS BEVILJADE!
+            </DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground font-medium pt-1">
+              Ditt administratörskonto har uppdaterats framgångsrikt.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-6">
+            <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10">
+              <span className="text-sm font-bold text-primary uppercase tracking-widest mb-1">Nytt Saldo</span>
+              <div className="flex items-center gap-3">
+                <Coins className="w-6 h-6 text-yellow-500" />
+                <span className="text-4xl font-black tabular-nums">{tokenBalance}</span>
+              </div>
+              <div className="mt-3 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <p className="text-[10px] font-black text-emerald-500 uppercase">+{lastGrantedAmount} Tokens Tillagda</p>
+              </div>
+            </div>
+            
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground bg-muted/30 p-3 rounded-lg">
+                <Shield className="w-4 h-4 text-primary" />
+                <span>Systemloggar uppdaterade med administratörsåtgärd.</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground bg-muted/30 p-3 rounded-lg">
+                <Trophy className="w-4 h-4 text-yellow-500" />
+                <span>Din profil och balans har synkroniserats globalt.</span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              type="button" 
+              variant="premium" 
+              className="w-full h-11 text-base font-black tracking-tight"
+              onClick={() => setShowSuccessDialog(false)}
+            >
+              FORTSÄTT TILL DASHBOARD
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
