@@ -418,7 +418,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         let isPremium = false
         try {
-          const premiumResponse = await fetch(`/api/user-premium-status?userId=${authUser.id}`)
+          const premiumResponse = await fetch(`/api/check-premium-status`)
           if (premiumResponse.ok) {
             const premiumData = await premiumResponse.json()
             isPremium = premiumData.isPremium

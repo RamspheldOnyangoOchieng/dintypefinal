@@ -83,22 +83,7 @@ export async function isAdmin(userId: string) {
       return true
     }
 
-    // Method 2: Check app_admins table (fallback)
-    const { data: appAdmin, error: appAdminError } = await supabase
-      .from("app_admins")
-      .select("user_id")
-      .eq("user_id", userId)
-      .maybeSingle()
-
-    console.log('[isAdmin] app_admins query result:', { data: appAdmin, error: appAdminError })
-
-    if (appAdmin) {
-      console.log('[isAdmin] ✅ User found in app_admins table')
-      cacheAdminStatus(userId, true)
-      return true
-    }
-
-    // Method 3: Check profiles.is_admin (fallback)
+    // Method 2 (Legacy/Social): Check profiles.is_admin (fallback)
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("is_admin")
