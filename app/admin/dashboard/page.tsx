@@ -22,6 +22,8 @@ import {
   UserPlus,
   Database,
   Sparkles,
+  Shield,
+  Coins,
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"

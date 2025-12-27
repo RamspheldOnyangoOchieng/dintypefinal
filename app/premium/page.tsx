@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Check, Shield, Lock, Sparkles, Loader2, Coins } from "lucide-react"
+import { Check, Shield, Lock, Sparkles, Loader2, Coins, Activity } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { toast } from "sonner"
