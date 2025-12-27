@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
-import { createAdminClient } from "@/lib/supabase-server"
-import { isAdmin } from "@/lib/auth"
+import { createServerClient } from "@/lib/supabase-server"
+import { isUserAdmin } from "@/lib/admin-auth"
 
 export async function POST(request: Request) {
     try {
-        const supabase = await createAdminClient()
+        const supabase = await createServerClient()
         if (!supabase) {
             return NextResponse.json({ error: "Database connection failed" }, { status: 500 })
         }
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
         }
 
         // Check if the user is an admin
-        const adminStatus = await isAdmin(user.id)
+        const adminStatus = await isUserAdmin(supabase, user.id)
         if (!adminStatus) {
             return NextResponse.json({ error: "Forbidden: Only admins can use this endpoint" }, { status: 403 })
         }
