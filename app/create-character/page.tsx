@@ -51,9 +51,12 @@ export default function CreateCharacterPage() {
     const [isLoadingMaleImages, setIsLoadingMaleImages] = useState(false);
     const [femaleImages, setFemaleImages] = useState<{ [key: string]: { [key: string]: { [key: string]: string } } }>({});
     const [isLoadingFemaleImages, setIsLoadingFemaleImages] = useState(false);
+    const [showNameDialog, setShowNameDialog] = useState(false);
+    const [errorModal, setErrorModal] = useState({ isOpen: false, title: "", message: "" });
 
     const supabase = createClientComponentClient();
     const router = useRouter();
+    const { openLoginModal } = useAuthModal();
 
     // Load female images from database when gender is 'lady'
     useEffect(() => {
@@ -165,7 +168,9 @@ export default function CreateCharacterPage() {
 
         // Complete mapping of all available images with their exact filenames
         // Separate imageMap for female (lady) and male (gent) characters
-        const femaleImageMap: { [key: string]: { [key: string]: { [key: string]: string } } } = {
+        // Complete mapping of all available images with their exact filenames
+        // Separate imageMap for female (lady) and male (gent) characters
+        const femaleImageMap: any = {
             'style': {
                 'realistic': '/character creation/choose style/realistic.jpg',
                 'anime': '/character creation/choose style/Anime.jpg'
@@ -327,7 +332,7 @@ export default function CreateCharacterPage() {
         };
 
         // Male (gent) image map - loaded dynamically from database or fallback to placeholders
-        const maleImageMap: { [key: string]: { [key: string]: { [key: string]: string } } } = {
+        const maleImageMap: any = {
             'style': {
                 'realistic': '/character creation/choose style/realistic.jpg',
                 'anime': '/character creation/choose style/Anime.jpg'
@@ -1534,7 +1539,7 @@ export default function CreateCharacterPage() {
                         </>
                     )}
 
-                    {((currentStep === 3 && gender === 'lady') || (currentStep === 1 && gender === 'gent')) && (
+                    {((currentStep === 2 && gender === 'lady') || (currentStep === 0 && gender === 'gent')) && (
                         <>
                             {/* Choose Body Type Section */}
                             <div className="mb-6 sm:mb-8 md:mb-12">
