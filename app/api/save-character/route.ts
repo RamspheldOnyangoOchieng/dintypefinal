@@ -9,7 +9,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const groqApiKey = process.env.GROQ_API_KEY!;
 
 // Token cost for creating a character (includes AI description generation)
-const CHARACTER_CREATION_TOKEN_COST = 2;
+const CHARACTER_CREATION_TOKEN_COST = 0;
 
 export async function POST(request: NextRequest) {
     let tokensDeducted = false;
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         console.log('✅ Authenticated user:', userId.substring(0, 8));
 
         const body = await request.json();
-        const { characterName, imageUrl, characterDetails, gender } = body;
+        const { characterName, imageUrl, characterDetails, gender, description: userDescription, promptTemplate } = body;
 
         if (!characterName || !imageUrl) {
             return NextResponse.json(
@@ -131,12 +131,26 @@ export async function POST(request: NextRequest) {
         // Extract age from characterDetails (convert "20s" to 25, "30s" to 35, etc.)
         const ageValue = extractAge(characterDetails.age);
 
-        // Generate AI description
-        console.log('🤖 Generating AI description...');
-        const description = await generateAIDescription(characterName, characterDetails);
-        console.log('✅ Description generated:', description.substring(0, 100) + '...');
+        // Use user-provided description or generate one
+        let description = '';
+        if (userDescription && userDescription.trim().length > 0) {
+            description = userDescription.trim();
+            console.log('📝 Using user-provided description');
+        } else {
+            console.log('🤖 Generating AI description...');
+            description = await generateAIDescription(characterName, characterDetails);
+            console.log('✅ Description generated');
+        }
 
-        const systemPrompt = buildSystemPrompt(characterDetails, characterName);
+        // Use user-provided prompt template or build one
+        let systemPrompt = '';
+        if (promptTemplate && promptTemplate.trim().length > 0) {
+            systemPrompt = promptTemplate.trim();
+            console.log('📝 Using user-provided prompt template');
+        } else {
+            systemPrompt = buildSystemPrompt(characterDetails, characterName);
+            console.log('🤖 System prompt built');
+        }
 
         // Insert character into database with permanent image URL
         const { data, error } = await supabase

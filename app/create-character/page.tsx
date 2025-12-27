@@ -4,20 +4,33 @@ import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthModal } from "@/components/auth-modal-context";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+    Sparkles,
+    MessageSquare,
+    ChevronLeft,
+    ChevronRight,
+    User,
+    Calendar,
+    Eye,
+    Heart,
+    Info,
+    ShieldCheck
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function CreateCharacterPage() {
     const searchParams = useSearchParams();
     const gender = searchParams.get('gender') || 'lady'; // Default to 'lady' if not specified
 
-    // Define step flows for each gender
-    // Lady: 8 steps - Style, Ethnicity/Age/Eyes, Hair, Body/Breast/Butt, Personality, Relationship, Summary, Generation
-    // Gent: 4 steps - Style, Body, Personality, Relationship, Summary, Generation
-    const totalSteps = gender === 'lady' ? 8 : 6; // Including summary and generation steps
+    const totalSteps = gender === 'lady' ? 7 : 5; // Re-indexed: 0-Ethnicity/Age/Eyes, 1-Hair, 2-Body, 3-Personality, 4-Relationship, 5-Summary, 6-Generation
 
     const [currentStep, setCurrentStep] = useState(0);
-    const [selectedStyle, setSelectedStyle] = useState<'realistic' | 'anime' | null>(null);
+    const [selectedStyle, setSelectedStyle] = useState<'realistic' | 'anime'>('realistic'); // Default to realistic
     const [selectedEthnicity, setSelectedEthnicity] = useState<string | null>(null);
-    const [selectedAge, setSelectedAge] = useState<string | null>(null);
+    const [selectedAge, setSelectedAge] = useState<number>(25); // Default age 25
     const [selectedEyeColor, setSelectedEyeColor] = useState<string | null>(null);
     const [selectedHairStyle, setSelectedHairStyle] = useState<string | null>(null);
     const [selectedHairColor, setSelectedHairColor] = useState<string | null>(null);
@@ -30,14 +43,9 @@ export default function CreateCharacterPage() {
     const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
     const [enhancedPrompt, setEnhancedPrompt] = useState<string | null>(null);
     const [showImage, setShowImage] = useState(false);
-    const [showNameDialog, setShowNameDialog] = useState(false);
-    const { openLoginModal } = useAuthModal();
-    const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string }>({
-        isOpen: false,
-        title: '',
-        message: ''
-    });
     const [characterName, setCharacterName] = useState("");
+    const [characterDescription, setCharacterDescription] = useState("");
+    const [promptTemplate, setPromptTemplate] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [maleImages, setMaleImages] = useState<{ [key: string]: { [key: string]: { [key: string]: string } } }>({});
     const [isLoadingMaleImages, setIsLoadingMaleImages] = useState(false);
@@ -397,8 +405,8 @@ export default function CreateCharacterPage() {
     };
 
     // Auto-start generation when reaching the generation step
-    // Lady: step 7 (8th step), Gent: step 5 (6th step)
-    const generationStep = gender === 'lady' ? 7 : 5;
+    // Lady: step 6 (7th step), Gent: step 4 (5th step)
+    const generationStep = gender === 'lady' ? 6 : 4;
     useEffect(() => {
         if (currentStep === generationStep && !generatedImageUrl && !isGenerating) {
             handleGenerateImage();
@@ -406,29 +414,27 @@ export default function CreateCharacterPage() {
     }, [currentStep]);
 
     // Helper function to get the step mapping based on gender
-    // Lady: 0=Style, 1=Ethnicity/Age/Eyes, 2=Hair, 3=Body/Breast/Butt, 4=Personality, 5=Relationship, 6=Summary, 7=Generation
-    // Gent: 0=Style, 1=Body, 2=Personality, 3=Relationship, 4=Summary, 5=Generation
+    // Lady: 0=Ethnicity/Age/Eyes, 1=Hair, 2=Body/Breast/Butt, 3=Personality, 4=Relationship, 5=Summary, 6=Generation
+    // Gent: 0=Body, 1=Personality, 2=Relationship, 3=Summary, 4=Generation
     const getStepValidation = () => {
         if (gender === 'lady') {
             switch (currentStep) {
-                case 0: return !!selectedStyle;
-                case 1: return !!(selectedEthnicity && selectedAge && selectedEyeColor);
-                case 2: return !!(selectedHairStyle && selectedHairColor);
-                case 3: return !!(selectedBodyType && selectedBreastSize && selectedButtSize);
-                case 4: return !!selectedPersonality;
-                case 5: return !!selectedRelationship;
-                case 6: return true; // Summary step
-                case 7: return !!generatedImageUrl; // Generation step
+                case 0: return !!(selectedEthnicity && selectedAge && selectedEyeColor);
+                case 1: return !!(selectedHairStyle && selectedHairColor);
+                case 2: return !!(selectedBodyType && selectedBreastSize && selectedButtSize);
+                case 3: return !!selectedPersonality;
+                case 4: return !!selectedRelationship;
+                case 5: return true; // Summary step
+                case 6: return !!generatedImageUrl; // Generation step
                 default: return false;
             }
         } else { // gent
             switch (currentStep) {
-                case 0: return !!selectedStyle;
-                case 1: return !!selectedBodyType; // Gents only need body type
-                case 2: return !!selectedPersonality;
-                case 3: return !!selectedRelationship;
-                case 4: return true; // Summary step
-                case 5: return !!generatedImageUrl; // Generation step
+                case 0: return !!selectedBodyType; // Gents only need body type
+                case 1: return !!selectedPersonality;
+                case 2: return !!selectedRelationship;
+                case 3: return true; // Summary step
+                case 4: return !!generatedImageUrl; // Generation step
                 default: return false;
             }
         }
@@ -436,70 +442,86 @@ export default function CreateCharacterPage() {
 
     const getNextButtonText = () => {
         if (gender === 'lady') {
-            if (currentStep === 5) return 'Review Character →';
-            if (currentStep === 6) return 'Create my AI →';
-            if (currentStep === 7) return 'Continue →';
+            if (currentStep === 4) return 'Review Character →';
+            if (currentStep === 5) return 'Create my AI →';
+            if (currentStep === 6) return 'Continue →';
         } else { // gent
-            if (currentStep === 3) return 'Review Character →';
-            if (currentStep === 4) return 'Create my AI →';
-            if (currentStep === 5) return 'Continue →';
+            if (currentStep === 2) return 'Review Character →';
+            if (currentStep === 3) return 'Create my AI →';
+            if (currentStep === 4) return 'Continue →';
         }
         return 'Next →';
     };
 
-    // Step 6 is summary/preview step for lady, step 4 for gent
-    const renderStep6 = () => {
+    // Step 5 is summary/preview step for lady, step 3 for gent
+    const renderStepSummary = () => {
+        const charAttributes = [
+            { label: 'Ethnicity', value: selectedEthnicity, type: 'ethnicity' },
+            { label: 'Age', value: selectedAge.toString(), type: 'age' },
+            { label: 'Eye Color', value: selectedEyeColor, type: 'eyeColor' },
+            { label: 'Hair Style', value: selectedHairStyle, type: 'hairStyle' },
+            { label: 'Hair Color', value: selectedHairColor, type: 'hairColor' },
+            { label: 'Body Type', value: selectedBodyType, type: 'bodyType' },
+            { label: 'Personality', value: selectedPersonality, type: 'personality' },
+            { label: 'Relationship', value: selectedRelationship, type: 'relationship' },
+        ];
+
         return (
-            <>
-                {/* Summary Section */}
-                <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold mb-2 text-card-foreground">Review Your AI Character</h2>
-                    <p className="text-muted-foreground">Review your selections before we create your AI</p>
+            <div className="space-y-8">
+                <div className="text-center">
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent mb-2">Review Your AI Character</h2>
+                    <p className="text-muted-foreground">Everything looks perfect! Ready to bring her to life?</p>
                 </div>
 
-                {/* Summary Grid - show all selections */}
-                <div className="max-w-6xl mx-auto mb-8">
-                    {gender === 'lady' ? (
-                        <>
-                            {/* Lady: Show all fields */}
-                            {/* Mobile: 2 columns, Desktop: 5 columns */}
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-4 md:mb-6">
-                                {renderSummaryCard('Style', selectedStyle, 'style')}
-                                {renderSummaryCard('Ethnicity', selectedEthnicity, 'ethnicity')}
-                                {renderSummaryCard('Age', selectedAge, 'age')}
-                                {renderSummaryCard('Eyes Color', selectedEyeColor, 'eyeColor')}
-                                {renderSummaryCard('Hair Style', selectedHairStyle, 'hairStyle')}
-                            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div className="bg-secondary/30 rounded-3xl p-6 border border-border/50 backdrop-blur-sm">
+                        <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-pink-500" />
+                            Physique & Details
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            {charAttributes.map((attr) => (
+                                <div key={attr.label} className="bg-background/40 p-3 rounded-2xl border border-border/30 hover:border-pink-500/30 transition-colors">
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">{attr.label}</p>
+                                    <p className="text-sm font-medium flex items-center gap-2">
+                                        <span className="text-lg">{getEmoji(attr.type, attr.value)}</span>
+                                        {getDisplayValue(attr.value, attr.type)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                            {/* Second Row */}
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-4 md:mb-6">
-                                {renderSummaryCard('Hair Color', selectedHairColor, 'hairColor')}
-                                {renderSummaryCard('Body Type', selectedBodyType, 'bodyType')}
-                                {renderSummaryCard('Breast Size', selectedBreastSize, 'breastSize')}
-                                {renderSummaryCard('Butt Size', selectedButtSize, 'buttSize')}
-                                {renderSummaryCard('Personality', selectedPersonality, 'personality')}
-                            </div>
-
-                            {/* Third Row - Relationship centered */}
-                            <div className="flex justify-center">
-                                <div className="w-full md:w-1/5">
-                                    {renderSummaryCard('Relationship', selectedRelationship, 'relationship')}
+                    <div className="space-y-6">
+                        <div className="bg-secondary/30 rounded-3xl p-6 border border-border/50 backdrop-blur-sm">
+                            <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                                <MessageSquare className="h-5 w-5 text-pink-500" />
+                                Custom Settings
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-muted-foreground">Description (Optional)</label>
+                                    <textarea
+                                        value={characterDescription}
+                                        onChange={(e) => setCharacterDescription(e.target.value)}
+                                        placeholder={`Add more details about ${gender === 'lady' ? 'her' : 'his'} personality or background...`}
+                                        className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all resize-none"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-muted-foreground">Prompt Template (Advanced)</label>
+                                    <textarea
+                                        value={promptTemplate}
+                                        onChange={(e) => setPromptTemplate(e.target.value)}
+                                        placeholder="Enter instructions for the AI's behavior..."
+                                        className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm font-mono focus:ring-2 focus:ring-pink-500 outline-none transition-all resize-none"
+                                    />
                                 </div>
                             </div>
-                        </>
-                    ) : (
-                        <>
-                            {/* Gent: Only show Style, Body Type, Personality, Relationship */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6 justify-center">
-                                {renderSummaryCard('Style', selectedStyle, 'style')}
-                                {renderSummaryCard('Body Type', selectedBodyType, 'bodyType')}
-                                {renderSummaryCard('Personality', selectedPersonality, 'personality')}
-                                {renderSummaryCard('Relationship', selectedRelationship, 'relationship')}
-                            </div>
-                        </>
-                    )}
+                        </div>
+                    </div>
                 </div>
-            </>
+            </div>
         );
     };
 
@@ -660,6 +682,8 @@ export default function CreateCharacterPage() {
                 },
                 body: JSON.stringify({
                     characterName: characterName.trim(),
+                    description: characterDescription.trim(),
+                    promptTemplate: promptTemplate.trim(),
                     imageUrl: generatedImageUrl,
                     characterDetails,
                     enhancedPrompt,
@@ -675,7 +699,7 @@ export default function CreateCharacterPage() {
                     // It's a limit reached error, not an auth error
                     throw new Error(errorData.error || 'Limit reached');
                 }
-                
+
                 console.log('⚠️ Not authenticated, prompting login');
                 setIsSaving(false);
                 openLoginModal();
@@ -685,12 +709,12 @@ export default function CreateCharacterPage() {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 const errorMessage = errorData.error || errorData.details || 'Failed to save character';
-                
+
                 // If it's a token error (402), make it clear
                 if (response.status === 402) {
                     throw new Error(`Insufficient tokens: ${errorMessage}`);
                 }
-                
+
                 throw new Error(errorMessage);
             }
 
@@ -951,409 +975,124 @@ export default function CreateCharacterPage() {
 
                 {/* Main Content Card */}
                 <div className="bg-card rounded-xl sm:rounded-2xl p-2 sm:p-4 md:p-8 shadow-2xl relative z-10 border border-border">
-                    {currentStep === 0 && (
-                        <>
-                            <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                                <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 text-card-foreground">Choose Style*</h2>
-                            </div>
-
-                            {/* Style Selection - Ultra-small screens: vertical stack, small screens: horizontal */}
-                            <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
-                                {/* Realistic Option */}
-                                <div
-                                    className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedStyle === 'realistic'
-                                        ? 'bg-primary border-2 border-primary'
-                                        : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                    onClick={() => setSelectedStyle('realistic')}
-                                >
-                                    <div className="w-[120px] h-[160px] sm:w-[140px] sm:h-[206px] lg:w-[320px] lg:h-[443px] rounded-lg sm:rounded-xl overflow-hidden relative">
-                                        {gender === 'lady' ? (
-                                            <img
-                                                src="/character creation/choose style/realistic.jpg"
-                                                alt="Realistic character example"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <img
-                                                src="https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/assets/male-attributes/male-bodyType-athletic-realistic-1764529365456.jpg"
-                                                alt="Realistic male character example"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        )}
-                                        <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2">
-                                            <span className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold ${selectedStyle === 'realistic'
-                                                ? 'bg-primary-foreground text-primary'
-                                                : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                Realistic
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Anime Option */}
-                                <div
-                                    className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedStyle === 'anime'
-                                        ? 'bg-primary border-2 border-primary'
-                                        : 'border-2 border-border hover:border-primary'
-                                        }`}
-                                    onClick={() => setSelectedStyle('anime')}
-                                >
-                                    <div className="w-[120px] h-[160px] sm:w-[140px] sm:h-[206px] lg:w-[320px] lg:h-[443px] rounded-lg sm:rounded-xl overflow-hidden relative">
-                                        {gender === 'lady' ? (
-                                            <img
-                                                src="/character creation/choose style/Anime.jpg"
-                                                alt="Anime character example"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <img
-                                                src="https://dmjybjsboltyupukulkb.supabase.co/storage/v1/object/public/assets/male-attributes/male-bodyType-athletic-anime-1764529300449.jpg"
-                                                alt="Anime male character example"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        )}
-                                        <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2">
-                                            <span className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold ${selectedStyle === 'anime'
-                                                ? 'bg-primary-foreground text-primary'
-                                                : 'bg-background/50 text-foreground'
-                                                }`}>
-                                                Anime
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </>
-                    )}
-
-                    {currentStep === 1 && gender === 'lady' && (
-                        <>
+                    {currentStep === 0 && gender === 'lady' && (
+                        <div className="space-y-10">
                             {/* Choose Ethnicity Section */}
-                            <div className="mb-6 sm:mb-8 md:mb-12">
-                                <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">Choose Ethnicity*</h2>
+                            <div className="space-y-6">
+                                <div className="text-center">
+                                    <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
+                                        <User className="h-6 w-6 text-pink-500" />
+                                        Choose Ethnicity*
+                                    </h2>
+                                    <p className="text-muted-foreground text-sm mt-1">Select the background that best fits your AI</p>
                                 </div>
-                                {/* Ultra-small: 2 columns, Small: 3 columns, Desktop: 5 columns */}
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:justify-center md:items-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
-                                    {/* Caucasian */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'caucasian'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEthnicity('caucasian')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('ethnicity', 'caucasian', '/character creation/Ethnicity/realistic/caucasian-3a46e91357800f7a540500d0115fe6364650b7a1d9e42673061b670fc226464d.webp')}
-                                                alt="Caucasian"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'caucasian'
-                                                    ? 'bg-primary-foreground text-primary'
-                                                    : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                    Caucasian
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                                    {[
+                                        { id: 'caucasian', label: 'Caucasian', fallback: '/character creation/Ethnicity/realistic/caucasian-3a46e91357800f7a540500d0115fe6364650b7a1d9e42673061b670fc226464d.webp' },
+                                        { id: 'latina', label: 'Latina', fallback: '/character creation/Ethnicity/realistic/latina-9f20e7d69703c6489122ac5b69865ac1252a7527c4509522f5d8df717067d1a6.webp' },
+                                        { id: 'asian', label: 'Asian', fallback: '/character creation/Ethnicity/realistic/asian-45e23043a3b83e0bcffb1cf30a17f0c8d41f551616b930b11591e97cadfdde29.webp' },
+                                        { id: 'african', label: 'African', fallback: '/character creation/Ethnicity/realistic/black_afro-3221c8246e818f77797a50c83fca1f39767780b709deeb661cb80041b5fcc4c5.webp' },
+                                        { id: 'indian', label: 'Indian', fallback: '/character creation/Ethnicity/realistic/arab-29d6da7f90a7a14b34f080498a9996712ee80d3d5dfb6f9d7ce39be0e6b9922a.webp' }
+                                    ].map((eth) => (
+                                        <div
+                                            key={eth.id}
+                                            className={cn(
+                                                "group relative cursor-pointer rounded-2xl overflow-hidden border-2 transition-all duration-300",
+                                                selectedEthnicity === eth.id
+                                                    ? "border-pink-500 ring-4 ring-pink-500/20 scale-105"
+                                                    : "border-transparent hover:border-pink-500/50"
+                                            )}
+                                            onClick={() => setSelectedEthnicity(eth.id)}
+                                        >
+                                            <div className="aspect-[3/4] overflow-hidden">
+                                                <img
+                                                    src={getImageUrl('ethnicity', eth.id, eth.fallback)}
+                                                    alt={eth.label}
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                            </div>
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-center p-3">
+                                                <span className="text-white text-xs font-bold tracking-wide uppercase">
+                                                    {eth.label}
                                                 </span>
                                             </div>
+                                            {selectedEthnicity === eth.id && (
+                                                <div className="absolute top-2 right-2 bg-pink-500 rounded-full p-1 shadow-lg">
+                                                    <ShieldCheck className="h-3 w-3 text-white" />
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-
-                                    {/* Latina */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'latina'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEthnicity('latina')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('ethnicity', 'latina', '/character creation/Ethnicity/realistic/latina-9f20e7d69703c6489122ac5b69865ac1252a7527c4509522f5d8df717067d1a6.webp')}
-                                                alt="Latina"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'latina'
-                                                    ? 'bg-primary-foreground text-primary'
-                                                    : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                    Latina
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Asian */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'asian'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEthnicity('asian')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('ethnicity', 'asian', '/character creation/Ethnicity/realistic/asian-45e23043a3b83e0bcffb1cf30a17f0c8d41f551616b930b11591e97cadfdde29.webp')}
-                                                alt="Asian"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'asian'
-                                                    ? 'bg-primary-foreground text-primary'
-                                                    : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                    Asian
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* African */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'african'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEthnicity('african')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('ethnicity', 'african', '/character creation/Ethnicity/realistic/black_afro-3221c8246e818f77797a50c83fca1f39767780b709deeb661cb80041b5fcc4c5.webp')}
-                                                alt="African"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'african'
-                                                    ? 'bg-primary-foreground text-primary'
-                                                    : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                    African
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Indian */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEthnicity === 'indian'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEthnicity('indian')}
-                                    >
-                                        <div className="w-[60px] h-[60px] sm:w-[88px] sm:h-[88px] lg:w-[120px] lg:h-[120px] rounded-lg sm:rounded-xl overflow-hidden relative mx-auto">
-                                            <img
-                                                src={getImageUrl('ethnicity', 'indian', '/character creation/Ethnicity/realistic/arab-29d6da7f90a7a14b34f080498a9996712ee80d3d5dfb6f9d7ce39be0e6b9922a.webp')}
-                                                alt="Indian"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2">
-                                                <span className={`px-1 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${selectedEthnicity === 'indian'
-                                                    ? 'bg-primary-foreground text-primary'
-                                                    : 'bg-background/50 text-foreground'
-                                                    }`}>
-                                                    Indian
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            {/* Choose Age Section */}
-                            <div className="mb-6 sm:mb-8 md:mb-12">
-                                <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">Choose Age</h2>
+                            {/* Choose Age Section with Slider */}
+                            <div className="space-y-6 py-6 border-y border-border/50">
+                                <div className="text-center">
+                                    <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
+                                        <Calendar className="h-6 w-6 text-pink-500" />
+                                        Choose Age
+                                    </h2>
+                                    <p className="text-muted-foreground text-sm mt-1">Drag the slider to set her age: <span className="text-pink-500 font-bold">{selectedAge} years</span></p>
                                 </div>
-                                <div className="flex justify-center items-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
-                                    {/* Teen(18+) */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedAge === 'teen'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedAge('teen')}
-                                    >
-                                        <span className={`text-xs sm:text-sm font-semibold ${selectedAge === 'teen' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
-                                            Teen(18+)
-                                        </span>
-                                    </div>
-
-                                    {/* 20s */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedAge === '20s'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedAge('20s')}
-                                    >
-                                        <span className={`text-xs sm:text-sm font-semibold ${selectedAge === '20s' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
-                                            20s
-                                        </span>
-                                    </div>
-
-                                    {/* 30s */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedAge === '30s'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedAge('30s')}
-                                    >
-                                        <span className={`text-xs sm:text-sm font-semibold ${selectedAge === '30s' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
-                                            30s
-                                        </span>
-                                    </div>
-
-                                    {/* 40s+ */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedAge === '40s+'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedAge('40s+')}
-                                    >
-                                        <span className={`text-xs sm:text-sm font-semibold ${selectedAge === '40s+' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
-                                            40s+
-                                        </span>
+                                <div className="px-4 max-w-md mx-auto space-y-4">
+                                    <Slider
+                                        defaultValue={[25]}
+                                        min={18}
+                                        max={70}
+                                        step={1}
+                                        onValueChange={(vals) => setSelectedAge(vals[0])}
+                                        className="py-4"
+                                    />
+                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                        <span>18 Years</span>
+                                        <span>70 Years</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Choose Eye Color Section */}
-                            <div className="mb-6 sm:mb-8 md:mb-12">
-                                <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">Choose Eye Color*</h2>
+                            <div className="space-y-6">
+                                <div className="text-center">
+                                    <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
+                                        <Eye className="h-6 w-6 text-pink-500" />
+                                        Choose Eye Color*
+                                    </h2>
                                 </div>
-                                <div className="flex justify-center items-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
-                                    {/* Brown */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'brown'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEyeColor('brown')}
-                                    >
-                                        <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
-                                            <img
-                                                src={getImageUrl('eyeColor', 'brown', '/character creation/eye  color/realistic/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp')}
-                                                alt="Brown eyes"
-                                                className="w-full h-full object-cover"
-                                            />
+                                <div className="flex flex-wrap justify-center gap-4">
+                                    {[
+                                        { id: 'brown', label: 'Brown', fallback: '/character creation/eye  color/realistic/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp' },
+                                        { id: 'blue', label: 'Blue', fallback: '/character creation/eye  color/realistic/blue-f7e75e814204c4d8464d36f525b0f6e9191557a585cb4be01e91ca8eb45416d0.webp' },
+                                        { id: 'green', label: 'Green', fallback: '/character creation/eye  color/realistic/green-8a705cc5c2c435ac0f7addd110f4dd2b883a2e35b6403659c3e30cc7a741359c.webp' }
+                                    ].map((eye) => (
+                                        <div
+                                            key={eye.id}
+                                            onClick={() => setSelectedEyeColor(eye.id)}
+                                            className={cn(
+                                                "group cursor-pointer p-1 rounded-full border-2 transition-all",
+                                                selectedEyeColor === eye.id ? "border-pink-500" : "border-transparent"
+                                            )}
+                                        >
+                                            <div className="w-16 h-16 rounded-full overflow-hidden border border-border group-hover:ring-2 group-hover:ring-pink-500/50 transition-all">
+                                                <img
+                                                    src={getImageUrl('eyeColor', eye.id, eye.fallback)}
+                                                    alt={eye.label}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <p className={cn(
+                                                "text-center text-[10px] uppercase font-bold mt-1 tracking-wider",
+                                                selectedEyeColor === eye.id ? "text-pink-500" : "text-muted-foreground"
+                                            )}>{eye.label}</p>
                                         </div>
-                                        <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'brown' ? 'text-foreground' : 'text-muted-foreground'
-                                                }`}>
-                                                Brown
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Blue */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'blue'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEyeColor('blue')}
-                                    >
-                                        <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
-                                            <img
-                                                src={getImageUrl('eyeColor', 'blue', '/character creation/eye  color/realistic/blue-f7e75e814204c4d8464d36f525b0f6e9191557a585cb4be01e91ca8eb45416d0.webp')}
-                                                alt="Blue eyes"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'blue' ? 'text-foreground' : 'text-muted-foreground'
-                                                }`}>
-                                                Blue
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Green */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'green'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEyeColor('green')}
-                                    >
-                                        <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
-                                            <img
-                                                src={getImageUrl('eyeColor', 'green', '/character creation/eye  color/realistic/green-8a705cc5c2c435ac0f7addd110f4dd2b883a2e35b6403659c3e30cc7a741359c.webp')}
-                                                alt="Green eyes"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'green' ? 'text-foreground' : 'text-muted-foreground'
-                                                }`}>
-                                                Green
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Red */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'red'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEyeColor('red')}
-                                    >
-                                        <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
-                                            <img
-                                                src={getImageUrl('eyeColor', 'red', '/character creation/eye  color/anime/red-ff81c2e205a08d9a80fbd8f8773296a6f842690c19c8a1db4f8b3aeccd380327.webp')}
-                                                alt="Red eyes"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'red' ? 'text-foreground' : 'text-muted-foreground'
-                                                }`}>
-                                                Red
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Yellow */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 ${selectedEyeColor === 'yellow'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedEyeColor('yellow')}
-                                    >
-                                        <div className="w-16 h-12 sm:w-20 sm:h-16 md:w-24 md:h-16 rounded-lg sm:rounded-lg overflow-hidden relative">
-                                            <img
-                                                src={getImageUrl('eyeColor', 'yellow', '/character creation/eye  color/anime/yellow-9799b66b14a68e561a20597361141f24f886d68d84b0f6c8735ac2ea69ff486f.webp')}
-                                                alt="Yellow eyes"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        <div className="text-center mt-1 sm:mt-2">
-                                            <span className={`text-xs sm:text-sm font-semibold ${selectedEyeColor === 'yellow' ? 'text-foreground' : 'text-muted-foreground'
-                                                }`}>
-                                                Yellow
-                                            </span>
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
-                        </>
+                        </div>
                     )}
 
-                    {currentStep === 2 && gender === 'lady' && (
+
+                    {currentStep === 1 && gender === 'lady' && (
                         <>
                             {/* Choose Hair Style Section */}
                             <div className="mb-6 sm:mb-8 md:mb-12">
@@ -2342,694 +2081,76 @@ export default function CreateCharacterPage() {
                         </>
                     )}
 
-                    {((currentStep === 4 && gender === 'lady') || (currentStep === 2 && gender === 'gent')) && (
-                        <>
-                            {/* Choose Personality Section */}
-                            <div className="mb-6 sm:mb-8 md:mb-12">
-                                <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 text-card-foreground">Choose Personality*</h2>
-                                </div>
-
-                                {/* Personality Grid - Ultra-small: 1 column, Small: 2 columns, Desktop: 3 columns */}
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto mb-4 sm:mb-6 md:mb-8">
-
-                                    {/* Lady Personalities */}
-                                    {gender === 'lady' && (
-                                        <>
-                                            {/* Caregiver */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'caregiver'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('caregiver')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'caregiver', '')}
-                                                        alt="Caregiver"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Caregiver</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Nurturing, protective, and always there to offer comfort.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Sage */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'sage'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('sage')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'sage', '')}
-                                                        alt="Sage"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Sage</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Wise, reflective, and a source of guidance.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Innocent */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'innocent'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('innocent')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'innocent', '')}
-                                                        alt="Innocent"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Innocent</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Optimistic, pure-hearted and exploring the world with wonder.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Jester */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'jester'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('jester')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'jester', '')}
-                                                        alt="Jester"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Jester</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Playful, humorous, and always there to make you laugh.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Temptress */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'temptress'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('temptress')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'temptress', '')}
-                                                        alt="Temptress"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Temptress</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Flirtatious, playful, and always leaving you wanting more.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Dominant */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'dominant'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('dominant')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'dominant', '')}
-                                                        alt="Dominant"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Dominant</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Assertive, controlling, and commanding.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Submissive */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'submissive'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('submissive')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'submissive', '')}
-                                                        alt="Submissive"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Submissive</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Obedient, eager to please, and eager to follow.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Lover */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'lover'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('lover')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'lover', '')}
-                                                        alt="Lover"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Lover</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Romantic, passionate, and seeking a deep emotional connection.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Nympho */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'nympho'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('nympho')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'nympho', '')}
-                                                        alt="Nympho"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Nympho</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Insatiable, intense sexuality, craving intimacy.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Mean */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'mean'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('mean')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'mean', '')}
-                                                        alt="Mean"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Mean</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Cold, dismissive, and often sarcastic.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Confidant */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'confidant'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('confidant')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'confidant', '')}
-                                                        alt="Confidant"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Confidant</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Trustworthy, a good listener, and always can offer advice.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Experimenter */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'experimenter'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('experimenter')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'experimenter', '')}
-                                                        alt="Experimenter"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Experimenter</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Curious, willing, eager to try new things.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {/* Gent Personalities */}
-                                    {gender === 'gent' && (
-                                        <>
-                                            {/* Confident */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'confident'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('confident')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'confident', '')}
-                                                        alt="Confident"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Confident</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Strong, assertive, and self-assured.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Caring */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'caring'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('caring')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'caring', '')}
-                                                        alt="Caring"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Caring</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Warm, gentle, and supportive.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Dominant */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'dominant'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('dominant')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'dominant', '')}
-                                                        alt="Dominant"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Dominant</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Commanding, controlling, and powerful.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Playful */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'playful'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('playful')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'playful', '')}
-                                                        alt="Playful"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Playful</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Fun-loving, charming, and mischievous.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Mysterious */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'mysterious'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('mysterious')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'mysterious', '')}
-                                                        alt="Mysterious"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Mysterious</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Enigmatic, intriguing, and captivating.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Romantic */}
-                                            <div
-                                                className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedPersonality === 'romantic'
-                                                    ? 'ring-2 ring-primary'
-                                                    : 'hover:ring-2 hover:ring-primary/50'
-                                                    }`}
-                                                onClick={() => setSelectedPersonality('romantic')}
-                                            >
-                                                <div className="relative aspect-[3/4]">
-                                                    <img
-                                                        src={getImageUrl('personality', 'romantic', '')}
-                                                        alt="Romantic"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-white mb-0.5">Romantic</h3>
-                                                        <p className="text-[10px] sm:text-xs text-white/80 leading-relaxed">
-                                                            Passionate, tender, and loving.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-
-                                </div>
+                    {/* Step 3 (Lady) / Step 1 (Gent): Personality */}
+                    {((gender === 'lady' && currentStep === 3) || (gender === 'gent' && currentStep === 1)) && (
+                        <div className="space-y-8">
+                            <div className="text-center">
+                                <h2 className="text-3xl font-bold flex items-center justify-center gap-2">
+                                    <Sparkles className="h-8 w-8 text-pink-500" />
+                                    Personality Traits
+                                </h2>
+                                <p className="text-muted-foreground">Select {gender === 'lady' ? 'her' : 'his'} core personality</p>
                             </div>
-                        </>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {(gender === 'lady' 
+                                    ? ['caregiver', 'sage', 'innocent', 'jester', 'temptress', 'dominant', 'submissive', 'lover', 'nympho', 'mean', 'confidant', 'experimenter']
+                                    : ['confident', 'caring', 'dominant', 'playful', 'mysterious', 'romantic']
+                                ).map((key) => (
+                                    <Button
+                                        key={key}
+                                        variant={selectedPersonality === key ? "default" : "outline"}
+                                        className={cn(
+                                            "h-auto py-4 px-6 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300",
+                                            selectedPersonality === key 
+                                                ? "bg-pink-500 hover:bg-pink-600 text-white shadow-lg shadow-pink-500/20 scale-105" 
+                                                : "hover:border-pink-500/50 hover:bg-pink-500/5"
+                                        )}
+                                        onClick={() => setSelectedPersonality(key)}
+                                    >
+                                        <span className="text-2xl">{getEmoji('personality', key)}</span>
+                                        <span className="font-bold tracking-wide">{getDisplayValue(key, 'personality')}</span>
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
                     )}
 
-                    {((currentStep === 5 && gender === 'lady') || (currentStep === 3 && gender === 'gent')) && (
-                        <>
-                            {/* Choose Relationship Section */}
-                            <div className="mb-6 sm:mb-8 md:mb-12">
-                                <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 text-card-foreground">Choose Relationship*</h2>
-                                </div>
-
-                                {/* Relationship Grid - Ultra-small: 1 column, Small: 2 columns, Desktop: 3 columns */}
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto mb-4 sm:mb-6 md:mb-8 max-w-full overflow-x-hidden">
-                                    {/* Row 1 */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'stranger'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('stranger')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'stranger', '')}
-                                                alt="Stranger"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">Stranger</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'school-mate'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('school-mate')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'school-mate', '')}
-                                                alt="School Mate"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">School Mate</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'colleague'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('colleague')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'colleague', '')}
-                                                alt="Colleague"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">Colleague</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Row 2 */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'mentor'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('mentor')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'mentor', '')}
-                                                alt="Mentor"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">Mentor</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === (gender === 'gent' ? 'boyfriend' : 'girlfriend')
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship(gender === 'gent' ? 'boyfriend' : 'girlfriend')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', gender === 'gent' ? 'boyfriend' : 'girlfriend', '')}
-                                                alt={gender === 'gent' ? 'Boyfriend' : 'Girlfriend'}
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">{gender === 'gent' ? 'Boyfriend' : 'Girlfriend'}</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'sex-friend'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('sex-friend')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'sex-friend', '')}
-                                                alt="Sex Friend"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">Sex Friend</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Row 3 */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === (gender === 'gent' ? 'husband' : 'wife')
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship(gender === 'gent' ? 'husband' : 'wife')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', gender === 'gent' ? 'husband' : 'wife', '')}
-                                                alt={gender === 'gent' ? 'Husband' : 'Wife'}
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">{gender === 'gent' ? 'Husband' : 'Wife'}</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'mistress'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('mistress')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'mistress', '')}
-                                                alt="Mistress"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">Mistress</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'friend'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('friend')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'friend', '')}
-                                                alt="Friend"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">Friend</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Row 4 */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'best-friend'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('best-friend')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'best-friend', '')}
-                                                alt="Best Friend"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">Best Friend</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'step-sister'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('step-sister')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'step-sister', '')}
-                                                alt="Step Sister"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">Step Sister</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl overflow-hidden transition-all duration-200 ${selectedRelationship === 'step-mom'
-                                            ? 'ring-2 ring-primary'
-                                            : 'hover:ring-2 hover:ring-primary/50'
-                                            }`}
-                                        onClick={() => setSelectedRelationship('step-mom')}
-                                    >
-                                        <div className="relative aspect-[3/4]">
-                                            <img
-                                                src={getImageUrl('relationship', 'step-mom', '')}
-                                                alt="Step Mom"
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-                                                <h3 className="font-semibold text-sm sm:text-base text-white">Step Mom</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                    {/* Step 4 (Lady) / Step 2 (Gent): Relationship */}
+                    {((gender === 'lady' && currentStep === 4) || (gender === 'gent' && currentStep === 2)) && (
+                        <div className="space-y-8">
+                            <div className="text-center">
+                                <h2 className="text-3xl font-bold flex items-center justify-center gap-2">
+                                    <Heart className="h-8 w-8 text-pink-500" />
+                                    Relationship
+                                </h2>
+                                <p className="text-muted-foreground">Define your current status with {gender === 'lady' ? 'her' : 'him'}</p>
                             </div>
-                        </>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {['stranger', 'school-mate', 'colleague', 'mentor', 'girlfriend', 'sex-friend', 'wife', 'mistress', 'friend', 'best-friend', 'step-sister', 'step-mom'].map((key) => (
+                                    <Button
+                                        key={key}
+                                        variant={selectedRelationship === key ? "default" : "outline"}
+                                        className={cn(
+                                            "h-auto py-4 px-6 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300",
+                                            selectedRelationship === key 
+                                                ? "bg-pink-500 hover:bg-pink-600 text-white shadow-lg shadow-pink-500/20 scale-105" 
+                                                : "hover:border-pink-500/50 hover:bg-pink-500/5"
+                                        )}
+                                        onClick={() => setSelectedRelationship(key)}
+                                    >
+                                        <span className="text-2xl">{getEmoji('relationship', key)}</span>
+                                        <span className="font-bold tracking-wide">{getDisplayValue(key, 'relationship')}</span>
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
                     )}
 
-                    {((currentStep === 6 && gender === 'lady') || (currentStep === 4 && gender === 'gent')) && renderStep6()}
-                    {((currentStep === 7 && gender === 'lady') || (currentStep === 5 && gender === 'gent')) && renderStep7()}
+                    {/* Step 5 (Lady) / Step 3 (Gent): Summary */}
+                    {((gender === 'lady' && currentStep === 5) || (gender === 'gent' && currentStep === 3)) && renderStepSummary()}
+                    
+                    {/* Step 6 (Lady) / Step 4 (Gent): Generation */}
+                    {((gender === 'lady' && currentStep === 6) || (gender === 'gent' && currentStep === 4)) && renderStep7()}
 
 
 
@@ -3051,7 +2172,7 @@ export default function CreateCharacterPage() {
                                 }`}
                             disabled={!getStepValidation() || isGenerating}
                             onClick={() => {
-                                const finalStep = gender === 'lady' ? 7 : 5;
+                                const finalStep = gender === 'lady' ? 6 : 4;
                                 if (currentStep === finalStep) {
                                     // Show the naming dialog when user clicks Continue on final step
                                     setShowNameDialog(true);

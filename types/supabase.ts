@@ -69,45 +69,78 @@ export interface Database {
       characters: {
         Row: {
           id: string
+          user_id: string | null
           name: string
           description: string | null
           personality: string | null
           avatar_url: string | null
           video_url: string | null
           image_url: string | null
+          image: string | null
           voice: string | null
           metadata: Json | null
           is_active: boolean
           created_at: string
           updated_at: string
+          age: number | null
+          system_prompt: string | null
+          share_revenue: boolean | null
+          ethnicity: string | null
+          relationship: string | null
+          body: string | null
+          occupation: string | null
+          hobbies: string | null
+          language: string | null
         }
         Insert: {
           id?: string
+          user_id?: string | null
           name: string
           description?: string | null
           personality?: string | null
           avatar_url?: string | null
           video_url?: string | null
           image_url?: string | null
+          image?: string | null
           voice?: string | null
           metadata?: Json | null
           is_active?: boolean
           created_at?: string
           updated_at?: string
+          age?: number | null
+          system_prompt?: string | null
+          share_revenue?: boolean | null
+          ethnicity?: string | null
+          relationship?: string | null
+          body?: string | null
+          occupation?: string | null
+          hobbies?: string | null
+          language?: string | null
         }
         Update: {
           id?: string
+          user_id?: string | null
           name?: string
           description?: string | null
           personality?: string | null
           avatar_url?: string | null
           video_url?: string | null
           image_url?: string | null
+          image?: string | null
           voice?: string | null
           metadata?: Json | null
           is_active?: boolean
           created_at?: string
           updated_at?: string
+          age?: number | null
+          system_prompt?: string | null
+          share_revenue?: boolean | null
+          ethnicity?: string | null
+          relationship?: string | null
+          body?: string | null
+          occupation?: string | null
+          hobbies?: string | null
+          language?: string | null
         }
         Relationships: []
       }
