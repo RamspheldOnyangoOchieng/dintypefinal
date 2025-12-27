@@ -115,8 +115,6 @@ export default function PremiumPage() {
     } finally {
       setIsLoading(false)
     }
-  }
-
   const handleTokenPurchase = async () => {
     if (!selectedTokenPackageId) {
       toast.error("Välj ett token-paket")
@@ -129,14 +127,42 @@ export default function PremiumPage() {
       return
     }
 
-    if (!isPremium) {
-      toast.error("Endast Premium-användare kan köpa tokens")
-      return
-    }
-
     const selectedPackage = tokenPackages.find((pkg) => pkg.id === selectedTokenPackageId)
     if (!selectedPackage) {
       toast.error("Valt token-paket kunde inte hittas")
+      return
+    }
+
+    // Admin skip credits check and just grant tokens
+    if (user.isAdmin) {
+      try {
+        setIsLoading(true)
+        const response = await fetch("/api/admin/grant-tokens", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tokenAmount: selectedPackage.tokens,
+            description: `Admin self-grant: ${selectedPackage.tokens} tokens`
+          })
+        })
+
+        const data = await response.json()
+        if (response.ok) {
+          toast.success(`Administratör! Du har lagt till ${selectedPackage.tokens} tokens till ditt konto.`)
+          setTokenBalance(prev => prev + selectedPackage.tokens)
+        } else {
+          throw new Error(data.error || "Misslyckades att lägga till tokens")
+        }
+      } catch (error: any) {
+        toast.error(error.message)
+      } finally {
+        setIsLoading(false)
+      }
+      return
+    }
+
+    if (!isPremium) {
+      toast.error("Endast Premium-användare kan köpa tokens")
       return
     }
 
@@ -208,8 +234,13 @@ export default function PremiumPage() {
         {/* Display current status and balance */}
         {user && (
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <Badge variant={isPremium ? "default" : "secondary"} className="text-base px-4 py-2">
-              {isPremium ? (
+            <Badge variant={user.isAdmin ? "destructive" : isPremium ? "default" : "secondary"} className="text-base px-4 py-2">
+              {user.isAdmin ? (
+                <>
+                  <Lock className="w-4 h-4 mr-2" />
+                  Administrator
+                </>
+              ) : isPremium ? (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
                   Premium Active
@@ -220,7 +251,7 @@ export default function PremiumPage() {
             </Badge>
             <Badge variant="outline" className="text-base px-4 py-2 border-primary/50 text-primary bg-primary/5">
               <Shield className="w-4 h-4 mr-2" />
-              {creditBalance} Credits
+              {user.isAdmin ? "∞" : creditBalance} Credits
             </Badge>
             <Badge variant="outline" className="text-base px-4 py-2">
               <Coins className="w-4 h-4 mr-2" />
@@ -279,7 +310,14 @@ export default function PremiumPage() {
           </table>
         </CardContent>
         <CardFooter className="justify-center p-8 bg-muted/20 border-t">
-          {!isPremium ? (
+          {user?.isAdmin ? (
+            <div className="text-center">
+              <Badge className="text-lg px-6 py-3 bg-blue-500 hover:bg-blue-600 transition-colors">
+                <Check className="w-5 h-5 mr-2" />
+                Administratörsläge: Full tillgång
+              </Badge>
+            </div>
+          ) : !isPremium ? (
             <Button
               size="lg"
               onClick={handlePremiumPurchase}
@@ -390,15 +428,15 @@ export default function PremiumPage() {
               </div>
             </div>
 
-            {/* Purchase Functional Block - Only if Premium */}
-            {isPremium ? (
+            {/* Purchase Functional Block - Only if Premium (or Admin) */}
+            {isPremium || user?.isAdmin ? (
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
                   <div>
                     <div className="text-sm text-muted-foreground">Ditt saldo</div>
                     <div className="text-2xl font-bold flex items-center gap-2">
                       <Shield className="h-5 w-5 text-primary" />
-                      {creditBalance} <span className="text-sm font-normal text-muted-foreground">Credits</span>
+                      {user?.isAdmin ? "∞" : creditBalance} <span className="text-sm font-normal text-muted-foreground">Credits</span>
                     </div>
                   </div>
                   <div className="h-12 w-px bg-border hidden sm:block"></div>
@@ -412,7 +450,7 @@ export default function PremiumPage() {
                 </div>
 
                 <div className="space-y-3 pt-2">
-                  <h3 className="font-semibold text-base">Välj ett paket:</h3>
+                  <h3 className="font-semibold text-base">{user?.isAdmin ? "Välj paket att lägga till:" : "Välj ett paket:"}</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {tokenPackages.map((pkg) => (
                       <div
@@ -429,7 +467,9 @@ export default function PremiumPage() {
                           <span className="font-bold">{pkg.tokens} Tokens</span>
                           {selectedTokenPackageId === pkg.id && <Check className="w-4 h-4 text-primary" />}
                         </div>
-                        <div className="text-sm font-medium text-primary">{pkg.price} Credits</div>
+                        <div className="text-sm font-medium text-primary">
+                          {user?.isAdmin ? "GRATIS (Admin)" : `${pkg.price} Credits`}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -437,18 +477,20 @@ export default function PremiumPage() {
 
                 <Button
                   onClick={handleTokenPurchase}
-                  className="w-full bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 shadow-lg text-lg h-12"
+                  className={`w-full ${user?.isAdmin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gradient-to-r from-primary to-purple-600 hover:opacity-90'} shadow-lg text-lg h-12`}
                   disabled={!selectedTokenPackageId || isLoading}
                 >
                   {isLoading ? (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   ) : (
-                    <>Tanka Tokens ({tokenPackages.find(p => p.id === selectedTokenPackageId)?.price || 0} Credits)</>
+                    <>{user?.isAdmin ? "Bevilja Tokens" : `Tanka Tokens (${tokenPackages.find(p => p.id === selectedTokenPackageId)?.price || 0} Credits)`}</>
                   )}
                 </Button>
 
                 <p className="text-[11px] text-center text-muted-foreground italic">
-                  Varje gång du fyller på (top up), minskas ditt kredit-saldo.
+                  {user?.isAdmin 
+                    ? "Som administratör kan du lägga till tokens utan att spendera krediter." 
+                    : "Varje gång du fyller på (top up), minskas ditt kredit-saldo."}
                 </p>
               </div>
             ) : (
