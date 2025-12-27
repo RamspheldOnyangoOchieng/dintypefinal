@@ -97,9 +97,9 @@ export async function POST(request: NextRequest) {
     // Check if user is premium
     try {
       const premiumCheckResponse = await fetch(
-        `${request.nextUrl.origin}/api/user-premium-status?userId=${userId}`,
+        `${request.nextUrl.origin}/api/check-premium-status?userId=${userId}`,
         {
-          headers: authHeader ? { Authorization: authHeader } : { 'X-User-ID': userId }
+          headers: authHeader ? { Authorization: authHeader } : { 'X-User-ID': userId as string }
         }
       );
 

@@ -63,7 +63,7 @@ const rules = [
 ]
 
 export default function ProfilePage() {
-  const { user, isLoading, logout, refreshUser } = useAuth()
+  const { user, isLoading, logout, refreshUser, tokenBalance, creditBalance } = useAuth()
   const router = useRouter()
 
   const [mounted, setMounted] = useState(false)
@@ -78,8 +78,6 @@ export default function ProfilePage() {
     notifications: true,
   })
 
-  const [tokenBalance, setTokenBalance] = useState(0)
-  const [creditBalance, setCreditBalance] = useState(0)
   const [isPremium, setIsPremium] = useState(false)
   const [isDataLoading, setIsDataLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -110,7 +108,7 @@ export default function ProfilePage() {
         const supabase = createClient()
 
         // Fetch from profiles table
-        const { data: profile, error } = await (supabase
+        const { data: profile } = await (supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
@@ -133,15 +131,7 @@ export default function ProfilePage() {
             username: user.username || "",
             email: user.email || "",
           }))
-        }
-
-        // Fetch balances from stable API
-        const response = await fetch("/api/check-premium-status")
-        if (response.ok) {
-          const data = await response.json()
-          setTokenBalance(data.tokenBalance || 0)
-          setCreditBalance(data.creditBalance || 0)
-          setIsPremium(data.isPremium || false)
+          setIsPremium(user.isPremium || false)
         }
       } catch (error) {
         console.error("Error fetching profile:", error)
@@ -150,10 +140,10 @@ export default function ProfilePage() {
       }
     }
 
-    if (mounted && user) {
+    if (user) {
       fetchFullProfile()
     }
-  }, [user, mounted])
+  }, [user])
 
   const handleSaveProfile = async () => {
     if (!user) return

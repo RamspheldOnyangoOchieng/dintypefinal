@@ -93,21 +93,30 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
     .eq("id", userId)
     .single()
 
-  // Update transaction record
-  await supabase
+  // Record/Update transaction record
+  const { error: txError } = await supabase
     .from("payment_transactions")
-    .update({
-      status: "completed",
+    .upsert({
+      user_id: userId,
+      stripe_session_id: session.id,
       stripe_customer_id: typeof session.customer === "string" ? session.customer : session.customer?.id,
-      stripe_payment_intent_id:
-        typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id,
+      stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id,
+      amount: session.amount_total ? session.amount_total / 100 : 0,
+      currency: (session.currency || 'sek').toUpperCase(),
+      status: "completed",
+      plan_id: session.metadata?.planId,
+      plan_name: session.metadata?.planName,
+      plan_duration: parseInt(session.metadata?.planDuration || "1", 10),
       metadata: session.metadata,
-    })
-    .eq("stripe_session_id", session.id)
+      updated_at: new Date().toISOString()
+    }, { onConflict: "stripe_session_id" })
+
+  if (txError) {
+    console.error("❌ Error recording payment transaction in webhook:", txError)
+  }
 
   // Handle token purchase
   const tokensToAdd = parseInt(session.metadata?.tokens || "0", 10)
-  let purchaseType = "purchase"
   let itemName = "Unknown Item"
   let purchaseDetails = ""
 
@@ -120,21 +129,24 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
 
     const newBalance = (currentTokens?.balance || 0) + tokensToAdd
 
-    await supabase.from("user_tokens").upsert({ user_id: userId, balance: newBalance }, { onConflict: "user_id" })
+    await supabase.from("user_tokens").upsert({
+      user_id: userId,
+      balance: newBalance,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id" })
 
-    // Record transaction
+    // Record token transaction
     await supabase.from("token_transactions").insert({
       user_id: userId,
       amount: tokensToAdd,
       type: "purchase",
-      description: `Purchased ${tokensToAdd} tokens`,
+      description: `Purchased ${tokensToAdd} tokens (Webhook: ${session.id})`,
     })
 
     itemName = `${tokensToAdd} Tokens`
-    purchaseDetails = `You now have ${newBalance} tokens in your account. Use them to create characters, send messages, and access premium features.`
-    purchaseType = "tokens"
+    purchaseDetails = `You now have ${newBalance} tokens in your account.`
 
-    console.log(`✅ Added ${tokensToAdd} tokens to user ${userId}`)
+    console.log(`✅ Webhook: Added ${tokensToAdd} tokens to user ${userId}`)
   }
 
   // Handle premium plan purchase
@@ -143,25 +155,36 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
     const now = new Date()
     const expiresAt = new Date(now.setMonth(now.getMonth() + planDurationMonths)).toISOString()
 
-    await supabase
+    // Update premium_profiles - Triggers DB sync to profiles.is_premium
+    const { error: premiumError } = await supabase
       .from("premium_profiles")
       .upsert(
         {
           user_id: userId,
           expires_at: expiresAt,
           plan_id: session.metadata.planId,
-          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
         { onConflict: "user_id" }
       )
 
-    // Grant credits for new premium subscribers
-    const creditAmount = 110 // Example: 110 credits for monthly premium
-    
-    await supabase.from("user_credits").upsert({ 
-      user_id: userId, 
-      balance: creditAmount,
+    if (premiumError) {
+      console.error("❌ Webhook error updating premium_profiles:", premiumError)
+    }
+
+    // Grant credits (additive)
+    const creditAmount = 110
+    const { data: currentCredits } = await supabase
+      .from("user_credits")
+      .select("balance")
+      .eq("user_id", userId)
+      .maybeSingle()
+
+    const newCreditBalance = (currentCredits?.balance || 0) + creditAmount
+
+    await supabase.from("user_credits").upsert({
+      user_id: userId,
+      balance: newCreditBalance,
       updated_at: new Date().toISOString()
     }, { onConflict: "user_id" })
 
@@ -170,36 +193,24 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
       user_id: userId,
       amount: creditAmount,
       type: "subscription_grant",
-      description: `Premium subscription credit: ${creditAmount} credits`,
+      description: `Premium subscription grant: ${creditAmount} credits`,
     })
 
-    // Sync with profiles table
-    await supabase
-      .from("profiles")
-      .update({ is_premium: true } as any)
-      .eq("id", userId)
-
-    console.log(`✅ Granted ${creditAmount} credits to new premium user ${userId}.`)
+    console.log(`✅ Webhook: Granted ${creditAmount} credits to ${userId}.`)
 
     itemName = session.metadata.planName || "Premium Plan"
-    purchaseDetails = `Your premium membership is now active until ${new Date(expiresAt).toLocaleDateString()}. You've received ${creditAmount} credits! Use them to top up your tokens for character creation and advanced AI features.`
-    purchaseType = "premium"
+    purchaseDetails = `Your premium membership is now active until ${new Date(expiresAt).toLocaleDateString()}. You've received ${creditAmount} credits!`
 
-    console.log(`✅ Created premium profile for user ${userId}, expires ${expiresAt}`)
-
-    // Send welcome email for new premium users
+    // Send welcome email
     if (profile?.email && profile?.username) {
       try {
         await sendWelcomeEmail(profile.email, profile.username)
-        console.log(`📧 Sent welcome email to ${profile.email}`)
-      } catch (emailError) {
-        console.error("Failed to send welcome email:", emailError)
-      }
+      } catch (e) { }
     }
   }
 
   // Record revenue
-  const price = fromStripeAmount(session.amount_total || 0) // Convert öre to kr
+  const price = fromStripeAmount(session.amount_total || 0)
   if (price > 0) {
     await supabase.from("revenue_transactions").insert({ amount: price })
   }

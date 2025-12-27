@@ -1,41 +1,64 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase-server"
 
-// Removed in-memory cache to ensure real-time status updates after payment
-
 export const dynamic = "force-dynamic"
 
-export async function GET() {
+/**
+ * Robust endpoint to check the current user's premium status, token balance, and credit balance.
+ * This is used to maintain real-time synchronization across the application.
+ */
+export async function GET(request: Request) {
   try {
     const supabase = await createClient()
 
-    // Check if user is authenticated using getUser() (more secure)
+    // Get current authenticated user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      return NextResponse.json({ authenticated: false, isPremium: false, tokenBalance: 0 }, { status: 200 })
+      return NextResponse.json({
+        authenticated: false,
+        isPremium: false,
+        tokenBalance: 0,
+        creditBalance: 0
+      })
     }
 
-    const userId = user.id
+    // Check if a specific userId is requested (Admin only)
+    const { searchParams } = new URL(request.url)
+    const requestedUserId = searchParams.get("userId")
 
+    let userId = user.id
 
-    // Check premium_profiles table for active premium status
+    if (requestedUserId && requestedUserId !== user.id) {
+      // Check if current user is admin
+      const { data: adminUser } = await supabase
+        .from("admin_users")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle()
+
+      if (!adminUser) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+      }
+      userId = requestedUserId
+    }
+
+    // 1. Check premium status from premium_profiles
     const { data: premiumProfile, error: premiumError } = await supabase
       .from("premium_profiles")
-      .select("expires_at")
+      .select("expires_at, plan_id")
       .eq("user_id", userId)
       .maybeSingle()
 
-    let isPremium = false
-
-    if (premiumProfile && !premiumError) {
-      // Check if premium has not expired
-      const expiresAt = new Date((premiumProfile as any).expires_at)
-      isPremium = expiresAt > new Date()
+    if (premiumError) {
+      console.error("Error fetching premium profile:", premiumError)
     }
 
-    // Get token balance
-    const { data: tokenData, error: tokenError } = await supabase
+    const now = new Date()
+    const isPremium = premiumProfile ? new Date((premiumProfile as any).expires_at) > now : false
+
+    // 2. Get token balance
+    const { data: tokenData } = await supabase
       .from("user_tokens")
       .select("balance")
       .eq("user_id", userId)
@@ -43,8 +66,8 @@ export async function GET() {
 
     const tokenBalance = (tokenData as any)?.balance || 0
 
-    // Get credit balance
-    const { data: creditData, error: creditError } = await supabase
+    // 3. Get credit balance
+    const { data: creditData } = await supabase
       .from("user_credits")
       .select("balance")
       .eq("user_id", userId)
@@ -52,37 +75,26 @@ export async function GET() {
 
     const creditBalance = (creditData as any)?.balance || 0
 
-    // Update profile.is_premium to match premium_profiles status
-    try {
-      await supabase
-        .from("profiles")
-        .upsert({ id: userId, is_premium: isPremium } as any, { onConflict: "id" })
-    } catch (e) {
-      // Ignore profile update errors
-      console.log("Profile update skipped:", e)
-    }
-
-    const response = {
+    return NextResponse.json({
+      success: true,
       authenticated: true,
+      userId,
       isPremium,
+      expiresAt: (premiumProfile as any)?.expires_at || null,
+      planId: (premiumProfile as any)?.plan_id || null,
       tokenBalance,
-      creditBalance,
-    }
-
-
-    return NextResponse.json(response)
+      creditBalance
+    })
   } catch (error) {
-    console.error("Server error:", error)
+    console.error("Server error checking premium status:", error)
     return NextResponse.json(
       {
         authenticated: false,
-        error: "server_error",
-        message: error instanceof Error ? error.message : "Unknown error",
         isPremium: false,
-        tokenBalance: 0,
-        creditBalance: 0,
+        error: "server_error",
+        message: error instanceof Error ? error.message : "Unknown error"
       },
-      { status: 200 },
+      { status: 500 }
     )
   }
 }

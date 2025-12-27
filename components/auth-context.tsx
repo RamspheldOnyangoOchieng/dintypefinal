@@ -11,6 +11,8 @@ export type User = {
   email: string
   isAdmin: boolean
   isPremium: boolean
+  tokenBalance: number
+  creditBalance: number
   createdAt: string
   avatar?: string
 }
@@ -21,6 +23,8 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<boolean>
   signup: (username: string, email: string, password: string) => Promise<boolean>
   logout: () => void
+  tokenBalance: number
+  creditBalance: number
   refreshSession: () => Promise<boolean>
   refreshUser: () => Promise<void>
   isLoading: boolean
@@ -92,16 +96,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Check if the user is an admin
         const adminStatus = await isAdmin(user.id)
 
-        // Check premium status
+        // Check premium status and balances from robust endpoint
         let isPremium = false
+        let tokenBalance = 0
+        let creditBalance = 0
         try {
-          const premiumResponse = await fetch(`/api/user-premium-status?userId=${user.id}`)
+          const premiumResponse = await fetch(`/api/check-premium-status`)
           if (premiumResponse.ok) {
             const premiumData = await premiumResponse.json()
             isPremium = premiumData.isPremium
+            tokenBalance = premiumData.tokenBalance || 0
+            creditBalance = premiumData.creditBalance || 0
           }
         } catch (e) {
-          console.error("Failed to check premium status during load")
+          console.error("Failed to check premium status during initial load")
         }
 
         setUser({
@@ -110,6 +118,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: user.email || "",
           isAdmin: adminStatus,
           isPremium: isPremium,
+          tokenBalance: tokenBalance,
+          creditBalance: creditBalance,
           createdAt: user.created_at || new Date().toISOString(),
           avatar: user.user_metadata?.avatar_url,
         })
@@ -148,11 +158,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (data) {
           // Transform the data to match our User type
-          const formattedUsers = data.map((u) => ({
+          const formattedUsers = data.map((u: any) => ({
             id: u.id,
             username: u.username || u.email.split("@")[0],
             email: u.email,
             isAdmin: u.is_admin || false,
+            isPremium: u.is_premium || false,
+            tokenBalance: 0,
+            creditBalance: 0,
             createdAt: u.created_at,
           }))
 
@@ -199,13 +212,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           adminStatus = false
         }
 
-        // Check premium status
+        // Check premium status and balances
         let isPremium = false
+        let tokenBalance = 0
+        let creditBalance = 0
         try {
-          const premiumResponse = await fetch(`/api/user-premium-status?userId=${data.user.id}`)
+          const premiumResponse = await fetch(`/api/check-premium-status`)
           if (premiumResponse.ok) {
             const premiumData = await premiumResponse.json()
             isPremium = premiumData.isPremium
+            tokenBalance = premiumData.tokenBalance || 0
+            creditBalance = premiumData.creditBalance || 0
           }
         } catch (e) {
           console.error("Failed to check premium status during login")
@@ -217,6 +234,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: data.user.email || "",
           isAdmin: adminStatus,
           isPremium: isPremium,
+          tokenBalance: tokenBalance,
+          creditBalance: creditBalance,
           createdAt: data.user.created_at || new Date().toISOString(),
           avatar: data.user.user_metadata?.avatar_url,
         })
@@ -320,7 +339,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkDeleteUserFunction = async (): Promise<boolean> => {
     try {
       // First try to check if the function exists in the database directly
-      const { data, error: functionCheckError } = await supabase.rpc("exec_sql", {
+      const { data, error: functionCheckError } = await (supabase as any).rpc("exec_sql", {
         sql: "SELECT EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'delete_user')",
       })
 
@@ -330,7 +349,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Fallback: Try to call the function with a non-existent user ID
       // This will fail with a specific error if the function exists
-      const { error } = await supabase.rpc("delete_user", { user_id: "00000000-0000-0000-0000-000000000000" })
+      const { error } = await (supabase as any).rpc("delete_user", { user_id: "00000000-0000-0000-0000-000000000000" })
 
       // If we get an error about the user not existing or admin permissions, the function exists
       if (
@@ -417,11 +436,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const adminStatus = await isAdmin(authUser.id)
 
         let isPremium = false
+        let tokenBalance = 0
+        let creditBalance = 0
         try {
+          // Use the more robust check-premium-status endpoint
           const premiumResponse = await fetch(`/api/check-premium-status`)
           if (premiumResponse.ok) {
             const premiumData = await premiumResponse.json()
             isPremium = premiumData.isPremium
+            tokenBalance = premiumData.tokenBalance || 0
+            creditBalance = premiumData.creditBalance || 0
           }
         } catch (e) {
           console.error("Failed to check premium status during refresh")
@@ -433,6 +457,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: authUser.email || "",
           isAdmin: adminStatus,
           isPremium: isPremium,
+          tokenBalance: tokenBalance,
+          creditBalance: creditBalance,
           createdAt: authUser.created_at || new Date().toISOString(),
           avatar: authUser.user_metadata?.avatar_url,
         })
@@ -468,6 +494,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         signup,
         logout,
+        tokenBalance: user?.tokenBalance || 0,
+        creditBalance: user?.creditBalance || 0,
         refreshSession,
         refreshUser,
         isLoading,

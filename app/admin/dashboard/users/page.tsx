@@ -463,7 +463,7 @@ export default function AdminUsersPage() {
 
     try {
       // Fetch current subscription status
-      const response = await fetch(`/api/user-premium-status?userId=${user.id}`)
+      const response = await fetch(`/api/check-premium-status?userId=${user.id}`)
       const data = await response.json()
 
       if (data.success) {
@@ -1127,9 +1127,9 @@ export default function AdminUsersPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="subStatus">Premium Status</Label>
-              <Select 
-                value={subscriptionForm.status} 
-                onValueChange={(v) => setSubscriptionForm({...subscriptionForm, status: v})}
+              <Select
+                value={subscriptionForm.status}
+                onValueChange={(v) => setSubscriptionForm({ ...subscriptionForm, status: v })}
               >
                 <SelectTrigger id="subStatus">
                   <SelectValue />
@@ -1146,7 +1146,7 @@ export default function AdminUsersPage() {
                 id="expiresAt"
                 type="date"
                 value={subscriptionForm.expiresAt}
-                onChange={(e) => setSubscriptionForm({...subscriptionForm, expiresAt: e.target.value})}
+                onChange={(e) => setSubscriptionForm({ ...subscriptionForm, expiresAt: e.target.value })}
               />
             </div>
           </div>

@@ -32,7 +32,7 @@ const imageOptions = [
 
 export default function GenerateImagePage() {
   const { toast } = useToast()
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
   const { openLoginModal } = useAuthModal()
   const router = useRouter()
   const { setIsOpen } = useSidebar()
@@ -61,8 +61,6 @@ export default function GenerateImagePage() {
     currentBalance: 0,
     requiredTokens: 5
   })
-  const [isPremium, setIsPremium] = useState(false)
-  const [isCheckingPremium, setIsCheckingPremium] = useState(true)
   const [showPremiumModal, setShowPremiumModal] = useState(false)
 
 
@@ -75,68 +73,9 @@ export default function GenerateImagePage() {
     return fallback
   }
 
-  // Check premium status
-  useEffect(() => {
-    async function checkPremiumStatus() {
-      if (!user?.id) {
-        console.log("No user ID, setting as free user")
-        setIsPremium(false)
-        setIsCheckingPremium(false)
-        return
-      }
-
-      // Admins always have premium features
-      if (user.isAdmin) {
-        console.log("User is admin, granting premium access")
-        setIsPremium(true)
-        setIsCheckingPremium(false)
-        return
-      }
-
-      try {
-        console.log("Checking premium status for user:", user.id)
-
-        // Get authentication headers
-        const supabase = createClient()
-        const { data: { session } } = await supabase.auth.getSession()
-
-        let headers: HeadersInit = {
-          "Content-Type": "application/json",
-        }
-
-        // Try to get access token, with fallback to user ID
-        if (session?.access_token) {
-          headers["Authorization"] = `Bearer ${session.access_token}`
-        } else {
-          // Fallback to user ID header
-          headers["X-User-ID"] = user.id
-        }
-
-        const response = await fetch(`/api/user-premium-status?userId=${user.id}`, {
-          headers
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          console.log("Premium status response:", data)
-          setIsPremium(data.isPremium || false)
-          console.log("User is premium:", data.isPremium || false)
-        } else {
-          console.error("Premium status check failed:", response.status)
-          // If the check fails, assume free user
-          setIsPremium(false)
-        }
-      } catch (error) {
-        console.error("Failed to check premium status:", error)
-        // If error occurs, assume free user
-        setIsPremium(false)
-      } finally {
-        setIsCheckingPremium(false)
-      }
-    }
-
-    checkPremiumStatus()
-  }, [user?.id])
+  // Use premium status from context
+  const isPremium = user?.isPremium || false
+  const isCheckingPremium = isLoading
 
   // Calculate tokens required for button display
   const selectedOption = imageOptions.find((option) => option.value === selectedCount)
