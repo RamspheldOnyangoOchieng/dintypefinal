@@ -18,14 +18,7 @@ interface TokenPackage {
 }
 
 export default function PremiumPage() {
-  // Hardcoded packages to match the specific text request
-  const tokenPackages: TokenPackage[] = [
-    { id: 'pack_200', name: '200 tokens', tokens: 200, price: 99, priceDisplay: '9,99 € / 99 kr' },
-    { id: 'pack_550', name: '550 tokens', tokens: 550, price: 249, priceDisplay: '€24.99 / 249 kr' },
-    { id: 'pack_1550', name: '1,550 tokens', tokens: 1550, price: 499, priceDisplay: '€49.99 / 499 kr' },
-    { id: 'pack_5800', name: '5,800 tokens', tokens: 5800, price: 1499, priceDisplay: '€149.99 / 1,499 kr' },
-  ]
-
+  const [tokenPackages, setTokenPackages] = useState<TokenPackage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingStatus, setIsCheckingStatus] = useState(true)
   const [isPremium, setIsPremium] = useState(false)
@@ -36,6 +29,22 @@ export default function PremiumPage() {
   const router = useRouter()
   const { user } = useAuth()
   const statusCheckRef = useRef<boolean>(false)
+
+  // Fetch token packages
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const response = await fetch("/api/token-packages")
+        const data = await response.json()
+        if (data.success) {
+          setTokenPackages(data.packages)
+        }
+      } catch (error) {
+        console.error("Error fetching packages:", error)
+      }
+    }
+    fetchPackages()
+  }, [])
 
   useEffect(() => {
     const checkPremiumStatus = async () => {
@@ -344,6 +353,43 @@ export default function PremiumPage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
+            {/* Price Table from Spreadsheet */}
+            <div className="rounded-xl border border-yellow-400/30 overflow-hidden shadow-sm">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="bg-yellow-400/90 text-black">
+                    <th className="text-left p-3 font-bold">Köpa Tokens</th>
+                    <th className="text-right p-3 font-bold">Kostnad</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-card">
+                  {tokenPackages.length === 0 ? (
+                    <tr>
+                      <td colSpan={2} className="p-4 text-center text-muted-foreground italic">
+                        Laddar token-paket...
+                      </td>
+                    </tr>
+                  ) : (
+                    tokenPackages.map((pkg, idx) => (
+                      <tr key={pkg.id} className={`border-b border-border/50 ${idx % 2 === 1 ? 'bg-muted/10' : ''}`}>
+                        <td className="p-3 font-medium">
+                          {pkg.tokens.toLocaleString()} tokens {pkg.priceDisplay && `— ${pkg.priceDisplay}`}
+                        </td>
+                        <td className="p-3 text-right font-bold">
+                          {pkg.price === 0 ? 'INGÅR' : (pkg.priceDisplay || `${pkg.price} kr`)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+              <div className="bg-yellow-400/10 p-3 border-t border-yellow-400/30">
+                <p className="text-xs font-semibold text-center text-amber-900 dark:text-amber-200">
+                  Remember: Only premium users who have paid 1 month subscription can buy tokens
+                </p>
+              </div>
+            </div>
+
             {/* Purchase Functional Block - Only if Premium */}
             {isPremium ? (
               <div className="space-y-4">
