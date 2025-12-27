@@ -9,6 +9,7 @@ interface UserTokenBalanceProps {
     showIcon?: boolean
     iconSize?: number
     textSize?: "xs" | "sm" | "base" | "lg" | "xl"
+    refreshTrigger?: number // Add this to allow manual refreshes
 }
 
 export function UserTokenBalance({
@@ -17,6 +18,7 @@ export function UserTokenBalance({
     showIcon = true,
     iconSize = 16,
     textSize = "sm",
+    refreshTrigger = 0,
 }: UserTokenBalanceProps) {
     const [balance, setBalance] = useState<number | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -53,7 +55,7 @@ export function UserTokenBalance({
         }
 
         fetchBalance()
-    }, [userId])
+    }, [userId, refreshTrigger])
 
     const textSizeClass = {
         xs: "text-xs",

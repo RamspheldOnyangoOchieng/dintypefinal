@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase-server"
 import { createAdminClient } from "@/lib/supabase-admin"
-import { uploadVideoToBunny } from "@/lib/cloudinary-upload"
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,14 +51,15 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Upload video to Bunny.net
-    console.log("[API] Uploading video to Bunny.net...")
-    let bunnyUrl: string
+    // Upload video to Cloudinary
+    console.log("[API] Uploading video to Cloudinary...")
+    let cloudinaryUrl: string
     try {
-      bunnyUrl = await uploadVideoToBunny(videoData)
-      console.log("[API] Video uploaded to Bunny.net:", bunnyUrl)
+      const { uploadVideoToCloudinary } = await import("@/lib/cloudinary-upload")
+      cloudinaryUrl = await uploadVideoToCloudinary(videoData)
+      console.log("[API] Video uploaded to Cloudinary:", cloudinaryUrl)
     } catch (uploadError) {
-      console.error("[API] Failed to upload video to Bunny.net:", uploadError)
+      console.error("[API] Failed to upload video to Cloudinary:", uploadError)
       return NextResponse.json(
         { error: "Failed to upload video to cloud storage" },
         { status: 500 }
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       .from("generated_images")
       .insert({
         user_id: userId,
-        image_url: bunnyUrl, // Bunny.net CDN URL instead of base64
+        image_url: cloudinaryUrl, // Cloudinary URL instead of Bunny
         prompt: prompt,
         model_used: "runpod-video",
         media_type: "video",

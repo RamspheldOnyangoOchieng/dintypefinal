@@ -2,23 +2,43 @@
 
 import { updateCollection, deleteCollection } from "@/lib/storage-utils"
 import { createAdminClient } from "@/lib/supabase-admin"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase-server"
 import { getAnonymousUserId } from "@/lib/anonymous-user"
 import { revalidatePath } from "next/cache"
-import { getAnonymousId } from "./anonymous-id"
 
-// If there are any non-async functions here, let's make them async
+/**
+ * Helper to get the current user ID (auth or anonymous fallback)
+ */
+async function getUserId() {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user?.id) {
+      return user.id
+    }
+
+    // Fallback to anonymous ID for server-side
+    // Note: This will be 00000000-0000-0000-0000-000000000000 if not in browser
+    return getAnonymousUserId()
+  } catch (error) {
+    console.error("Error getting user ID in server action:", error)
+    return getAnonymousUserId()
+  }
+}
+
 export async function createCollection(name: string, description = "") {
   try {
-    const supabase = await createAdminClient()
-    const anonymousId = getAnonymousId()
+    const userId = await getUserId()
+    const supabaseAdmin = await createAdminClient()
+    if (!supabaseAdmin) throw new Error("Could not initialize admin client")
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("collections")
       .insert({
         name,
         description,
-        user_id: anonymousId,
+        user_id: userId,
       })
       .select()
       .single()
@@ -37,72 +57,19 @@ export async function createCollection(name: string, description = "") {
 }
 
 export async function createNewCollection(formData: FormData) {
-  try {
-    const name = formData.get("name") as string
-    const description = formData.get("description") as string
+  const name = formData.get("name") as string
+  const description = formData.get("description") as string
 
-    if (!name) {
-      throw new Error("Collection name is required")
-    }
+  if (!name) return { success: false, error: "Collection name is required" }
 
-    // Get user ID (authenticated or anonymous)
-    const supabase = createClient()
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    let userId: string
-
-    if (session?.user?.id) {
-      console.log("[Server Action] User is authenticated:", session.user.id)
-      userId = session.user.id
-    } else {
-      userId = getAnonymousUserId()
-      console.log("[Server Action] Using anonymous ID:", userId)
-    }
-
-    const supabaseAdmin = await createAdminClient()
-
-    const collection = await supabaseAdmin
-      .from("collections")
-      .insert({
-        name,
-        description,
-        user_id: userId,
-      })
-      .select()
-      .single()
-
-    return { success: true, collection }
-  } catch (error) {
-    console.error("Error creating collection:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create collection",
-    }
-  }
+  return createCollection(name, description)
 }
 
 export async function getAllCollections() {
   try {
-    // Get user ID (authenticated or anonymous)
-    const supabase = createClient()
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    let userId: string
-
-    if (session?.user?.id) {
-      console.log("[Server Action] User is authenticated:", session.user.id)
-      userId = session.user.id
-    } else {
-      userId = getAnonymousUserId()
-      console.log("[Server Action] Using anonymous ID:", userId)
-    }
-
-    // Use admin client to bypass RLS
+    const userId = await getUserId()
     const supabaseAdmin = await createAdminClient()
+    if (!supabaseAdmin) throw new Error("Could not initialize admin client")
 
     // Get collections with image count
     const { data, error } = await supabaseAdmin
@@ -143,24 +110,9 @@ export async function getAllCollections() {
 
 export async function getCollection(id: string) {
   try {
-    // Get user ID (authenticated or anonymous)
-    const supabase = createClient()
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    let userId: string
-
-    if (session?.user?.id) {
-      console.log("[Server Action] User is authenticated:", session.user.id)
-      userId = session.user.id
-    } else {
-      userId = getAnonymousUserId()
-      console.log("[Server Action] Using anonymous ID:", userId)
-    }
-
-    // Use admin client to bypass RLS
+    const userId = await getUserId()
     const supabaseAdmin = await createAdminClient()
+    if (!supabaseAdmin) throw new Error("Could not initialize admin client")
 
     // Get the collection
     const { data: collection, error: collectionError } = await supabaseAdmin
@@ -222,6 +174,7 @@ export async function updateExistingCollection(id: string, formData: FormData) {
       description,
     })
 
+    revalidatePath("/collections")
     return { success: true, collection }
   } catch (error) {
     console.error("Error updating collection:", error)
@@ -235,6 +188,7 @@ export async function updateExistingCollection(id: string, formData: FormData) {
 export async function deleteExistingCollection(id: string) {
   try {
     await deleteCollection(id)
+    revalidatePath("/collections")
     return { success: true }
   } catch (error) {
     console.error("Error deleting collection:", error)

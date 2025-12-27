@@ -24,7 +24,7 @@ import { useAuthModal } from "@/components/auth-modal-context"
 // Remove the static imageOptions array and replace with dynamic calculation
 // Get selected option for token calculation - move this logic up and make it dynamic
 const imageOptions = [
-  { value: "1", label: "1", tokens: 5 },
+  { value: "1", label: "1 (Free)", tokens: 0 },
   { value: "4", label: "4", tokens: 20 },
   { value: "6", label: "6", tokens: 30 },
   { value: "8", label: "8", tokens: 40 },
@@ -638,7 +638,7 @@ export default function GenerateImagePage() {
   }
 
   const viewCollection = () => {
-    router.push("/collection")
+    router.push("/collections")
   }
 
 
@@ -658,6 +658,16 @@ export default function GenerateImagePage() {
             <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
               Generate Image
             </h1>
+
+            {user && (
+              <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20">
+                <Coins className="w-4 h-4 text-yellow-500" />
+                <span className="text-sm font-black italic tabular-nums text-yellow-500">
+                  {user.isAdmin ? "∞" : user.tokenBalance}
+                </span>
+              </div>
+            )}
+
             {/* Debug: Show premium status */}
             {!isCheckingPremium && isPremium && (
               <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">

@@ -2,17 +2,17 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { 
-  Check, 
-  Shield, 
-  Lock, 
-  Sparkles, 
-  Loader2, 
-  Coins, 
-  Activity, 
-  Zap, 
-  MessageSquare, 
-  UserPlus, 
+import {
+  Check,
+  Shield,
+  Lock,
+  Sparkles,
+  Loader2,
+  Coins,
+  Activity,
+  Zap,
+  MessageSquare,
+  UserPlus,
   Image as ImageIcon,
   ChevronRight,
   Star,
@@ -57,7 +57,7 @@ export default function PremiumPage() {
   const [lastGrantedAmount, setLastGrantedAmount] = useState(0)
 
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const statusCheckRef = useRef<boolean>(false)
 
   // Fetch token packages
@@ -183,6 +183,7 @@ export default function PremiumPage() {
           toast.success(`Administratör! Du har lagt till ${selectedPackage.tokens} tokens till ditt konto.`)
           setTokenBalance(prev => prev + selectedPackage.tokens)
           setLastGrantedAmount(selectedPackage.tokens)
+          await refreshUser()
           setShowSuccessDialog(true)
         } else {
           throw new Error(data.error || "Misslyckades att lägga till tokens")
@@ -218,6 +219,7 @@ export default function PremiumPage() {
           toast.success(`Framgång! Du har köpt ${selectedPackage.tokens} tokens.`)
           setTokenBalance(prev => prev + selectedPackage.tokens)
           setCreditBalance(prev => prev - selectedPackage.price)
+          await refreshUser()
         } else {
           throw new Error(data.error || "Misslyckades att konvertera krediter")
         }
@@ -380,15 +382,15 @@ export default function PremiumPage() {
             <CardFooter className="p-6 pt-0">
               {user?.isAdmin ? (
                 <div className="w-full text-center py-2.5 bg-primary/5 rounded-lg border border-primary/10">
-                   <p className="text-xs text-primary font-bold italic flex items-center justify-center gap-2">
-                     <Shield className="w-3.5 h-3.5" /> Admin-konto
-                   </p>
+                  <p className="text-xs text-primary font-bold italic flex items-center justify-center gap-2">
+                    <Shield className="w-3.5 h-3.5" /> Admin-konto
+                  </p>
                 </div>
               ) : isPremium ? (
                 <div className="w-full text-center py-2.5 bg-emerald-500/10 rounded-lg border border-emerald-500/10">
-                   <p className="text-xs text-emerald-500 font-bold italic flex items-center justify-center gap-2">
-                     <Check className="w-4 h-4" /> Prenumeration aktiv
-                   </p>
+                  <p className="text-xs text-emerald-500 font-bold italic flex items-center justify-center gap-2">
+                    <Check className="w-4 h-4" /> Prenumeration aktiv
+                  </p>
                 </div>
               ) : (
                 <Button
@@ -432,91 +434,91 @@ export default function PremiumPage() {
           </div>
 
           <Card className="border-border/40 bg-card/40 backdrop-blur-xl shadow-xl relative overflow-hidden">
-             {(!isPremium && !user?.isAdmin) && (
-               <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
-                  <div className="p-3 rounded-full bg-amber-500/10 border border-amber-500/20 mb-3">
-                    <Lock className="w-6 h-6 text-amber-500" />
+            {(!isPremium && !user?.isAdmin) && (
+              <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                <div className="p-3 rounded-full bg-amber-500/10 border border-amber-500/20 mb-3">
+                  <Lock className="w-6 h-6 text-amber-500" />
+                </div>
+                <h4 className="text-lg font-bold">Premium Krävs</h4>
+                <p className="text-xs text-muted-foreground mb-4">Du behöver Premium för att kunna använda tokens.</p>
+                <Button onClick={handlePremiumPurchase} className="h-10 px-6 rounded-lg bg-primary font-bold text-sm">
+                  UPPGRADERA MER
+                </Button>
+              </div>
+            )}
+
+            <CardHeader className="p-6 border-b border-border/10">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h3 className="text-lg font-bold italic tracking-tight">Välj ett paket</h3>
+                <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-muted/40 border border-border/40">
+                  <div className="text-center">
+                    <p className="text-[8px] font-black text-muted-foreground uppercase leading-none pb-0.5">Krediter</p>
+                    <p className="text-sm font-black italic leading-none">{user?.isAdmin ? "∞" : creditBalance}</p>
                   </div>
-                  <h4 className="text-lg font-bold">Premium Krävs</h4>
-                  <p className="text-xs text-muted-foreground mb-4">Du behöver Premium för att kunna använda tokens.</p>
-                  <Button onClick={handlePremiumPurchase} className="h-10 px-6 rounded-lg bg-primary font-bold text-sm">
-                     UPPGRADERA MER
-                  </Button>
-               </div>
-             )}
-
-             <CardHeader className="p-6 border-b border-border/10">
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                   <h3 className="text-lg font-bold italic tracking-tight">Välj ett paket</h3>
-                   <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-muted/40 border border-border/40">
-                      <div className="text-center">
-                        <p className="text-[8px] font-black text-muted-foreground uppercase leading-none pb-0.5">Krediter</p>
-                        <p className="text-sm font-black italic leading-none">{user?.isAdmin ? "∞" : creditBalance}</p>
-                      </div>
-                      <div className="w-px h-6 bg-border/40" />
-                      <div className="text-center">
-                        <p className="text-[8px] font-black text-muted-foreground uppercase leading-none pb-0.5">Tokens</p>
-                        <p className="text-sm font-black italic leading-none">{tokenBalance}</p>
-                      </div>
-                   </div>
+                  <div className="w-px h-6 bg-border/40" />
+                  <div className="text-center">
+                    <p className="text-[8px] font-black text-muted-foreground uppercase leading-none pb-0.5">Tokens</p>
+                    <p className="text-sm font-black italic leading-none">{tokenBalance}</p>
+                  </div>
                 </div>
-             </CardHeader>
+              </div>
+            </CardHeader>
 
-             <CardContent className="p-6 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                   {tokenPackages.map((pkg) => (
-                    <div
-                      key={pkg.id}
-                      onClick={() => setSelectedTokenPackageId(pkg.id)}
-                      className={cn(
-                        "cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200",
-                        selectedTokenPackageId === pkg.id
-                          ? "border-primary bg-primary/5 shadow-md"
-                          : "border-border/50 hover:border-primary/20 hover:bg-muted/30"
-                      )}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <Coins className={cn("w-4 h-4", selectedTokenPackageId === pkg.id ? "text-primary" : "text-muted-foreground")} />
-                        {selectedTokenPackageId === pkg.id && <Check className="w-3 h-3 text-primary" />}
-                      </div>
-                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{pkg.name}</p>
-                      <p className="text-2xl font-black tracking-tighter py-1">{pkg.tokens.toLocaleString()}</p>
-                      <div className="pt-2 border-t border-border/20 mt-2 flex justify-between items-center">
-                        <span className="text-[9px] font-bold text-muted-foreground">PRIS</span>
-                        <span className="text-sm font-black text-primary italic">
-                           {user?.isAdmin ? "GRATIS" : (pkg.priceDisplay || `${pkg.price} kr`)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-2 space-y-3">
-                  <Button
-                    onClick={handleTokenPurchase}
+            <CardContent className="p-6 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {tokenPackages.map((pkg) => (
+                  <div
+                    key={pkg.id}
+                    onClick={() => setSelectedTokenPackageId(pkg.id)}
                     className={cn(
-                      "w-full h-12 rounded-xl text-lg font-black tracking-wide",
-                      user?.isAdmin ? "bg-blue-600 hover:bg-blue-700" : "bg-gradient-to-r from-primary to-purple-600 shadow-md"
+                      "cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200",
+                      selectedTokenPackageId === pkg.id
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border/50 hover:border-primary/20 hover:bg-muted/30"
                     )}
-                    disabled={!selectedTokenPackageId || isLoading}
                   >
-                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : user?.isAdmin ? "BEVILJA TOKENS" : "KÖP TOKENS"}
-                  </Button>
-                  <p className="text-[10px] text-center text-muted-foreground italic">
-                     {user?.isAdmin 
-                      ? "Som administratör kan du lägga till tokens utan kostnad." 
-                      : "Krediter dras automatiskt från ditt saldo."}
-                  </p>
-                </div>
-             </CardContent>
+                    <div className="flex justify-between items-start mb-2">
+                      <Coins className={cn("w-4 h-4", selectedTokenPackageId === pkg.id ? "text-primary" : "text-muted-foreground")} />
+                      {selectedTokenPackageId === pkg.id && <Check className="w-3 h-3 text-primary" />}
+                    </div>
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{pkg.name}</p>
+                    <p className="text-2xl font-black tracking-tighter py-1">{pkg.tokens.toLocaleString()}</p>
+                    <div className="pt-2 border-t border-border/20 mt-2 flex justify-between items-center">
+                      <span className="text-[9px] font-bold text-muted-foreground">PRIS</span>
+                      <span className="text-sm font-black text-primary italic">
+                        {user?.isAdmin ? "GRATIS" : (pkg.priceDisplay || `${pkg.price} kr`)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 space-y-3">
+                <Button
+                  onClick={handleTokenPurchase}
+                  className={cn(
+                    "w-full h-12 rounded-xl text-lg font-black tracking-wide",
+                    user?.isAdmin ? "bg-blue-600 hover:bg-blue-700" : "bg-gradient-to-r from-primary to-purple-600 shadow-md"
+                  )}
+                  disabled={!selectedTokenPackageId || isLoading}
+                >
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : user?.isAdmin ? "BEVILJA TOKENS" : "KÖP TOKENS"}
+                </Button>
+                <p className="text-[10px] text-center text-muted-foreground italic">
+                  {user?.isAdmin
+                    ? "Som administratör kan du lägga till tokens utan kostnad."
+                    : "Krediter dras automatiskt från ditt saldo."}
+                </p>
+              </div>
+            </CardContent>
           </Card>
         </div>
 
         {/* Footer Trust - Minimalist */}
         <div className="flex flex-wrap items-center justify-center gap-8 py-4 opacity-40 text-[10px] font-bold tracking-widest uppercase">
-           <div className="flex items-center gap-2"><Shield className="w-3 h-3" /> SECURE</div>
-           <div className="flex items-center gap-2"><Lock className="w-3 h-3" /> PRIVATE</div>
-           <div className="flex items-center gap-2"><Sparkles className="w-3 h-3" /> UNLIMITED</div>
+          <div className="flex items-center gap-2"><Shield className="w-3 h-3" /> SECURE</div>
+          <div className="flex items-center gap-2"><Lock className="w-3 h-3" /> PRIVATE</div>
+          <div className="flex items-center gap-2"><Sparkles className="w-3 h-3" /> UNLIMITED</div>
         </div>
       </div>
 
@@ -546,7 +548,7 @@ export default function PremiumPage() {
                 <p className="text-[10px] font-black text-emerald-500 uppercase">+{lastGrantedAmount} Tokens Tillagda</p>
               </div>
             </div>
-            
+
             <div className="mt-6 space-y-3">
               <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground bg-muted/30 p-3 rounded-lg">
                 <Shield className="w-4 h-4 text-primary" />
@@ -560,9 +562,9 @@ export default function PremiumPage() {
           </div>
 
           <DialogFooter className="sm:justify-center">
-            <Button 
-              type="button" 
-              variant="premium" 
+            <Button
+              type="button"
+              variant="premium"
               className="w-full h-11 text-base font-black tracking-tight"
               onClick={() => setShowSuccessDialog(false)}
             >

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { uploadImageToBunny } from "@/lib/cloudinary-upload"
 import { getUnifiedNovitaKey } from '@/lib/unified-api-keys';
 
 const supabase = createClient(
@@ -103,9 +102,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Upload character image to Bunny.net CDN first, then send URL to RunPod
-    console.log("[API] Uploading character image to Bunny.net CDN for video generation...");
-    let bunnyImageUrl: string;
+    // Upload character image to Cloudinary first, then send URL to RunPod
+    console.log("[API] Uploading character image to Cloudinary for video generation...");
+    let cloudinaryImageUrl: string;
     try {
       // Fetch the image from the character's image URL
       const imageResponse = await fetch(character.image);
@@ -117,11 +116,12 @@ export async function POST(request: NextRequest) {
       const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
       const base64Image = `data:${contentType};base64,${imageBase64Data}`;
       
-      // Upload to Bunny.net and get public URL
-      bunnyImageUrl = await uploadImageToBunny(base64Image);
-      console.log("[API] Character image uploaded to Bunny.net:", bunnyImageUrl);
+      // Upload to Cloudinary and get public URL
+      const { uploadImageToCloudinary } = await import("@/lib/cloudinary-upload");
+      cloudinaryImageUrl = await uploadImageToCloudinary(base64Image, 'temp-generation');
+      console.log("[API] Character image uploaded to Cloudinary:", cloudinaryImageUrl);
     } catch (error) {
-      console.error("[API] Failed to upload image to Bunny.net:", error);
+      console.error("[API] Failed to upload image to Cloudinary:", error);
       return NextResponse.json(
         { error: 'Failed to upload character image for video generation' },
         { status: 500 }
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         input: {
-          image_url: bunnyImageUrl,
+          image_url: cloudinaryImageUrl,
           prompt: enhancedPrompt,
           width: 480,
           height: 832,

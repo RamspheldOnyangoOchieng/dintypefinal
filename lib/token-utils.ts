@@ -81,6 +81,19 @@ export async function deductTokens(userId: string, amount: number, description: 
       throw transactionError
     }
 
+    // Also log to cost_logs for analytics
+    try {
+      const { data: logData, error: logError } = await supabaseAdmin.from("cost_logs").insert({
+        user_id: userId,
+        action_type: metadata?.activity_type || 'token_usage',
+        cost: amount,
+        metadata: { ...metadata, description, source: 'deductTokens' }
+      })
+      if (logError) console.error("Error logging cost:", logError)
+    } catch (e) {
+      console.error("Failed to log to cost_logs:", e)
+    }
+
     return true
   } catch (error) {
     console.error("Error in deductTokens:", error)

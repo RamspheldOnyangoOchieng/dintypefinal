@@ -1,7 +1,7 @@
 "use server"
 
 import { createAdminClient } from "@/lib/supabase-admin"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase-server"
 import { getAnonymousUserId } from "@/lib/anonymous-user"
 
 // Export the functions that are being imported elsewhere
@@ -368,13 +368,13 @@ export async function removeImageFromExistingCollection(imageId: string) {
 // Helper function to get user ID
 async function getUserId() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+    } = await supabase.auth.getUser()
 
-    if (session?.user?.id) {
-      return session.user.id
+    if (user?.id) {
+      return user.id
     }
 
     // Use the anonymous ID

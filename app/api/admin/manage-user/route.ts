@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         const { createAdminClient } = await import("@/lib/supabase-admin")
         const supabaseAdmin = await createAdminClient()
         if (!supabaseAdmin) {
-             return NextResponse.json({ error: "Failed to initialize admin client" }, { status: 500 })
+            return NextResponse.json({ error: "Failed to initialize admin client" }, { status: 500 })
         }
 
         if (action === "grant-tokens") {
@@ -41,10 +41,12 @@ export async function POST(request: Request) {
                 return NextResponse.json({ error: "Invalid token amount" }, { status: 400 })
             }
 
+            const description = body.description || `Admin manual adjustment by ${adminUser.email}`
+
             const { error: updateError } = await supabaseAdmin.rpc('admin_add_tokens', {
                 p_user_id: userId,
                 p_amount: amount,
-                p_description: body.description || `Admin manual adjustment by ${adminUser.email}`
+                p_description: description
             })
 
             if (updateError) {
@@ -53,8 +55,8 @@ export async function POST(request: Request) {
             }
 
             return NextResponse.json({ success: true, message: `Tokens updated for user ${userId}` })
-        } 
-        
+        }
+
         if (action === "update-subscription") {
             // Update premium_profiles
             const subscriptionData: any = {
@@ -85,6 +87,15 @@ export async function POST(request: Request) {
                 .from('profiles')
                 .update({ is_premium: isPremium } as any)
                 .eq('id', userId)
+
+            // Log activity
+            const { logActivity } = await import("@/lib/activity")
+            await logActivity({
+                userId,
+                type: 'subscription_upgrade',
+                description: `Admin manual subscription update: ${status || 'active'} (Plan: ${planId || 'standard'})`,
+                metadata: { admin_id: adminUser.id, status, planId, expiresAt }
+            })
 
             return NextResponse.json({ success: true, message: `Subscription updated for user ${userId}` })
         }

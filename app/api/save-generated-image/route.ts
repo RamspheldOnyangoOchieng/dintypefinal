@@ -33,31 +33,37 @@ export async function POST(request: NextRequest) {
 
     // Use admin client to bypass RLS
     const supabaseAdmin = await createAdminClient()
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: "Failed to initialize database client" }, { status: 500 })
+    }
 
     // Check if this permanent URL already exists for this user
-    // We check against Cloudinary URLs, not Novita URLs (Novita URLs are temporary)
+    // We check against permanent URLs (Cloudinary), not temporary ones (Novita)
     let permanentImageUrl = imageUrl;
-    
-    // Only upload to Cloudinary if it's a Novita URL (temporary)
-    if (imageUrl.includes('novita.ai') || imageUrl.includes('task-result')) {
-      console.log("🔄 Downloading image from Novita...");
-      
+
+    const isNovita = imageUrl.includes('novita.ai') || imageUrl.includes('task-result');
+    const isCloudinary = imageUrl.includes('cloudinary.com');
+
+    // Only upload if it's NOT already on our permanent storage
+    if (isNovita || !isCloudinary) {
+      console.log("🔄 Downloading image for permanent storage in Cloudinary...");
+
       try {
-        // Upload to Cloudinary for permanent storage
+        const { uploadImageToCloudinary } = await import("@/lib/cloudinary-upload");
         permanentImageUrl = await uploadImageToCloudinary(imageUrl, 'generated-images');
         console.log("✅ Uploaded to Cloudinary:", permanentImageUrl);
       } catch (uploadError) {
         console.error("❌ Failed to upload to Cloudinary:", uploadError);
         return NextResponse.json(
-          { 
+          {
             error: "Failed to upload image to permanent storage",
-            details: uploadError instanceof Error ? uploadError.message : "Unknown error"
+            details: "Cloudinary upload failed"
           },
           { status: 500 }
         );
       }
     } else {
-      console.log("ℹ️  URL already appears to be permanent (not Novita)");
+      console.log("ℹ️  URL already appears to be permanent");
     }
 
     // Check if this permanent image URL already exists for this user
@@ -96,8 +102,8 @@ export async function POST(request: NextRequest) {
     console.log("   Image ID:", data.id);
     console.log("   Permanent URL:", permanentImageUrl);
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       image: data,
       permanentUrl: permanentImageUrl
     })

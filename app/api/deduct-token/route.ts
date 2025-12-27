@@ -17,54 +17,33 @@ export async function POST(req: Request) {
             return new NextResponse(JSON.stringify({ error: 'Invalid amount' }), { status: 400 })
         }
 
-        // Get user's current token balance
-        const { data: userTokens, error: selectError } = await supabase
-            .from('user_tokens')
-            .select('balance')
-            .eq('user_id', userId)
-            .single()
+        const { deductTokens } = await import("@/lib/token-utils")
+        const success = await deductTokens(
+          userId, 
+          deductionAmount, 
+          body.description || `Token usage (${deductionAmount} tokens)`,
+          body.metadata || {}
+        )
 
-        if (selectError) {
-            // If row doesn't exist, create it with 0 start (or default)
-            if (selectError.code === 'PGRST116') {
-                // Warning: This implies user has 0 tokens if not found.
-                // You might want to initialize them here if that logic exists elsewhere.
+        if (!success) {
+            // Check balance again to give specific error if it was insufficient
+            const { getUserTokenBalance } = await import("@/lib/token-utils")
+            const currentBalance = await getUserTokenBalance(userId)
+            
+            if (currentBalance < deductionAmount) {
                 return new NextResponse(JSON.stringify({
                     error: 'Insufficient tokens',
                     insufficientTokens: true,
-                    currentBalance: 0,
+                    currentBalance,
                     requiredTokens: deductionAmount
                 }), { status: 400 })
             }
-            console.error('Error fetching user tokens:', selectError)
-            return new NextResponse(JSON.stringify({ error: selectError.message }), { status: 500 })
+            
+            return new NextResponse(JSON.stringify({ error: 'Failed to deduct tokens' }), { status: 500 })
         }
 
-        const currentBalance = (userTokens as any)?.balance || 0;
-
-        // Check if user has enough tokens
-        if (currentBalance < deductionAmount) {
-            return new NextResponse(JSON.stringify({
-                error: 'Insufficient tokens',
-                insufficientTokens: true, // Flag for frontend to show upgrade modal
-                currentBalance: currentBalance,
-                requiredTokens: deductionAmount
-            }), { status: 400 }) // Using 400 as per frontend expectation in some checks, or 402 Payment Required
-        }
-
-        // Deduct tokens
-        const newBalance = currentBalance - deductionAmount
-
-        const { error: updateError } = await supabase
-            .from('user_tokens')
-            // @ts-ignore
-            .update({ balance: newBalance })
-            .eq('user_id', userId)
-
-        if (updateError) {
-            console.error('Error deducting token:', updateError)
-            return new NextResponse(JSON.stringify({ error: updateError.message }), { status: 500 })
-        }
+        const { getUserTokenBalance } = await import("@/lib/token-utils")
+        const newBalance = await getUserTokenBalance(userId)
 
         return new NextResponse(JSON.stringify({
             success: true,

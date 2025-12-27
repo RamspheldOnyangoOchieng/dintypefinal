@@ -42,6 +42,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { UserTokenBalance } from "@/components/user-token-balance"
+import { UnifiedActivityList } from "@/components/unified-activity-list"
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic"
@@ -77,6 +78,7 @@ export default function AdminUsersPage() {
   // Token & Subscription Management
   const [showTokenDialog, setShowTokenDialog] = useState(false)
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false)
+  const [showActivityDialog, setShowActivityDialog] = useState(false)
   const [tokenAmount, setTokenAmount] = useState(0)
   const [tokenDescription, setTokenDescription] = useState("")
   const [subscriptionForm, setSubscriptionForm] = useState({
@@ -84,6 +86,7 @@ export default function AdminUsersPage() {
     expiresAt: "",
   })
   const [isProcessing, setIsProcessing] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -456,6 +459,11 @@ export default function AdminUsersPage() {
     setShowTokenDialog(true)
   }
 
+  const openActivityDialog = (user: UserWithActions) => {
+    setSelectedUser(user)
+    setShowActivityDialog(true)
+  }
+
   const openSubscriptionDialog = async (user: UserWithActions) => {
     setSelectedUser(user)
     setIsProcessing(true)
@@ -506,6 +514,7 @@ export default function AdminUsersPage() {
       const data = await response.json()
       if (data.success) {
         toast({ title: "Tokens Granted", description: `${tokenAmount} tokens granted to ${selectedUser.username}` })
+        setRefreshKey(prev => prev + 1)
         setShowTokenDialog(false)
       } else {
         throw new Error(data.error)
@@ -743,7 +752,7 @@ export default function AdminUsersPage() {
                         </Badge>
                       </td>
                       <td className="py-4 px-4 text-slate-500 dark:text-slate-400">
-                        <UserTokenBalance userId={user.id} />
+                        <UserTokenBalance userId={user.id} refreshTrigger={refreshKey} />
                       </td>
                       <td className="py-4 px-4 text-slate-500 dark:text-slate-400">
                         {format(new Date(user.createdAt), "MMM d, yyyy")}
@@ -767,6 +776,10 @@ export default function AdminUsersPage() {
                               <DropdownMenuItem className="cursor-pointer" onClick={() => openEditDialog(user)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="cursor-pointer" onClick={() => openActivityDialog(user)}>
+                                <Activity className="mr-2 h-4 w-4" />
+                                View Activity
                               </DropdownMenuItem>
                               <DropdownMenuItem className="cursor-pointer" onClick={() => openTokenDialog(user)}>
                                 <Coins className="mr-2 h-4 w-4" />
@@ -1107,6 +1120,35 @@ export default function AdminUsersPage() {
             <Button disabled={isProcessing} onClick={handleManageTokens}>
               {isProcessing ? "Updating..." : "Update Tokens"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Activity Dialog */}
+      <Dialog open={showActivityDialog} onOpenChange={setShowActivityDialog}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2 italic italic font-black">
+              <Activity className="h-5 w-5 text-primary" />
+              <span>Aktivitetshistorik - {selectedUser?.username}</span>
+            </DialogTitle>
+            <DialogDescription>
+              Se alla transaktioner och aktiviteter för denna användare.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            {selectedUser && (
+              <UnifiedActivityList 
+                userId={selectedUser.id} 
+                showTitle={false} 
+                limit={50}
+              />
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowActivityDialog(false)}>Stäng</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -481,7 +481,10 @@ export default function AdminDashboardPage() {
                           {activity.user?.username || 'Unknown User'}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                          {activity.description || `${activity.type}: ${activity.amount > 0 ? '+' : ''}${activity.amount} tokens`}
+                          <Badge variant="outline" className="mr-2 text-[10px] h-4 px-1 lowercase">
+                            {activity.activity_kind || 'token'}
+                          </Badge>
+                          {activity.description || `${activity.type}: ${activity.amount > 0 ? '+' : ''}${activity.amount}`}
                         </p>
                       </div>
                       <div className="ml-auto text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
@@ -773,7 +776,7 @@ export default function AdminDashboardPage() {
                   />
                 </div>
               </div>
-              
+
               <Alert>
                 <Activity className="h-4 w-4" />
                 <AlertDescription>

@@ -41,6 +41,7 @@ import DeleteFeedbackModal from "@/components/delete-feedback-modal"
 import DeleteConfirmationModal from "@/components/delete-confirmation-modal"
 import { TokenTransactionHistory } from "@/components/token-transaction-history"
 import { TokenUsageStats } from "@/components/token-usage-stats"
+import { UnifiedActivityList } from "@/components/unified-activity-list"
 import {
   Dialog,
   DialogContent,
@@ -511,23 +512,11 @@ export default function ProfilePage() {
 
           {/* Activity Tab */}
           <TabsContent value="activity" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Card className="border-border/40 bg-card/30 backdrop-blur-sm shadow-lg overflow-hidden">
-                <CardHeader className="bg-muted/20 border-b border-border/40">
-                  <CardTitle className="flex items-center gap-2">
-                    <Coins className="w-5 h-5 text-yellow-500" /> Transaktionshistorik
-                  </CardTitle>
-                  <CardDescription>Dina senaste köp och token-användning.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <TokenTransactionHistory userId={user.id} />
-                </CardContent>
-              </Card>
-
-              <div className="space-y-8">
+             <UnifiedActivityList userId={user.id} />
+             
+             <div className="pt-6">
                 <TokenUsageStats userId={user.id} initialData={null} />
-              </div>
-            </div>
+             </div>
           </TabsContent>
 
           {/* Security Tab */}

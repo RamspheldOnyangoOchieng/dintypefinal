@@ -186,7 +186,7 @@ export default function GuidePage() {
                     <h4 className="font-semibold">Automatisk sparning i Galleri</h4>
                   </div>
                   <p className="text-sm">
-                    Alla genererade bilder sparas automatiskt i ditt <Link href="/collection" className="text-primary hover:underline">Galleri</Link> (Collection). Du behöver inte göra något - de finns där direkt efter generering.
+                    Alla genererade bilder sparas automatiskt i ditt <Link href="/collections" className="text-primary hover:underline">Galleri</Link> (Collection). Du behöver inte göra något - de finns där direkt efter generering.
                   </p>
                 </div>
 
