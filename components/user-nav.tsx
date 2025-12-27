@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "./auth-context"
 import { useAuthModal } from "./auth-modal-context"
 import Link from "next/link"
+import { User, Sparkles } from "lucide-react"
 import { useTranslations } from "@/lib/use-translations"
 
 export function UserNav() {
@@ -40,13 +41,16 @@ export function UserNav() {
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                         <Link href="/profile">
-                            <DropdownMenuItem>Profil</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">
+                                <User className="mr-2 h-4 w-4" />
+                                <span>Profil & Inställningar</span>
+                            </DropdownMenuItem>
                         </Link>
                         <Link href="/premium">
-                            <DropdownMenuItem>Premium</DropdownMenuItem>
-                        </Link>
-                        <Link href="/settings">
-                            <DropdownMenuItem>Inställningar</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">
+                                <Sparkles className="mr-2 h-4 w-4 font-bold text-yellow-500" />
+                                <span>Premium & Tokens</span>
+                            </DropdownMenuItem>
                         </Link>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />

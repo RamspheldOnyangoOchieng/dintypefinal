@@ -222,7 +222,7 @@ export default function AdminDashboardPage() {
   const handleSave = () => {
     setIsSaving(true)
     // Simulate API call
-    setTimeout(() => {
+    setTimeout(async () => {
       updateSettings({
         siteName,
         logoText,
