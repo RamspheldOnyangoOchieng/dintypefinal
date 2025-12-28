@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth-context";
 import { useAuthModal } from "@/components/auth-modal-context";
@@ -61,7 +61,7 @@ export default function CreateCharacterPage() {
     const [showNameDialog, setShowNameDialog] = useState(false);
     const [errorModal, setErrorModal] = useState({ isOpen: false, title: "", message: "" });
 
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
     const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
     const { openLoginModal } = useAuthModal();
@@ -397,7 +397,7 @@ export default function CreateCharacterPage() {
 
         // Select the appropriate imageMap based on gender
         const imageMap = gender === 'gent' ? maleImageMap : femaleImageMap;
-        
+
         // Debug logging for gent images
         if (gender === 'gent') {
             const maleImagesLoaded = Object.keys(maleImages).length > 0;
@@ -410,7 +410,7 @@ export default function CreateCharacterPage() {
                 fallbackProvided: !!fallbackUrl
             });
         }
-        
+
         // Get the image path
         const categoryImages = imageMap[categoryName];
         if (!categoryImages) {
@@ -1164,7 +1164,7 @@ export default function CreateCharacterPage() {
                                 </div>
                                 <div className="px-4 max-w-md mx-auto space-y-4">
                                     <Slider
-                                        defaultValue={[25]}
+                                        value={[selectedAge]}
                                         min={18}
                                         max={70}
                                         step={1}
@@ -1205,7 +1205,7 @@ export default function CreateCharacterPage() {
                                             onClick={() => setSelectedEyeColor(eye.id)}
                                             className={cn(
                                                 "group cursor-pointer p-1 rounded-full border-2 transition-all",
-                                                selectedEyeColor === eye.id ? "border-primary" : "border-transparent"
+                                                selectedEyeColor === eye.id ? "border-primary ring-4 ring-primary/20 scale-105" : "border-transparent"
                                             )}
                                         >
                                             <div className="w-16 h-16 rounded-full overflow-hidden border border-border group-hover:ring-2 group-hover:ring-primary/50 transition-all">
@@ -1247,7 +1247,7 @@ export default function CreateCharacterPage() {
                                             variant={selectedEyeShape === shape.id ? "default" : "outline"}
                                             className={cn(
                                                 "h-auto py-6 rounded-2xl border-2 transition-all hover:scale-105",
-                                                selectedEyeShape === shape.id ? "border-primary bg-primary/10 text-primary shadow-lg shadow-primary/20" : ""
+                                                selectedEyeShape === shape.id ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 scale-105" : "border-border"
                                             )}
                                             onClick={() => setSelectedEyeShape(shape.id)}
                                         >
@@ -1628,7 +1628,7 @@ export default function CreateCharacterPage() {
                                 <div className="text-center mb-4 sm:mb-6 md:mb-8">
                                     <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 text-card-foreground">Choose Hair Color*</h2>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 max-w-3xl mx-auto">
                                     {[
                                         { id: 'black', label: 'Black' },
@@ -2308,7 +2308,7 @@ export default function CreateCharacterPage() {
                             onClick={() => {
                                 const summaryStep = gender === 'lady' ? 6 : 3;
                                 const generationStep = gender === 'lady' ? 7 : 4;
-                                
+
                                 if (currentStep === summaryStep) {
                                     setShowNameDialog(true);
                                 } else if (currentStep === generationStep) {

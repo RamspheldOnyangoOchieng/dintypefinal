@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/components/auth-context"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createClient } from "@/utils/supabase/client"
 import { useSite } from "@/components/site-context"
 import { useTranslations } from "@/lib/use-translations"
 import { AdminDebug } from "@/components/admin-debug"
@@ -29,7 +29,7 @@ export default function AdminSettingsPage() {
   })
   const router = useRouter()
   const { user } = useAuth() // Use the same auth context as the sidebar
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const { settings: siteSettings, updateSettings: updateSiteSettings } = useSite()
   const { t } = useTranslations()
 
@@ -109,7 +109,7 @@ export default function AdminSettingsPage() {
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center space-x-3">
-  <div className="p-2 bg-primary/10 rounded-lg">
+        <div className="p-2 bg-primary/10 rounded-lg">
           <Settings className="h-6 w-6 text-white" />
         </div>
         <div>

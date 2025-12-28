@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase-server"
 import { getStripeKeys } from "@/lib/stripe-utils"
 
 // Helper function to check if a user is an admin
@@ -22,8 +21,8 @@ async function isUserAdmin(supabase: any, userId: string) {
 
 export async function GET(request: NextRequest) {
   try {
-  // Get the session using the route handler client
-  const supabase = createRouteHandlerClient({ cookies })
+    // Get the session using the standard server client
+    const supabase = await createClient()
 
     // Get the session
     const {

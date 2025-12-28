@@ -19,12 +19,12 @@ export async function getCharacters() {
     let query = supabaseAdmin.from("characters").select("*")
 
     if (user) {
-      // Logged in: show public characters OR user's own characters
-      // We check both naming conventions to be safe
-      query = query.or(`is_public.eq.true,user_id.eq.${user.id},isPublic.eq.true,userId.eq.${user.id}`)
+      // Logged in: show user's own characters OR public characters
+      // We use the standard column names: user_id and is_public
+      query = query.or(`user_id.eq.${user.id},is_public.eq.true`)
     } else {
       // Not logged in: show ONLY public characters
-      query = query.or('is_public.eq.true,isPublic.eq.true')
+      query = query.eq('is_public', true)
     }
 
     const { data, error } = await query.order("created_at", { ascending: false })

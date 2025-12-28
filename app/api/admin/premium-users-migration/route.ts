@@ -1,10 +1,9 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase-server"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
-  const supabase = createRouteHandlerClient({ cookies })
+    const supabase = await createClient()
 
     // Verify admin status
     const {
@@ -23,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     // Run the migration using SQL
-    const { error: migrationError } = await supabase.rpc("ensure_premium_user_columns")
+    const { error: migrationError } = await (supabase as any).rpc("ensure_premium_user_columns")
 
     if (migrationError) {
       console.error("Migration error:", migrationError)

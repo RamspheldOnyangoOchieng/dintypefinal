@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient as createStandardClient } from "@/lib/supabase-server"
 import { createClient } from "@supabase/supabase-js"
 
 // Create a Supabase admin client with the service role key
@@ -35,8 +34,8 @@ async function isUserAdmin(userId: string) {
 
 export async function GET(request: NextRequest) {
   try {
-  // Get the session using the route handler client
-  const supabase = createRouteHandlerClient({ cookies })
+    // Get the session using the standard server client
+    const supabase = await createStandardClient()
 
     // Get the session
     const {
@@ -71,8 +70,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-  // Get the session using the route handler client
-  const supabase = createRouteHandlerClient({ cookies })
+    // Get the session using the standard server client
+    const supabase = await createStandardClient()
 
     // Get the session
     const {

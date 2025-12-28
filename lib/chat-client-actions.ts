@@ -1,6 +1,6 @@
 "use client"
 
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createClient } from "@/utils/supabase/client"
 import type { Message } from "@/lib/chat-actions"
 
 // Save a message to the database (client-side)
@@ -24,7 +24,7 @@ export async function saveMessageClient(userId: string, characterId: string, mes
       messageId: message.id,
     })
 
-    const supabase = createClientComponentClient()
+    const supabase = createClient() as any
 
     // Get current user to verify authentication
     const {
@@ -126,7 +126,7 @@ export async function getChatHistoryClient(userId: string, characterId: string):
     }
 
     console.log("Fetching chat history for:", { userId, characterId })
-    const supabase = createClientComponentClient()
+    const supabase = createClient() as any
 
     // Get current user to verify authentication
     const {
@@ -171,7 +171,7 @@ export async function getChatHistoryClient(userId: string, characterId: string):
       return []
     }
 
-    return data.map((msg) => ({
+    return data.map((msg: any) => ({
       id: msg.id.toString(),
       role: msg.role as "user" | "assistant" | "system",
       content: msg.content,
@@ -201,7 +201,7 @@ export async function clearChatHistoryClient(userId: string, characterId: string
     }
 
     console.log("Clearing chat history for:", { userId, characterId })
-    const supabase = createClientComponentClient()
+    const supabase = createClient() as any
 
     // Get current user to verify authentication
     const {

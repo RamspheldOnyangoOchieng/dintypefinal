@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient as createStandardClient } from "@/lib/supabase-server"
 import { createClient } from "@supabase/supabase-js"
 
 // Helper function to check if a user is an admin
@@ -39,7 +38,7 @@ async function verifyAdminFromHeaders(supabase: any, request: NextRequest) {
   return false
 }
 
-// Create a Supabase admin client with service role to bypass RLS (no user session, direct service key)
+// Create a Supabase admin client with service role to bypass RLS
 function createSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -86,8 +85,7 @@ type AuthResult = {
 
 // Verify the user is authenticated and is an admin
 async function verifyAdminAuth(request: NextRequest): Promise<AuthResult> {
-  const cookieStore = await cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  const supabase = await createStandardClient()
 
   const {
     data: { session },
@@ -112,37 +110,32 @@ async function verifyAdminAuth(request: NextRequest): Promise<AuthResult> {
   return { success: true }
 }
 
-export async function GET(request: import("next/server").NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    // Get the admin client with service role permissions
-  // Verify the user is authenticated and is an admin
     const authResult = await verifyAdminAuth(request)
     if (!authResult.success) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
-  const liveMode = await ensureAndGetStripeMode()
-  return NextResponse.json({ success: true, liveMode, source: "settings" })
+    const liveMode = await ensureAndGetStripeMode()
+    return NextResponse.json({ success: true, liveMode, source: "settings" })
   } catch (error: any) {
     console.error("Server error:", error)
     return NextResponse.json({ error: `Server error: ${error.message}` }, { status: 500 })
   }
 }
 
-export async function POST(request: import("next/server").NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    // Get the admin client with service role permissions
-  // Verify the user is authenticated and is an admin
     const authResult = await verifyAdminAuth(request)
     if (!authResult.success) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    // Get the request body
     const body = await request.json()
     const { liveMode } = body
 
-  const updated = await setStripeMode(!!liveMode)
-  return NextResponse.json({ success: true, liveMode: updated, message: `Stripe mode set to ${updated ? "live" : "test"}` })
+    const updated = await setStripeMode(!!liveMode)
+    return NextResponse.json({ success: true, liveMode: updated, message: `Stripe mode set to ${updated ? "live" : "test"}` })
   } catch (error: any) {
     console.error("Server error:", error)
     return NextResponse.json({ error: `Server error: ${error.message}` }, { status: 500 })

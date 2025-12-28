@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/utils/supabase/client';
 import { Heart, MessageCircle, Trash2, Plus, Sparkles } from 'lucide-react';
 import { useAuthModal } from '@/components/auth-modal-context';
 import { useAuth } from '@/components/auth-context';
@@ -26,7 +26,7 @@ export default function MyAIPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
   const { openLoginModal } = useAuthModal();
   const { user } = useAuth();
   const [showPremiumModal, setShowPremiumModal] = useState(false);

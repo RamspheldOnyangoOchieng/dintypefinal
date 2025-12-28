@@ -1,11 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase-server"
 
 export async function POST(request: NextRequest) {
   try {
-    // Create a Supabase client with the service role key to bypass RLS
-  const supabaseAdmin = createRouteHandlerClient({ cookies })
+    // Create a Supabase client which handles cookies correctly
+    const supabaseAdmin = await createClient()
 
     // SQL to fix the settings table structure
     const fixTableSQL = `

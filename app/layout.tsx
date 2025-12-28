@@ -56,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <AuthProvider>
             <AuthModalProvider>
-              <ClientRootLayout>
+            <ClientRootLayout>
                 {children}
                 <MobileNav />
                 <AuthModals />
@@ -65,7 +65,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </ClientRootLayout>
             </AuthModalProvider>
           </AuthProvider>
-          <Toaster />
         </ThemeProvider>
       </body>
     </html>

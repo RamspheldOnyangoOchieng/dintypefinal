@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/utils/supabase/client';
 
 /**
  * Auth Debugger Component
@@ -21,7 +21,7 @@ export default function AuthDebugger() {
         error: null
     });
 
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
 
     useEffect(() => {
         checkAuth();

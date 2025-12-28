@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useCharacterImages } from "@/hooks/use-character-images";
 
@@ -26,7 +26,7 @@ export default function CreateCharacterPageWithAdminImages() {
     const [characterName, setCharacterName] = useState("");
     const [isSaving, setIsSaving] = useState(false);
 
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
     const router = useRouter();
     const { categories, loading: imagesLoading, getCategoryImages, getImageByKey } = useCharacterImages();
 

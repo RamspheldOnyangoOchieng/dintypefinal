@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase-server"
 import type { Database } from "@/types/supabase"
 
 // Helper function to check if a user is an admin
@@ -23,8 +22,8 @@ async function isUserAdmin(supabase: any, userId: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the session using the route handler client
-  const supabase = createRouteHandlerClient<Database>({ cookies })
+    // Get the session using the standard server client
+    const supabase = await createClient()
 
     // Get the session
     const {
@@ -43,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the stripe_keys table
-    const { error } = await supabase.rpc("create_stripe_keys_table")
+    const { error } = await (supabase as any).rpc("create_stripe_keys_table")
 
     if (error) {
       console.error("Error creating stripe_keys table:", error)

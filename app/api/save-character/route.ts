@@ -108,29 +108,31 @@ export async function POST(request: NextRequest) {
 
         // Insert character into database with permanent image URL
         const { data, error } = await (supabase as any)
-            .from('characters')
-            .insert({
-                user_id: userId,
-                name: characterName,
-                age: ageValue,
-                image: permanentImageUrl,
-                image_url: permanentImageUrl,
-                description: description,
-                system_prompt: systemPrompt,
-                personality: characterDetails.personality || 'Friendly',
-                voice: 'default',
-                is_public: isPublic,
-                share_revenue: true,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                metadata: characterDetails,
-                ethnicity: characterDetails.ethnicity || null,
-                relationship: characterDetails.relationship || null,
-                body: characterDetails.bodyType || null,
-                occupation: 'Student', // Default occupation
-                hobbies: 'Reading, Music', // Default hobbies
-                language: 'English', // Default language
-            })
+                .from('characters')
+                .insert({
+                    user_id: userId,
+                    name: characterName,
+                    age: ageValue,
+                    image: permanentImageUrl,
+                    image_url: permanentImageUrl,
+                    avatar_url: permanentImageUrl, // Also set avatar_url for compatibility
+                    description: description,
+                    system_prompt: systemPrompt,
+                    personality: characterDetails.personality || 'Friendly',
+                    voice: 'default',
+                    is_active: true, // Explicitly set to true
+                    is_public: isPublic,
+                    share_revenue: true,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    metadata: characterDetails,
+                    ethnicity: characterDetails.ethnicity || null,
+                    relationship: characterDetails.relationship || null,
+                    body: characterDetails.bodyType || null,
+                    occupation: 'Student', 
+                    hobbies: 'Reading, Music',
+                    language: 'English',
+                })
             .select()
             .single();
 
