@@ -29,7 +29,7 @@ export default function CreateCharacterPage() {
     const searchParams = useSearchParams();
     const gender = searchParams.get('gender') || 'lady'; // Default to 'lady' if not specified
 
-    const totalSteps = gender === 'lady' ? 9 : 5; // Re-indexed for lady: 0-Ethnicity/Age, 1-Eyes, 2-Hair, 3-Body, 4-Personality, 5-Relationship, 6-Outfit, 7-Summary, 8-Generation
+    const totalSteps = gender === 'lady' ? 8 : 5; // Re-indexed for lady: 0-Ethnicity/Age, 1-Eyes, 2-Hair, 3-Body, 4-Personality, 5-Relationship, 6-Summary, 7-Generation
 
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedStyle, setSelectedStyle] = useState<'realistic' | 'anime'>('realistic'); // Default to realistic
@@ -442,8 +442,8 @@ export default function CreateCharacterPage() {
     };
 
     // Auto-start generation when reaching the generation step
-    // Lady: step 6 (7th step), Gent: step 4 (5th step)
-    const generationStep = gender === 'lady' ? 8 : 4;
+    // Lady: step 7 (8th step), Gent: step 4 (5th step)
+    const generationStep = gender === 'lady' ? 7 : 4;
     useEffect(() => {
         if (currentStep === generationStep && !generatedImageUrl && !isGenerating) {
             handleGenerateImage();
@@ -462,9 +462,8 @@ export default function CreateCharacterPage() {
                 case 3: return !!(selectedBodyType && selectedBreastSize && selectedButtSize);
                 case 4: return !!selectedPersonality;
                 case 5: return !!selectedRelationship;
-                case 6: return !!selectedOutfit;
-                case 7: return true; // Summary step
-                case 8: return !!generatedImageUrl; // Generation step
+                case 6: return true; // Summary step
+                case 7: return !!generatedImageUrl; // Generation step
                 default: return false;
             }
         } else { // gent
@@ -481,9 +480,9 @@ export default function CreateCharacterPage() {
 
     const getNextButtonText = () => {
         if (gender === 'lady') {
-            if (currentStep === 6) return 'Granska karaktär →';
-            if (currentStep === 7) return 'Skapa min AI →';
-            if (currentStep === 8) return 'Fortsätt →';
+            if (currentStep === 5) return 'Granska karaktär →';
+            if (currentStep === 6) return 'Skapa min AI →';
+            if (currentStep === 7) return 'Fortsätt →';
         } else { // gent
             if (currentStep === 2) return 'Granska karaktär →';
             if (currentStep === 3) return 'Skapa min AI →';
@@ -568,8 +567,7 @@ export default function CreateCharacterPage() {
                                     { label: 'Body Type', value: selectedBodyType, type: 'bodyType' },
                                     { label: 'Breast Size', value: selectedBreastSize, type: 'breastSize' },
                                     { label: 'Hair Style', value: selectedHairStyle, type: 'hairStyle' },
-                                    { label: 'Hair Color', value: selectedHairColor, type: 'hairColor' },
-                                    { label: 'Outfit', value: selectedOutfit || 'Bikini', type: 'outfit' }
+                                    { label: 'Hair Color', value: selectedHairColor, type: 'hairColor' }
                                 ].map((attr, i) => (
                                     <div key={i} className="group relative h-20 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden border border-white/5 bg-white/5 hover:border-primary/50 transition-all duration-300">
                                         <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-300 hidden sm:block">
@@ -1076,31 +1074,7 @@ export default function CreateCharacterPage() {
                     </div>
                 )}
 
-                {/* Progress Bar */}
-                <div className="flex items-center justify-center mb-4 sm:mb-6 md:mb-8">
-                    <div className="flex items-center space-x-0.5 sm:space-x-1 md:space-x-2 overflow-x-auto pb-2">
-                        {Array.from({ length: totalSteps }, (_, step) => (
-                            <div key={step} className="flex items-center flex-shrink-0">
-                                <div className={`w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center text-xs sm:text-xs md:text-sm font-bold ${step <= currentStep
-                                    ? "bg-primary border-primary text-primary-foreground"
-                                    : "bg-secondary border-secondary text-muted-foreground"
-                                    }`}>
-                                    {step < currentStep ? (
-                                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                    ) : (
-                                        step + 1
-                                    )}
-                                </div>
-                                {step < totalSteps - 1 && (
-                                    <div className={`w-4 sm:w-6 md:w-12 h-1 mx-0.5 sm:mx-1 md:mx-2 ${step < currentStep ? "bg-primary" : "bg-secondary"
-                                        }`} />
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
+
 
                 {/* Main Content Card */}
                 <div className="bg-card rounded-xl sm:rounded-2xl p-2 sm:p-4 md:p-8 shadow-2xl relative z-10 border border-border">
@@ -2280,51 +2254,12 @@ export default function CreateCharacterPage() {
                         </div>
                     )}
 
-                    {/* Step 6: Outfit (Lady only) */}
-                    {gender === 'lady' && currentStep === 6 && (
-                        <div className="space-y-10">
-                            <div className="text-center">
-                                <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
-                                    <Sparkles className="h-6 w-6 text-pink-500" />
-                                    Välj outfit*
-                                </h2>
-                                <p className="text-muted-foreground text-sm mt-1">Styla din AI med den perfekta klädseln</p>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {[
-                                    { id: 'bikini', label: 'Bikini', icon: '👙' },
-                                    { id: 'dress', label: 'Klänning', icon: '👗' },
-                                    { id: 'lingerie', label: 'Underkläder', icon: '🎀' },
-                                    { id: 'casual', label: 'Vardagligt', icon: '👕' },
-                                    { id: 'sporty', label: 'Sportigt', icon: '👟' },
-                                    { id: 'office', label: 'Kontor', icon: '💼' },
-                                    { id: 'uniform', label: 'Uniform', icon: '👮‍♀️' },
-                                    { id: 'traditional', label: 'Traditionellt', icon: '🎎' }
-                                ].map((outfit) => (
-                                    <Button
-                                        key={outfit.id}
-                                        variant={selectedOutfit === outfit.id ? "default" : "outline"}
-                                        className={cn(
-                                            "h-auto py-8 rounded-2xl border-2 transition-all hover:scale-105 group",
-                                            selectedOutfit === outfit.id ? "border-pink-500 bg-pink-500/10 text-pink-500 shadow-lg shadow-pink-500/20" : ""
-                                        )}
-                                        onClick={() => setSelectedOutfit(outfit.id)}
-                                    >
-                                        <div className="flex flex-col items-center gap-3">
-                                            <span className="text-3xl group-hover:scale-125 transition-transform">{outfit.icon}</span>
-                                            <span className="font-bold uppercase tracking-wider text-xs">{outfit.label}</span>
-                                        </div>
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
-                    {/* Step 7 (Lady) / Step 3 (Gent): Summary */}
-                    {((gender === 'lady' && currentStep === 7) || (gender === 'gent' && currentStep === 3)) && renderStepSummary()}
+                    {/* Step 6 (Lady) / Step 3 (Gent): Summary */}
+                    {((gender === 'lady' && currentStep === 6) || (gender === 'gent' && currentStep === 3)) && renderStepSummary()}
 
-                    {/* Step 8 (Lady) / Step 4 (Gent): Generation */}
-                    {((gender === 'lady' && currentStep === 8) || (gender === 'gent' && currentStep === 4)) && renderStep7()}
+                    {/* Step 7 (Lady) / Step 4 (Gent): Generation */}
+                    {((gender === 'lady' && currentStep === 7) || (gender === 'gent' && currentStep === 4)) && renderStep7()}
 
 
 
@@ -2347,7 +2282,7 @@ export default function CreateCharacterPage() {
                                 }`}
                             disabled={!getStepValidation() || isGenerating}
                             onClick={() => {
-                                const finalStep = gender === 'lady' ? 7 : 3;
+                                const finalStep = gender === 'lady' ? 6 : 3;
                                 if (currentStep === finalStep) {
                                     setShowNameDialog(true);
                                 } else {
