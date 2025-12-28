@@ -25,7 +25,9 @@ import {
   Square,
   CheckCircle,
   Circle,
+  Lock,
 } from "lucide-react"
+import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
 import { getAllImages, deleteExistingImage, toggleImageFavorite, addImageToExistingCollection } from "@/lib/image-actions"
 import { getAllCollections, createNewCollection } from "@/lib/collection-actions"
 import { Input } from "@/components/ui/input"
@@ -100,7 +102,7 @@ export default function CollectionsPage() {
     try {
       const result = await getAllCollections()
       if (result.success) {
-        setCollections(result.collections)
+        setCollections(result.collections || [])
       }
     } finally {
       setIsLoadingCollections(false)

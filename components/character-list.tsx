@@ -93,7 +93,7 @@ export function CharacterList({ characters }: CharacterListProps) {
                 src={character.image_url || character.image || (character as any).image || "/placeholder.svg"}
                 alt={character.name}
                 fill
-                className="object-cover object-top transition-transform duration-[1.5s] group-hover:scale-110"
+                className="object-cover object-top transition-transform duration-[1500ms] group-hover:scale-110"
                 onError={() => character.id && handleImageError(character.id)}
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               />
