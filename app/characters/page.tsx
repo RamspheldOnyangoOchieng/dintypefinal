@@ -12,13 +12,13 @@ async function CharactersContent() {
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white/5 p-8 rounded-[2rem] border border-white/10 mb-8 backdrop-blur-xl">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter">My Collection</h1>
-          <p className="text-white/40 text-sm font-medium mt-1">Manage your unique AI collection</p>
+          <h1 className="text-4xl font-black text-white tracking-tighter italic">Alla karaktärer</h1>
+          <p className="text-white/40 text-sm font-medium mt-1">Utforska publika karaktärer och hantera dina egna.</p>
         </div>
-        <Button asChild className="bg-gradient-to-r from-[#ff4d8d] to-[#ff6b95] hover:shadow-[0_0_20px_rgba(255,77,141,0.3)] transition-all duration-300 rounded-xl px-6 h-12 font-bold text-white border-none scale-100 active:scale-95">
+        <Button asChild className="bg-primary hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(14,165,233,0.3)] transition-all duration-300 rounded-xl px-6 h-12 font-bold text-white border-none scale-100 active:scale-95">
           <Link href="/create-character">
             <Plus className="mr-2 h-5 w-5" />
-            New Character
+            Skapa karaktär
           </Link>
         </Button>
       </div>

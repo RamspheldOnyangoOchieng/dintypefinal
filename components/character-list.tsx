@@ -69,13 +69,13 @@ export function CharacterList({ characters }: CharacterListProps) {
 
   if (validCharacters.length === 0) {
     return (
-      <div className="text-center py-10">
-        <h3 className="text-lg font-medium mb-2">No characters found</h3>
-        <p className="text-muted-foreground mb-4">Create your first character to get started</p>
-        <Button asChild>
-          <Link href="/characters/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Character
+      <div className="text-center py-20 bg-white/5 rounded-[2rem] border border-white/10 backdrop-blur-xl">
+        <h3 className="text-2xl font-bold mb-2">Inga karaktärer hittades</h3>
+        <p className="text-white/40 mb-8 max-w-xs mx-auto text-sm">Skapa din första karaktär för att komma igång med ditt äventyr.</p>
+        <Button asChild className="bg-primary hover:bg-primary/90 h-12 px-8 rounded-xl font-bold text-white shadow-lg shadow-primary/20">
+          <Link href="/create-character">
+            <Plus className="mr-2 h-5 w-5" />
+            Skapa karaktär
           </Link>
         </Button>
       </div>
@@ -85,7 +85,7 @@ export function CharacterList({ characters }: CharacterListProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
       {validCharacters.map((character) => (
-        <div key={character.id} className="group relative bg-[#0a0a0a] rounded-[2rem] overflow-hidden border border-white/10 transition-all duration-700 hover:border-primary/50 hover:shadow-[0_0_30px_rgba(244,63,94,0.15)] hover:-translate-y-2">
+        <div key={character.id} className="group relative bg-[#0a0a0a] rounded-[2rem] overflow-hidden border border-white/10 transition-all duration-700 hover:border-primary/50 hover:shadow-[0_0_30px_rgba(14,165,233,0.15)] hover:-translate-y-2">
           {/* Image Container */}
           <div className="relative aspect-[2/3] w-full overflow-hidden">
             {(character.image_url || character.image || (character as any).image) ? (
@@ -112,7 +112,7 @@ export function CharacterList({ characters }: CharacterListProps) {
               {character.is_public ? (
                 <div className="bg-black/60 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full flex items-center gap-2 text-white shadow-lg">
                   <Globe className="h-3 w-3 text-primary animate-pulse" />
-                  <span className="text-[10px] font-bold uppercase tracking-tighter drop-shadow-md">Public</span>
+                  <span className="text-[10px] font-bold uppercase tracking-tighter drop-shadow-md">Publik</span>
                 </div>
               ) : (
                 <div />
@@ -129,31 +129,31 @@ export function CharacterList({ characters }: CharacterListProps) {
                     <DropdownMenuItem asChild className="rounded-lg hover:bg-white/10 focus:bg-white/10 transition-colors">
                       <Link href={`/characters/${character.id}/edit`} className="flex items-center w-full px-2 py-1.5">
                         <Edit className="mr-2 h-4 w-4 text-primary" />
-                        <span className="text-sm font-medium">Edit Profile</span>
+                        <span className="text-sm font-medium">Redigera profil</span>
                       </Link>
                     </DropdownMenuItem>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <button className="flex items-center w-full px-2 py-1.5 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Character
+                          Radera karaktär
                         </button>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-[#0f0f0f] border-white/10 text-white rounded-[2rem] p-8">
                         <AlertDialogHeader>
-                          <AlertDialogTitle className="text-2xl font-bold">Delete "{character.name}"?</AlertDialogTitle>
+                          <AlertDialogTitle className="text-2xl font-bold">Radera "{character.name}"?</AlertDialogTitle>
                           <AlertDialogDescription className="text-white/40 text-base">
-                            This action is permanent and will erase all memory and prompts associated with this AI.
+                            Denna åtgärd är permanent och kommer att radera allt minne och alla prompter associerade med denna AI.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="mt-6">
-                          <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl transition-all">Cancel</AlertDialogCancel>
+                          <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl transition-all">Avbryt</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => character.id && handleDelete(character.id)}
                             disabled={isDeleting === character.id}
                             className="bg-red-500 hover:bg-red-600 border-none rounded-xl font-bold transition-all"
                           >
-                            {isDeleting === character.id ? "Erasing..." : "Confirm Delete"}
+                            {isDeleting === character.id ? "Raderar..." : "Bekräfta radering"}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -177,7 +177,7 @@ export function CharacterList({ characters }: CharacterListProps) {
 
             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100">
               <Button asChild className="flex-1 bg-white text-black hover:bg-white/90 font-bold rounded-xl transition-all scale-95 group-hover:scale-100">
-                <Link href={`/characters/${character.id}`}>View Profile</Link>
+                <Link href={`/characters/${character.id}`}>Visa profil</Link>
               </Button>
               <Button asChild variant="outline" className="h-10 w-10 p-0 border-white/20 hover:bg-white/20 rounded-xl bg-black/20 backdrop-blur-md text-white group/chat transition-all duration-300">
                 <Link href={`/chat/${character.id}`} className="flex items-center justify-center">

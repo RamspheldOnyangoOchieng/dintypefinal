@@ -45,7 +45,7 @@ export default function CharacterDetailPage({ params }: CharacterDetailPageProps
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading character...</p>
+            <p className="text-muted-foreground">Laddar karaktär...</p>
           </div>
         </div>
       </div>
@@ -57,11 +57,11 @@ export default function CharacterDetailPage({ params }: CharacterDetailPageProps
       <div className="container py-8">
         <div className="text-center py-20">
           <h1 className="text-4xl font-bold mb-4">404</h1>
-          <p className="text-xl text-muted-foreground mb-8">Character not found</p>
-          <Button asChild>
+          <p className="text-xl text-muted-foreground mb-8">Karaktären hittades inte</p>
+          <Button asChild className="bg-primary hover:bg-primary/90 text-white">
             <Link href="/characters">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Characters
+              Tillbaka till karaktärer
             </Link>
           </Button>
         </div>
@@ -73,17 +73,17 @@ export default function CharacterDetailPage({ params }: CharacterDetailPageProps
     <div className="container py-8">
       <div className="space-y-8">
         <div className="flex justify-between items-center">
-          <Button variant="ghost" asChild>
+          <Button variant="ghost" asChild className="hover:text-primary">
             <Link href="/characters">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Characters
+              Tillbaka till karaktärer
             </Link>
           </Button>
           <div className="flex gap-2">
-            <Button asChild variant="default">
+            <Button asChild variant="default" className="bg-primary hover:bg-primary/90 text-white">
               <Link href={`/chat/${character.id}`}>
                 <MessageCircle className="mr-2 h-4 w-4" />
-                Start Chatting
+                Starta chatt
               </Link>
             </Button>
           </div>
@@ -113,9 +113,9 @@ export default function CharacterDetailPage({ params }: CharacterDetailPageProps
                 <div className="flex items-center gap-2 mb-4">
                   <h1 className="text-3xl font-bold">{character.name}</h1>
                   {character.isPublic && (
-                    <div className="bg-primary/10 text-primary px-2 py-1 rounded-full flex items-center text-xs">
+                    <div className="bg-primary/10 text-primary px-3 py-1 rounded-full flex items-center text-xs font-bold">
                       <Globe className="h-3 w-3 mr-1" />
-                      Public
+                      Publik
                     </div>
                   )}
                 </div>
@@ -142,34 +142,34 @@ export default function CharacterDetailPage({ params }: CharacterDetailPageProps
                   )}
                   {character.body && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Body Type</p>
-                      <p className="font-medium capitalize">{character.body}</p>
+                      <p className="text-xs text-white/40 uppercase tracking-widest font-bold mb-1">Kroppstyp</p>
+                      <p className="font-bold text-lg capitalize">{character.body}</p>
                     </div>
                   )}
                   {character.personality && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Personality</p>
-                      <p className="font-medium capitalize">{character.personality}</p>
+                      <p className="text-xs text-white/40 uppercase tracking-widest font-bold mb-1">Personlighet</p>
+                      <p className="font-bold text-lg capitalize">{character.personality}</p>
                     </div>
                   )}
                   {character.relationship && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Relationship</p>
-                      <p className="font-medium capitalize">{character.relationship}</p>
+                      <p className="text-xs text-white/40 uppercase tracking-widest font-bold mb-1">Relation</p>
+                      <p className="font-bold text-lg capitalize">{character.relationship}</p>
                     </div>
                   )}
                   {character.occupation && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Occupation</p>
-                      <p className="font-medium">{character.occupation}</p>
+                      <p className="text-xs text-white/40 uppercase tracking-widest font-bold mb-1">Sysselsättning</p>
+                      <p className="font-bold text-lg">{character.occupation}</p>
                     </div>
                   )}
                 </div>
 
-                <Button asChild size="lg" className="w-full">
+                <Button asChild size="lg" className="w-full bg-primary hover:bg-primary/90 text-white font-black h-14 rounded-xl shadow-lg shadow-primary/20">
                   <Link href={`/chat/${character.id}`}>
                     <MessageCircle className="mr-2 h-5 w-5" />
-                    Start Chatting with {character.name}
+                    Börja chatta med {character.name}
                   </Link>
                 </Button>
               </div>

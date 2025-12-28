@@ -101,10 +101,19 @@ export default function Sidebar() {
                 Generera
               </Button>
             </Link>
-            <Link href="/collection">
+            <Link href="/characters">
               <Button
                 variant="ghost"
-                className={`w-full justify-start ${pathname?.startsWith("/collection") ? "bg-[#252525]" : ""}`}
+                className={`w-full justify-start ${pathname?.startsWith("/characters") ? "bg-[#252525]" : ""}`}
+              >
+                <Users className="mr-2 h-5 w-5" />
+                Alla karaktärer
+              </Button>
+            </Link>
+            <Link href="/collections">
+              <Button
+                variant="ghost"
+                className={`w-full justify-start ${pathname?.startsWith("/collections") ? "bg-[#252525]" : ""}`}
               >
                 <FolderHeart className="mr-2 h-5 w-5" />
                 Mina bilder
