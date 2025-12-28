@@ -915,7 +915,7 @@ export default function GenerateImagePage() {
         </div>
 
         {isGenerating && (
-          <div className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
+          <div key="generating-state" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
             <div className={`bg-card ${isMobile ? 'p-6' : 'p-8'} rounded-xl mb-4`}>
               <Loader2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-primary animate-spin`} />
             </div>
@@ -951,7 +951,7 @@ export default function GenerateImagePage() {
         )}
 
         {!isGenerating && generatedImages.length === 0 && !error && (
-          <div className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
+          <div key="empty-state" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
             <div className={`bg-card ${isMobile ? 'p-6' : 'p-8'} rounded-xl mb-4`}>
               <Wand2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-muted-foreground`} />
             </div>
@@ -969,10 +969,10 @@ export default function GenerateImagePage() {
 
 
         {!isGenerating && generatedImages.length > 0 && (
-          <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-4'}`}>
+          <div key="result-state" className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-4'}`}>
             {generatedImages.map((image, index) => (
               <div
-                key={index}
+                key={`${image}-${index}`}
                 className="relative group cursor-pointer transform transition-transform hover:scale-[1.02]"
                 onClick={() => handleImageClick(index)}
               >

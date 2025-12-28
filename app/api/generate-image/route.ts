@@ -1,14 +1,18 @@
 // Last updated: 2025-12-14T20:15:00+03:00 - Force deployment refresh
 import { type NextRequest, NextResponse } from "next/server"
-import { deductTokens, refundTokens } from "@/lib/token-utils"
+import { deductTokens, refundTokens, getUserTokenBalance } from "@/lib/token-utils"
 import { createClient } from "@/lib/supabase-server"
+import { createAdminClient } from "@/lib/supabase-admin"
 import { getUnifiedNovitaKey } from "@/lib/unified-api-keys"
 import type { Database } from "@/types/supabase"
 
 // Dynamic token costs based on model and image count
 const getTokenCost = (model: string, imageCount: number = 1): number => {
+  // Ensure imageCount is a valid number
+  const count = isNaN(imageCount) ? 1 : Math.max(1, imageCount)
+
   // Single image generation is free
-  if (imageCount === 1) return 0
+  if (count === 1) return 0
 
   // Map frontend model names to token costs
   let baseTokenCost = 5 // Default for stability/seedream
@@ -19,7 +23,7 @@ const getTokenCost = (model: string, imageCount: number = 1): number => {
     baseTokenCost = 5
   }
 
-  return baseTokenCost * imageCount
+  return baseTokenCost * count
 }
 
 // Define types for the API
@@ -258,25 +262,23 @@ export async function POST(req: NextRequest) {
       console.log(`💳 Attempting to deduct ${tokenCost} tokens for user ${userId.substring(0, 8)}...`)
 
       try {
-        const deductionResult = await deductTokens(userId, tokenCost, `Image generation (${model}, ${image_num} images)`)
+        const deductionResult = await deductTokens(userId, tokenCost, `Image generation (${actualModel}, ${actualImageCount} images)`)
         if (!deductionResult) {
           console.error("❌ Token deduction failed")
-          const { getUserTokenBalance } = await import("@/lib/token-utils")
-          const currentBalance = await getUserTokenBalance(userId)
+          const balance = await getUserTokenBalance(userId)
           return NextResponse.json({
-            error: "Failed to deduct tokens. Please check your token balance.",
-            currentBalance,
+            error: "Insufficient tokens or token deduction failed. Please check your token balance.",
+            currentBalance: balance,
             requiredTokens: tokenCost
           }, { status: 402 })
         }
         console.log(`✅ Successfully deducted ${tokenCost} tokens`)
       } catch (error: any) {
         console.error("❌ Token deduction error:", error.message)
-        const { getUserTokenBalance } = await import("@/lib/token-utils")
-        const currentBalance = await getUserTokenBalance(userId)
+        const balance = await getUserTokenBalance(userId)
         return NextResponse.json({
           error: error.message || "Insufficient tokens or token deduction failed",
-          currentBalance,
+          currentBalance: balance,
           requiredTokens: tokenCost
         }, { status: 402 })
       }
@@ -400,14 +402,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const response = await fetch("https://api.novita.ai/v3/async/txt2img", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    });
+    let response;
+    try {
+      response = await fetch("https://api.novita.ai/v3/async/txt2img", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+    } catch (fetchErr) {
+      console.error("❌ Network error calling Novita API:", fetchErr);
+      // Refund if network error
+      if (tokenCost > 0 && !isAdmin) {
+        await refundTokens(userId, tokenCost, "Refund for network error during generation")
+      }
+      throw fetchErr;
+    }
 
     if (!response.ok) {
       const errorData = await response.text();
@@ -417,11 +429,12 @@ export async function POST(req: NextRequest) {
       if (tokenCost > 0 && !isAdmin) {
         console.log(`🔄 Image generation failed after deducting ${tokenCost} tokens. Attempting refund...`)
 
+        const refundReason = `Refund for failed image generation: ${errorData.substring(0, 100)}`;
         try {
           const refundResult = await refundTokens(
             userId,
             tokenCost,
-            `Refund for failed image generation (${actualModel}, ${actualImageCount} images)`,
+            refundReason,
             {
               original_request: { prompt, model: actualModel, image_count: actualImageCount },
               api_error: errorData,
@@ -443,10 +456,20 @@ export async function POST(req: NextRequest) {
         error: "Failed to generate image",
         details: "Image generation service is currently unavailable. Your tokens have been refunded.",
         refunded: true
-      }, { status: response.status });
+      }, { status: response.status || 500 });
     }
 
-    const data = (await response.json()) as NovitaTaskResponse
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonErr) {
+      console.error("❌ Failed to parse Novita response as JSON:", jsonErr);
+      if (tokenCost > 0 && !isAdmin) {
+        await refundTokens(userId, tokenCost, "Refund for invalid API response")
+      }
+      throw new Error("Invalid response format from image generation service");
+    }
+    
     console.log(`✅ Task submitted successfully, task ID: ${data.task_id}`)
 
     // Update database task record with the task_id from Novita

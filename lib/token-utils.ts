@@ -49,10 +49,16 @@ export async function deductTokens(userId: string, amount: number, description: 
       .maybeSingle()
 
     if (userError) throw userError
-    if (!userData) throw new Error("User has no token balance")
-    if (userData.balance < amount) throw new Error("Insufficient tokens")
+    
+    // If no record exists, consider balance as 0
+    const balance = userData?.balance || 0
+    
+    if (balance < amount) {
+      console.warn(`⚠️ User ${userId.substring(0, 8)} has insufficient tokens (${balance} < ${amount})`)
+      throw new Error("Insufficient tokens")
+    }
 
-    const originalBalance = userData.balance
+    const originalBalance = balance
     const newBalance = originalBalance - amount
 
     // 2. Update balance
