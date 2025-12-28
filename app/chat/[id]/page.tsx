@@ -839,6 +839,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         }
       }
 
+      if (!character) {
+        console.error("Cannot send message: Character is null");
+        return;
+      }
+
       // Check for NSFW content if the user is on the free plan
       if (!user?.isPremium && !user?.isAdmin) {
         if (containsNSFW(inputValue)) {
@@ -985,7 +990,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
   // Clear chat history
   const handleClearChat = async () => {
-    if (!isMounted) return
+    if (!isMounted || !character) return
 
     setIsClearingChat(true)
     setDebugInfo((prev) => ({ ...prev, lastAction: "clearingChat" }))
@@ -1047,13 +1052,39 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     );
   }
 
-  // Show loading while unwrapping params
-  if (!characterId) {
+  // Show loading while unwrapping params or loading characters
+  if (!characterId || (charactersLoading && !character)) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-muted-foreground">Loading...</div>
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="text-muted-foreground">{t("general.loading")}</div>
+        </div>
       </div>
     );
+  }
+
+  // Show "not found" if loading finished and no character exists
+  if (!character && !charactersLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-background p-4 text-center">
+        <div className="bg-card p-8 rounded-2xl shadow-xl max-w-md w-full border border-border">
+          <div className="p-3 bg-destructive/10 rounded-full w-fit mx-auto mb-6">
+            <X className="h-10 w-10 text-destructive" />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">{t("chat.profileNotFound")}</h1>
+          <p className="text-muted-foreground mb-8">Character ID: {characterId}</p>
+          <div className="flex flex-col gap-3">
+            <Button onClick={() => router.push('/chat')} className="w-full">
+              {t("chat.backToConversations")}
+            </Button>
+            <Button variant="outline" onClick={() => router.push('/')} className="w-full">
+              {t("general.home")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -1145,13 +1176,13 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               {/* Use regular img tag for Cloudinary images */}
               <img
                 src={
-                  imageErrors[character.id]
+                  imageErrors[character?.id || '']
                     ? "/placeholder.svg?height=40&width=40"
                     : (character?.image_url || character?.image || "/placeholder.svg?height=40&width=40")
                 }
                 alt={character?.name || "Character"}
                 className="w-full h-full rounded-full object-cover"
-                onError={() => handleImageError(character.id)}
+                onError={() => character?.id && handleImageError(character.id)}
                 loading="lazy"
               />
             </div>
@@ -1289,7 +1320,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               size="icon"
               className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] min-w-[44px] touch-manipulation"
               onClick={handleSendMessage}
-              disabled={isSendingMessage || isGeneratingImage || !inputValue.trim()}
+              disabled={isSendingMessage || isGeneratingImage || !inputValue.trim() || !character}
             >
               <Send className="h-4 w-4" />
             </Button>

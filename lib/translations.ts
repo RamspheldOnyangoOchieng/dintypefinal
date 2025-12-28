@@ -107,6 +107,8 @@ export type TranslationKey =
   | "chat.howToUse"
   | "chat.viewVideoIntro"
   | "chat.noVideoAvailable"
+  | "chat.profileNotFound"
+  | "chat.backToConversations"
   | "collection.yourImageCollection"
   | "collection.noImagesYet"
   | "collection.noImagesDescription"
@@ -459,6 +461,8 @@ export const translations: Record<"en" | "sv", Translations> = {
     "chat.howToUse": "How to Use",
     "chat.viewVideoIntro": "View video introduction",
     "chat.noVideoAvailable": "No video available",
+    "chat.profileNotFound": "Character not found",
+    "chat.backToConversations": "Back to Conversations",
     "collection.yourImageCollection": "Your Image Collection",
     "collection.noImagesYet": "No images saved yet",
     "collection.noImagesDescription": "Generate some images and save them to see them here!",
@@ -797,6 +801,8 @@ export const translations: Record<"en" | "sv", Translations> = {
     "chat.howToUse": "Hur man använder",
     "chat.viewVideoIntro": "Visa videointroduktion",
     "chat.noVideoAvailable": "Ingen video tillgänglig",
+    "chat.profileNotFound": "Karaktären hittades inte",
+    "chat.backToConversations": "Tillbaka till konversationer",
     "collection.yourImageCollection": "Din bildsamling",
     "collection.noImagesYet": "Inga bilder sparade än",
     "collection.noImagesDescription": "Generera några bilder och spara dem för att se dem här!",
