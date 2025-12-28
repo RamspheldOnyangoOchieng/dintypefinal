@@ -75,10 +75,10 @@ export function ImageModal({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 z-10 bg-black/50 hover:bg-black/70 text-white"
+            className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-black/80 text-white rounded-full transition-all"
             onClick={() => onOpenChange(false)}
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </Button>
 
           {/* Image container */}

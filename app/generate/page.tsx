@@ -56,6 +56,7 @@ export default function GenerateImagePage() {
   // const [autoSaving, setAutoSaving] = useState(false)
   const [generationProgress, setGenerationProgress] = useState(0)
   const [timeoutWarning, setTimeoutWarning] = useState(false)
+  const [savedImageUrls, setSavedImageUrls] = useState<Set<string>>(new Set())
   const [showInsufficientTokens, setShowInsufficientTokens] = useState(false)
   const [tokenBalanceInfo, setTokenBalanceInfo] = useState({
     currentBalance: 0,
@@ -178,22 +179,8 @@ export default function GenerateImagePage() {
     }
   }, [isGenerating])
 
-  // Auto-save generated images when they're ready (no loader, just save silently, and avoid infinite loop)
+  // Manual save logic is handled by the Save button
   const savedImagesRef = useRef<Set<string>>(new Set())
-  useEffect(() => {
-    if (generatedImages.length > 0 && user) {
-      generatedImages.forEach((imageUrl) => {
-        if (!savedImagesRef.current.has(imageUrl)) {
-          savedImagesRef.current.add(imageUrl)
-          saveImageToCollection(imageUrl, -1, false)
-        }
-      })
-    }
-    // Reset the ref if all images are cleared
-    if (generatedImages.length === 0) {
-      savedImagesRef.current.clear()
-    }
-  }, [generatedImages, user])
 
   const handleImageClick = (index: number) => {
     setSelectedImageIndex(index)
@@ -339,7 +326,7 @@ export default function GenerateImagePage() {
             try {
               const errorJson = JSON.parse(errorText)
               errorMessage = errorJson.error || errorJson.message || errorMessage
-              
+
               // Handle insufficient tokens (402 Payment Required)
               if (response.status === 402) {
                 setTokenBalanceInfo({
@@ -403,7 +390,7 @@ export default function GenerateImagePage() {
       if (data.task_id) {
         setCurrentTaskId(data.task_id);
         startStatusCheck(data.task_id);
-        
+
         // Refresh auth context user data to update token balance
         if (typeof refreshUser === 'function') {
           refreshUser().catch(e => console.error("Failed to refresh user after generation:", e))
@@ -589,6 +576,13 @@ export default function GenerateImagePage() {
           description: "Image saved to your collection with permanent URL",
         })
       }
+
+      // Track that this image has been saved
+      setSavedImageUrls(prev => {
+        const next = new Set(prev)
+        next.add(imageUrl)
+        return next
+      })
 
       return true
     } catch (error) {
@@ -1015,10 +1009,12 @@ export default function GenerateImagePage() {
                 <div className={`absolute bottom-2 right-2 bg-background/80 text-foreground ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded`}>
                   Image {index + 1}
                 </div>
-                {/* Show saved indicator */}
-                <div className={`absolute top-2 right-2 bg-green-500/80 text-white ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded-full`}>
-                  Saved
-                </div>
+                {/* Show saved indicator only if image is in savedImageUrls */}
+                {savedImageUrls.has(image) && (
+                  <div className={`absolute top-2 right-2 bg-green-500/80 text-white ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded-full`}>
+                    Saved
+                  </div>
+                )}
               </div>
             ))}
           </div>
