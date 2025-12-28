@@ -246,7 +246,7 @@ export default function PremiumPage() {
       {/* Dynamic Background Effect */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute -top-[5%] -left-[5%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px]" />
-        <div className="absolute top-[10%] -right-[5%] w-[25%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
+        <div className="absolute top-[10%] -right-[5%] w-[25%] h-[40%] bg-primary/5 rounded-full blur-[100px]" />
       </div>
 
       <div className="container max-w-6xl mx-auto py-8 px-4 space-y-12 relative">
@@ -345,7 +345,7 @@ export default function PremiumPage() {
           </Card>
 
           {/* Premium Tier */}
-          <Card className="group relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 via-card/40 to-purple-500/5 backdrop-blur-lg flex flex-col shadow-lg ring-1 ring-primary/10">
+          <Card className="group relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 via-card/40 to-blue-500/5 backdrop-blur-lg flex flex-col shadow-lg ring-1 ring-primary/10">
             <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground font-black text-[10px] tracking-wider px-2 py-0.5">
               MEST POPULÄR
             </Badge>
@@ -397,7 +397,7 @@ export default function PremiumPage() {
                   size="lg"
                   onClick={handlePremiumPurchase}
                   disabled={isLoading}
-                  className="w-full h-11 rounded-lg text-base font-black bg-gradient-to-r from-primary to-purple-600 hover:shadow-lg transition-all"
+                  className="w-full h-11 rounded-lg text-base font-black bg-gradient-to-r from-primary to-blue-600 hover:shadow-lg transition-all"
                 >
                   {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "BLI PREMIUM"}
                 </Button>
@@ -410,8 +410,8 @@ export default function PremiumPage() {
         <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { title: "Chatt", value: "5 Tokens", desc: "per sms", icon: <MessageSquare className="w-5 h-5 text-blue-500" /> },
-            { title: "Skapa AI", value: "2 Tokens", desc: "per profil", icon: <UserPlus className="w-5 h-5 text-pink-500" /> },
-            { title: "Bilder", value: "5-10 Tokens", desc: "per bild", icon: <ImageIcon className="w-5 h-5 text-purple-500" /> }
+            { title: "Skapa AI", value: "2 Tokens", desc: "per profil", icon: <UserPlus className="w-5 h-5 text-primary" /> },
+            { title: "Bilder", value: "5-10 Tokens", desc: "per bild", icon: <ImageIcon className="w-5 h-5 text-blue-500" /> }
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-card/20 border border-border/40 backdrop-blur-sm">
               <div className="p-2.5 rounded-xl bg-muted/40">
@@ -498,7 +498,7 @@ export default function PremiumPage() {
                   onClick={handleTokenPurchase}
                   className={cn(
                     "w-full h-12 rounded-xl text-lg font-black tracking-wide",
-                    user?.isAdmin ? "bg-blue-600 hover:bg-blue-700" : "bg-gradient-to-r from-primary to-purple-600 shadow-md"
+                    user?.isAdmin ? "bg-blue-600 hover:bg-blue-700" : "bg-gradient-to-r from-primary to-blue-600 shadow-md"
                   )}
                   disabled={!selectedTokenPackageId || isLoading}
                 >

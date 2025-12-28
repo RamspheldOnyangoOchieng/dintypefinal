@@ -105,110 +105,130 @@ export default function MyAIPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Laddar dina AI flickvänner...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">Laddar dina AI flickvänner...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Decorative background gradients */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[20%] -right-[5%] w-[30%] h-[50%] bg-blue-500/5 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3">
-                <Heart className="h-10 w-10 text-pink-500" />
-                Min AI flickvän
+        <div className="mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest mb-2">
+                <Sparkles className="h-3 w-3" />
+                Ditt Galleri
+              </div>
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-4 italic">
+                Min <span className="text-primary">AI</span> Flickvän
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
+              <p className="text-lg text-slate-600 dark:text-slate-400 font-medium max-w-2xl">
                 {characters.length === 0
-                  ? 'Du har inga AI flickvänner ännu. Skapa din första!'
-                  : `${characters.length} AI flickvän${characters.length !== 1 ? 'ner' : ''}`
+                  ? 'Du har inga AI flickvänner ännu. Släpp loss din fantasi och skapa din perfekta match!'
+                  : `Du har format ${characters.length} unik${characters.length !== 1 ? 'a' : ''} AI flickvän${characters.length !== 1 ? 'ner' : ''} hittills.`
                 }
               </p>
             </div>
 
             <button
               onClick={handleCreateNew}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200"
+              className="flex items-center justify-center gap-3 px-8 py-4 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all duration-300"
             >
-              <Plus className="h-5 w-5" />
-              Skapa ny
+              <Plus className="h-6 w-6" />
+              SKAPA NY
             </button>
           </div>
         </div>
 
         {/* Empty State */}
         {characters.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Heart className="h-12 w-12 text-pink-500" />
+          <div className="text-center py-20 px-6 rounded-3xl bg-card/40 border border-border/50 backdrop-blur-xl">
+            <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8 ring-8 ring-primary/5">
+              <Heart className="h-12 w-12 text-primary animate-pulse" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
-              Inga AI flickvänner ännu
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4 italic">
+              INGA AI FLICKVÄNNER ÄNNU
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-              Skapa din första AI flickvän och börja chatta! Det är enkelt och tar bara några minuter.
+            <p className="text-slate-600 dark:text-slate-400 mb-10 max-w-md mx-auto text-lg leading-relaxed">
+              Världen väntar på dig. Skapa din första unika AI-karaktär med personlighet, minnen och stil.
             </p>
             <button
               onClick={handleCreateNew}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-200"
+              className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-primary to-blue-600 text-white rounded-2xl font-black text-xl shadow-xl shadow-primary/25 hover:shadow-primary/45 hover:scale-105 transition-all duration-300"
             >
-              <Sparkles className="h-5 w-5" />
-              Skapa din första AI flickvän
+              <Sparkles className="h-6 w-6" />
+              BÖRJA SKAPA NU
             </button>
           </div>
         ) : (
           /* Characters Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {characters.map((character) => (
               <div
                 key={character.id}
-                className="group relative bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                className="group relative bg-card border border-border/50 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col"
               >
-                {/* Character Image */}
-                <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100 dark:from-gray-700 dark:to-gray-600">
+                {/* Character Image Container */}
+                <div className="relative aspect-[4/5] overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse -z-10" />
                   {(character.image || character.image_url) ? (
                     <img
                       src={character.image || character.image_url || ''}
                       alt={character.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Heart className="h-16 w-16 text-pink-300" />
+                      <Heart className="h-16 w-16 text-primary/20" />
                     </div>
                   )}
 
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <div className="w-full space-y-2">
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  {/* Top Badges */}
+                  <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+                    {character.personality && (
+                      <div className="px-2 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                        <Sparkles className="h-2.5 w-2.5 text-primary" />
+                        {character.personality}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Absolute-positioned Content/Buttons */}
+                  <div className="absolute inset-0 flex flex-col justify-end p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <div className="space-y-3">
                       <button
                         onClick={() => handleChat(character.id)}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg font-semibold transition-colors"
+                        className="w-full h-12 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-black text-sm tracking-wide shadow-lg shadow-primary/20 transition-all active:scale-95"
                       >
                         <MessageCircle className="h-4 w-4" />
-                        Chatta
+                        STARTA CHATT
                       </button>
                       <button
                         onClick={() => handleDelete(character.id)}
                         disabled={deletingId === character.id}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500/80 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+                        className="w-full h-12 flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 backdrop-blur-md border border-white/20 text-white hover:border-red-500/40 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
                       >
                         {deletingId === character.id ? (
-                          <>
-                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Tar bort...
-                          </>
+                          <div className="h-4 w-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
                         ) : (
                           <>
-                            <Trash2 className="h-4 w-4" />
-                            Ta bort
+                            <Trash2 className="h-3.5 w-3.5 opacity-60" />
+                            TA BORT
                           </>
                         )}
                       </button>
@@ -217,40 +237,35 @@ export default function MyAIPage() {
                 </div>
 
                 {/* Character Info */}
-                <div className="p-4">
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-1 truncate">
-                    {character.name}
-                  </h3>
+                <div className="p-6 flex-grow flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate italic">
+                      {character.name}
+                    </h3>
 
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    {character.age && (
-                      <span>{character.age} år</span>
-                    )}
-                    {character.relationship && (
-                      <>
-                        <span>•</span>
-                        <span className="capitalize">{character.relationship}</span>
-                      </>
+                    <div className="flex items-center gap-2 mt-1">
+                      {character.age && (
+                        <span className="text-sm font-bold text-primary">{character.age} ÅR</span>
+                      )}
+                      {character.relationship && (
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-md">
+                          {character.relationship}
+                        </span>
+                      )}
+                    </div>
+
+                    {character.description && (
+                      <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mt-3 font-medium leading-relaxed italic opacity-80">
+                        "{character.description}"
+                      </p>
                     )}
                   </div>
 
-                  {character.personality && (
-                    <div className="inline-flex items-center gap-1 px-2 py-1 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-full text-xs font-medium mb-2">
-                      <Sparkles className="h-3 w-3" />
-                      {character.personality}
-                    </div>
-                  )}
-
-                  {character.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-2">
-                      {character.description}
-                    </p>
-                  )}
-
-                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
-                      Skapad {new Date(character.created_at).toLocaleDateString('sv-SE')}
-                    </p>
+                  <div className="mt-6 pt-4 border-t border-border/50 flex items-center justify-between">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      {new Date(character.created_at).toLocaleDateString('sv-SE')}
+                    </span>
+                    <Heart className="h-4 w-4 text-primary/40 group-hover:text-primary transition-colors duration-300" />
                   </div>
                 </div>
               </div>

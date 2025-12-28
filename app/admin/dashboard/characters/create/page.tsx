@@ -358,7 +358,7 @@ export default function CreateCharacterPage() {
                           type="button"
                           variant="outline"
                           onClick={() => setShowImageGenerationModal(true)}
-                          className="w-full bg-transparent border-[#FF4D8D] text-[#FF4D8D] hover:bg-[#FF4D8D]/10"
+                          className="w-full bg-transparent border-primary text-primary hover:bg-primary/10"
                           disabled={isUploading}
                         >
                           <Sparkles className="h-4 w-4 mr-2" />
@@ -587,7 +587,7 @@ export default function CreateCharacterPage() {
                           size="sm"
                           onClick={handleGenerateDescription}
                           disabled={isGenerating}
-                          className="text-[#FF4D8D] border-[#FF4D8D] hover:bg-[#FF4D8D]/10 bg-transparent"
+                          className="text-primary border-primary hover:bg-primary/10 bg-transparent"
                         >
                           <Wand2 className="mr-2 h-4 w-4" />
                           {isGenerating ? "Generating..." : "Generate Description"}
@@ -614,7 +614,7 @@ export default function CreateCharacterPage() {
                           size="sm"
                           onClick={handleGenerateSystemPrompt}
                           disabled={isGenerating}
-                          className="text-[#FF4D8D] border-[#FF4D8D] hover:bg-[#FF4D8D]/10 bg-transparent"
+                          className="text-primary border-primary hover:bg-primary/10 bg-transparent"
                         >
                           <Wand2 className="mr-2 h-4 w-4" />
                           {isGenerating ? "Generating..." : "Generate System Prompt"}

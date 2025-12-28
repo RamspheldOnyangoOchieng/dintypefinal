@@ -474,19 +474,19 @@ export default function CreateCharacterPage() {
         return (
             <div className="space-y-8">
                 <div className="text-center">
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent mb-2">Review Your AI Character</h2>
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-2">Review Your AI Character</h2>
                     <p className="text-muted-foreground">Everything looks perfect! Ready to bring her to life?</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                     <div className="bg-secondary/30 rounded-3xl p-6 border border-border/50 backdrop-blur-sm">
                         <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                            <Sparkles className="h-5 w-5 text-pink-500" />
+                            <Sparkles className="h-5 w-5 text-primary" />
                             Physique & Details
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
                             {charAttributes.map((attr) => (
-                                <div key={attr.label} className="bg-background/40 p-3 rounded-2xl border border-border/30 hover:border-pink-500/30 transition-colors">
+                                <div key={attr.label} className="bg-background/40 p-3 rounded-2xl border border-border/30 hover:border-primary/30 transition-colors">
                                     <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">{attr.label}</p>
                                     <p className="text-sm font-medium flex items-center gap-2">
                                         <span className="text-lg">{getEmoji(attr.type, attr.value)}</span>
@@ -500,7 +500,7 @@ export default function CreateCharacterPage() {
                     <div className="space-y-6">
                         <div className="bg-secondary/30 rounded-3xl p-6 border border-border/50 backdrop-blur-sm">
                             <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                                <MessageSquare className="h-5 w-5 text-pink-500" />
+                                <MessageSquare className="h-5 w-5 text-primary" />
                                 Custom Settings
                             </h3>
                             <div className="space-y-4">
@@ -510,7 +510,7 @@ export default function CreateCharacterPage() {
                                         value={characterDescription}
                                         onChange={(e) => setCharacterDescription(e.target.value)}
                                         placeholder={`Add more details about ${gender === 'lady' ? 'her' : 'his'} personality or background...`}
-                                        className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all resize-none"
+                                        className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary outline-none transition-all resize-none"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -519,7 +519,7 @@ export default function CreateCharacterPage() {
                                         value={promptTemplate}
                                         onChange={(e) => setPromptTemplate(e.target.value)}
                                         placeholder="Enter instructions for the AI's behavior..."
-                                        className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm font-mono focus:ring-2 focus:ring-pink-500 outline-none transition-all resize-none"
+                                        className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm font-mono focus:ring-2 focus:ring-primary outline-none transition-all resize-none"
                                     />
                                 </div>
                             </div>
@@ -544,9 +544,9 @@ export default function CreateCharacterPage() {
                     {/* Loading Animation */}
                     <div className="flex justify-center items-center mb-8">
                         <div className="relative">
-                            <div className="w-32 h-32 border-4 border-border rounded-full animate-spin border-t-[#FF4D8D]"></div>
+                            <div className="w-32 h-32 border-4 border-border rounded-full animate-spin border-t-primary"></div>
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-16 h-16 border-4 border-border rounded-full animate-spin border-t-[#FF4D8D]" style={{ animationDirection: 'reverse' }}></div>
+                                <div className="w-16 h-16 border-4 border-border rounded-full animate-spin border-t-primary" style={{ animationDirection: 'reverse' }}></div>
                             </div>
                         </div>
                     </div>
@@ -571,7 +571,7 @@ export default function CreateCharacterPage() {
                     {generatedImageUrl && (
                         <div className="mb-8 flex justify-center">
                             <div
-                                className={`rounded-2xl overflow-hidden border-4 border-[#FF4D8D] shadow-2xl transition-opacity duration-1000 ${showImage ? 'opacity-100' : 'opacity-0'
+                                className={`rounded-2xl overflow-hidden border-4 border-primary shadow-2xl transition-opacity duration-1000 ${showImage ? 'opacity-100' : 'opacity-0'
                                     }`}
                                 style={{ maxWidth: '500px' }}
                             >
@@ -2091,7 +2091,7 @@ export default function CreateCharacterPage() {
                         <div className="space-y-8">
                             <div className="text-center">
                                 <h2 className="text-3xl font-bold flex items-center justify-center gap-2">
-                                    <Sparkles className="h-8 w-8 text-pink-500" />
+                                    <Sparkles className="h-8 w-8 text-primary" />
                                     Personality Traits
                                 </h2>
                                 <p className="text-muted-foreground">Select {gender === 'lady' ? 'her' : 'his'} core personality</p>
@@ -2107,8 +2107,8 @@ export default function CreateCharacterPage() {
                                         className={cn(
                                             "h-auto py-4 px-6 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300",
                                             selectedPersonality === key 
-                                                ? "bg-pink-500 hover:bg-pink-600 text-white shadow-lg shadow-pink-500/20 scale-105" 
-                                                : "hover:border-pink-500/50 hover:bg-pink-500/5"
+                                                ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 scale-105" 
+                                                : "hover:border-primary/50 hover:bg-primary/5"
                                         )}
                                         onClick={() => setSelectedPersonality(key)}
                                     >
@@ -2125,7 +2125,7 @@ export default function CreateCharacterPage() {
                         <div className="space-y-8">
                             <div className="text-center">
                                 <h2 className="text-3xl font-bold flex items-center justify-center gap-2">
-                                    <Heart className="h-8 w-8 text-pink-500" />
+                                    <Heart className="h-8 w-8 text-primary" />
                                     Relationship
                                 </h2>
                                 <p className="text-muted-foreground">Define your current status with {gender === 'lady' ? 'her' : 'him'}</p>
@@ -2138,8 +2138,8 @@ export default function CreateCharacterPage() {
                                         className={cn(
                                             "h-auto py-4 px-6 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300",
                                             selectedRelationship === key 
-                                                ? "bg-pink-500 hover:bg-pink-600 text-white shadow-lg shadow-pink-500/20 scale-105" 
-                                                : "hover:border-pink-500/50 hover:bg-pink-500/5"
+                                                ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 scale-105" 
+                                                : "hover:border-primary/50 hover:bg-primary/5"
                                         )}
                                         onClick={() => setSelectedRelationship(key)}
                                     >

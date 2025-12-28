@@ -719,8 +719,8 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
                 <div className="flex justify-end items-center mt-2">
                   <Button variant="ghost" size="sm" className="text-gray-400">
                     <div className="flex gap-1">
-                      <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
-                      <div className="w-3 h-3 bg-pink-500 rounded-sm"></div>
+                      <div className="w-3 h-3 bg-primary rounded-sm"></div>
+                      <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
                     </div>
                   </Button>
                 </div>
@@ -732,7 +732,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
               <CardContent className="p-4">
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
                     <h3 className="text-lg font-semibold text-white">Suggestions</h3>
                   </div>
 
@@ -765,7 +765,7 @@ export default function GenerateCharacterPage({ params }: GenerateCharacterPageP
                                 onClick={() => addSuggestionToPrompt(suggestion)}
                               >
                                 <div className="relative">
-                                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-2 hover:scale-110 transition-all duration-200 relative overflow-hidden shadow-lg group-hover:shadow-purple-500/25">
+                                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center mb-2 hover:scale-110 transition-all duration-200 relative overflow-hidden shadow-lg group-hover:shadow-primary/25">
                                     {suggestion.image ? (
                                       <img
                                         src={suggestion.image}
