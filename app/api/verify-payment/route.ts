@@ -63,7 +63,18 @@ async function fulfillOrder(session: any) {
       
       const price = session.amount_total / 100
       if (price > 0) {
-        await supabaseAdmin.from("revenue_transactions").insert({ amount: price })
+        await supabaseAdmin.from("revenue_transactions").insert({
+          user_id: userId,
+          transaction_type: "stripe_payment",
+          amount: price,
+          currency: (session.currency || 'sek').toUpperCase(),
+          description: session.metadata?.planName || (tokensToAdd > 0 ? `${tokensToAdd} Tokens` : "Purchase"),
+          metadata: {
+            stripe_session_id: session.id,
+            plan_id: session.metadata?.planId,
+            type: session.metadata?.type
+          }
+        })
       }
     }
 
@@ -121,7 +132,18 @@ async function fulfillOrder(session: any) {
       if (tokensToAdd <= 0) {
         const price = session.amount_total / 100
         if (price > 0) {
-          await supabaseAdmin.from("revenue_transactions").insert({ amount: price })
+          await supabaseAdmin.from("revenue_transactions").insert({
+            user_id: userId,
+            transaction_type: "stripe_payment",
+            amount: price,
+            currency: (session.currency || 'sek').toUpperCase(),
+            description: session.metadata?.planName || (tokensToAdd > 0 ? `${tokensToAdd} Tokens` : "Purchase"),
+            metadata: {
+              stripe_session_id: session.id,
+              plan_id: session.metadata?.planId,
+              type: session.metadata?.type
+            }
+          })
         }
       }
     }

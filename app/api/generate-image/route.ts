@@ -220,29 +220,32 @@ export async function POST(req: NextRequest) {
       }, { status: 401 })
     }
 
-    // Check if user is an admin to bypass token costs
+    // Check if user is an admin to bypass token costs (Use Admin Client for reliability)
     try {
-      // Check admin_users table first
-      const { data: adminRecord } = await supabase
-        .from('admin_users')
-        .select('user_id')
-        .eq('user_id', userId)
-        .maybeSingle()
-
-      if (adminRecord) {
-        isAdmin = true
-        console.log(`👑 User ${userId.substring(0, 8)} identified as Admin (admin_users table)`)
-      } else {
-        // Fallback: Check profiles table
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', userId)
+      const supabaseAdmin = await createAdminClient()
+      if (supabaseAdmin) {
+        // Check admin_users table first
+        const { data: adminRecord } = await supabaseAdmin
+          .from('admin_users')
+          .select('user_id')
+          .eq('user_id', userId)
           .maybeSingle()
 
-        if (profile?.is_admin) {
+        if (adminRecord) {
           isAdmin = true
-          console.log(`👑 User ${userId.substring(0, 8)} identified as Admin (profiles table)`)
+          console.log(`👑 User ${userId.substring(0, 8)} identified as Admin (admin_users table)`)
+        } else {
+          // Fallback: Check profiles table
+          const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', userId)
+            .maybeSingle()
+
+          if (profile?.is_admin) {
+            isAdmin = true
+            console.log(`👑 User ${userId.substring(0, 8)} identified as Admin (profiles table)`)
+          }
         }
       }
     } catch (error) {
@@ -364,7 +367,7 @@ export async function POST(req: NextRequest) {
       },
     }
 
-    // Create database task record BEFORE API call for webhook tracking
+    // Create database task record BEFORE API call for webhook tracking (Use Admin Client)
     console.log('💾 Creating task record in database...')
     const taskRecord = {
       user_id: userId,
@@ -379,17 +382,22 @@ export async function POST(req: NextRequest) {
       task_id: '', // Will be updated after API call
     }
 
-    const { data: createdTask, error: taskError } = await supabase
-      .from('generation_tasks')
-      .insert(taskRecord)
-      .select()
-      .single()
-
-    if (taskError) {
-      console.error('⚠️  Warning: Failed to create task record:', taskError)
-      // Don't fail the request if task creation fails, just log it
-    } else {
-      console.log('✅ Task record created successfully')
+    const supabaseAdminForTask = await createAdminClient()
+    let createdTask = null
+    
+    if (supabaseAdminForTask) {
+      const { data, error: taskError } = await supabaseAdminForTask
+        .from('generation_tasks')
+        .insert(taskRecord)
+        .select()
+        .single()
+      
+      if (taskError) {
+        console.error('⚠️  Warning: Failed to create task record:', taskError)
+      } else {
+        createdTask = data
+        console.log('✅ Task record created successfully')
+      }
     }
 
     const response = await fetch("https://api.novita.ai/v3/async/txt2img", {
@@ -442,8 +450,8 @@ export async function POST(req: NextRequest) {
     console.log(`✅ Task submitted successfully, task ID: ${data.task_id}`)
 
     // Update database task record with the task_id from Novita
-    if (createdTask) {
-      const { error: updateError } = await supabase
+    if (createdTask && supabaseAdminForTask) {
+      const { error: updateError } = await supabaseAdminForTask
         .from('generation_tasks')
         .update({
           task_id: data.task_id,

@@ -1,19 +1,25 @@
 import { createClient } from "@/lib/supabase-server"
 import { createAdminClient } from "./supabase-admin"
 
-// Get user's token balance
+// Get user's token balance (Admin-powered for reliability)
 export async function getUserTokenBalance(userId: string) {
   try {
-    const supabase = createClient()
+    const supabaseAdmin = await createAdminClient()
+    if (!supabaseAdmin) {
+      console.warn("Failed to get admin client for balance check, falling back to standard client")
+      const supabase = await createClient()
+      const { data, error } = await supabase.from("user_tokens").select("balance").eq("user_id", userId).maybeSingle()
+      return (data as any)?.balance || 0
+    }
 
-    const { data, error } = await supabase.from("user_tokens").select("balance").eq("user_id", userId).maybeSingle()
+    const { data, error } = await supabaseAdmin.from("user_tokens").select("balance").eq("user_id", userId).maybeSingle()
 
     if (error) {
       console.error("Error fetching token balance:", error)
       return 0
     }
 
-    return data?.balance || 0
+    return (data as any)?.balance || 0
   } catch (error) {
     console.error("Error in getUserTokenBalance:", error)
     return 0
@@ -35,42 +41,35 @@ export async function deductTokens(userId: string, amount: number, description: 
       throw new Error("Failed to initialize Supabase admin client")
     }
 
-    // Get current balance
+    // 1. Get current balance
     const { data: userData, error: userError } = await supabaseAdmin
       .from("user_tokens")
       .select("balance")
       .eq("user_id", userId)
       .maybeSingle()
 
-    if (userError) {
-      throw userError
-    }
+    if (userError) throw userError
+    if (!userData) throw new Error("User has no token balance")
+    if (userData.balance < amount) throw new Error("Insufficient tokens")
 
-    if (!userData) {
-      throw new Error("User has no token balance")
-    }
+    const originalBalance = userData.balance
+    const newBalance = originalBalance - amount
 
-    if (userData.balance < amount) {
-      throw new Error("Insufficient tokens")
-    }
-
-    // Update balance
+    // 2. Update balance
     const { error: updateError } = await supabaseAdmin
       .from("user_tokens")
       .update({
-        balance: userData.balance - amount,
+        balance: newBalance,
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", userId)
 
-    if (updateError) {
-      throw updateError
-    }
+    if (updateError) throw updateError
 
-    // Record transaction
+    // 3. Record transaction
     const { error: transactionError } = await supabaseAdmin.from("token_transactions").insert({
       user_id: userId,
-      amount: -amount, // Negative amount for usage
+      amount: -amount,
       type: "usage",
       description,
       metadata,
@@ -78,20 +77,26 @@ export async function deductTokens(userId: string, amount: number, description: 
     })
 
     if (transactionError) {
+      console.error("Failed to record transaction, REVERTING balance deduction:", transactionError)
+      // REVERT balance update if transaction insert fails
+      await supabaseAdmin.from("user_tokens").update({
+        balance: originalBalance,
+        updated_at: new Date().toISOString(),
+      }).eq("user_id", userId)
+
       throw transactionError
     }
 
-    // Also log to cost_logs for analytics
+    // 4. Log to cost_logs (silent failure allowed here as it's for analytics only)
     try {
-      const { data: logData, error: logError } = await supabaseAdmin.from("cost_logs").insert({
+      await supabaseAdmin.from("cost_logs").insert({
         user_id: userId,
         action_type: metadata?.activity_type || 'token_usage',
         cost: amount,
         metadata: { ...metadata, description, source: 'deductTokens' }
       })
-      if (logError) console.error("Error logging cost:", logError)
     } catch (e) {
-      console.error("Failed to log to cost_logs:", e)
+      console.error("Non-critical: Failed to log to cost_logs:", e)
     }
 
     return true
@@ -178,7 +183,7 @@ export async function addTokens(
 // Get user's token transaction history
 export async function getTokenTransactions(userId: string, limit = 50) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from("token_transactions")

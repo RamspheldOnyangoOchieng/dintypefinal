@@ -812,7 +812,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         // Increment message usage for limit tracking AND deduct tokens
         if (user?.id) {
           try {
-            await incrementMessageUsage(user.id)
+            // Note: incrementMessageUsage(user.id) is now called within sendChatMessage on the server
+            // to ensure consistency and prevent duplicate counts.
 
             // Ensure user has tokens (creates if first time)
             const { ensureUserTokens } = await import('@/lib/ensure-user-tokens')
@@ -829,14 +830,13 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               const warningMessage: Message = {
                 id: Math.random().toString(36).substring(2, 15),
                 role: "assistant",
-                content: "⚠️ Du har ont om tokens! Köp fler tokens för att fortsätta chatta.",
+                content: "⚠️ You're low on tokens! Buy more to keep chatting.",
                 timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
               }
               setMessages((prev) => [...prev, warningMessage])
             }
           } catch (error) {
-            console.error("Error incrementing message usage:", error)
-            // Don't block the user if tracking fails
+            console.error("Error handling token deduction:", error)
           }
         }
       } catch (error) {
@@ -1310,9 +1310,9 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       <PremiumUpgradeModal
         isOpen={isPremiumModalOpen}
         onClose={() => setIsPremiumModalOpen(false)}
-        feature="Obegränsade Meddelanden"
-        description="Uppgradera till Premium för att skicka obegränsat antal meddelanden"
-        imageSrc="/login-placeholder.jpeg"
+        feature="Unlimited Messages"
+        description="Unlimited Messages"
+        imageSrc={character?.image || "/login-placeholder.jpeg"}
       />
 
       {selectedImage && (
