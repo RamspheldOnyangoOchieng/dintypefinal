@@ -612,7 +612,7 @@ export default function CreateCharacterPage() {
                     <div className="pt-4 md:pt-6">
                         <button
                             onClick={() => setShowNameDialog(true)}
-                            className="w-full py-4 sm:py-5 rounded-lg sm:rounded-[1.5rem] bg-gradient-to-r from-[#ff4d8d] to-[#ff6b95] text-white font-black text-base sm:text-lg tracking-wider shadow-2xl shadow-pink-500/20 hover:scale-[1.02] hover:shadow-pink-500/40 active:scale-[0.98] transition-all uppercase">
+                            className="w-full py-4 sm:py-5 rounded-lg sm:rounded-[1.5rem] bg-gradient-to-r from-primary to-blue-600 text-white font-black text-base sm:text-lg tracking-wider shadow-2xl shadow-primary/20 hover:scale-[1.02] hover:shadow-primary/40 active:scale-[0.98] transition-all uppercase">
                             Gör min AI levande
                         </button>
                     </div>
@@ -754,8 +754,8 @@ export default function CreateCharacterPage() {
 
         // If we are on the summary step and haven't generated yet,
         // just save the name and move to the generation step
-        const summaryStep = gender === 'lady' ? 7 : 3;
-        const generationStep = gender === 'lady' ? 8 : 4;
+        const summaryStep = gender === 'lady' ? 6 : 3;
+        const generationStep = gender === 'lady' ? 7 : 4;
 
         if (currentStep === summaryStep && !generatedImageUrl) {
             console.log('📝 Name set, moving to generation step...');
@@ -1108,7 +1108,7 @@ export default function CreateCharacterPage() {
                             <div className="space-y-6">
                                 <div className="text-center">
                                     <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
-                                        <User className="h-6 w-6 text-pink-500" />
+                                        <User className="h-6 w-6 text-primary" />
                                         Choose Ethnicity*
                                     </h2>
                                     <p className="text-muted-foreground text-sm mt-1">Select the background that best fits your AI</p>
@@ -1126,8 +1126,8 @@ export default function CreateCharacterPage() {
                                             className={cn(
                                                 "group relative cursor-pointer rounded-2xl overflow-hidden border-2 transition-all duration-300",
                                                 selectedEthnicity === eth.id
-                                                    ? "border-pink-500 ring-4 ring-pink-500/20 scale-105"
-                                                    : "border-transparent hover:border-pink-500/50"
+                                                    ? "border-primary ring-4 ring-primary/20 scale-105"
+                                                    : "border-transparent hover:border-primary/50"
                                             )}
                                             onClick={() => setSelectedEthnicity(eth.id)}
                                         >
@@ -1144,7 +1144,7 @@ export default function CreateCharacterPage() {
                                                 </span>
                                             </div>
                                             {selectedEthnicity === eth.id && (
-                                                <div className="absolute top-2 right-2 bg-pink-500 rounded-full p-1 shadow-lg">
+                                                <div className="absolute top-2 right-2 bg-primary rounded-full p-1 shadow-lg">
                                                     <ShieldCheck className="h-3 w-3 text-white" />
                                                 </div>
                                             )}
@@ -1157,10 +1157,10 @@ export default function CreateCharacterPage() {
                             <div className="space-y-6 py-6 border-y border-border/50">
                                 <div className="text-center">
                                     <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
-                                        <Calendar className="h-6 w-6 text-pink-500" />
+                                        <Calendar className="h-6 w-6 text-primary" />
                                         Choose Age
                                     </h2>
-                                    <p className="text-muted-foreground text-sm mt-1">Drag the slider to set her age: <span className="text-pink-500 font-bold">{selectedAge} years</span></p>
+                                    <p className="text-muted-foreground text-sm mt-1">Drag the slider to set her age: <span className="text-primary font-bold">{selectedAge} years</span></p>
                                 </div>
                                 <div className="px-4 max-w-md mx-auto space-y-4">
                                     <Slider
@@ -1187,7 +1187,7 @@ export default function CreateCharacterPage() {
                             <div className="space-y-6">
                                 <div className="text-center">
                                     <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
-                                        <Eye className="h-6 w-6 text-pink-500" />
+                                        <Eye className="h-6 w-6 text-primary" />
                                         Välj Ögonfärg*
                                     </h2>
                                     <p className="text-muted-foreground text-sm mt-1">Välj den färg som bäst passar din AI</p>
@@ -1205,10 +1205,10 @@ export default function CreateCharacterPage() {
                                             onClick={() => setSelectedEyeColor(eye.id)}
                                             className={cn(
                                                 "group cursor-pointer p-1 rounded-full border-2 transition-all",
-                                                selectedEyeColor === eye.id ? "border-pink-500" : "border-transparent"
+                                                selectedEyeColor === eye.id ? "border-primary" : "border-transparent"
                                             )}
                                         >
-                                            <div className="w-16 h-16 rounded-full overflow-hidden border border-border group-hover:ring-2 group-hover:ring-pink-500/50 transition-all">
+                                            <div className="w-16 h-16 rounded-full overflow-hidden border border-border group-hover:ring-2 group-hover:ring-primary/50 transition-all">
                                                 <img
                                                     src={eye.fallback ? getImageUrl('eyeColor', eye.id, eye.fallback) : `https://images.unsplash.com/photo-1544474601-574300305a76?q=80&w=150`}
                                                     alt={eye.label}
@@ -1217,7 +1217,7 @@ export default function CreateCharacterPage() {
                                             </div>
                                             <p className={cn(
                                                 "text-center text-[10px] uppercase font-bold mt-1 tracking-wider",
-                                                selectedEyeColor === eye.id ? "text-pink-500" : "text-muted-foreground"
+                                                selectedEyeColor === eye.id ? "text-primary" : "text-muted-foreground"
                                             )}>{eye.label}</p>
                                         </div>
                                     ))}
@@ -1228,7 +1228,7 @@ export default function CreateCharacterPage() {
                             <div className="space-y-6 pt-8 border-t border-border/50">
                                 <div className="text-center">
                                     <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
-                                        <Eye className="h-6 w-6 text-pink-500" />
+                                        <Eye className="h-6 w-6 text-primary" />
                                         Välj Ögonform*
                                     </h2>
                                     <p className="text-muted-foreground text-sm mt-1">Välj den ögonform som bäst definierar hennes blick</p>
@@ -1247,7 +1247,7 @@ export default function CreateCharacterPage() {
                                             variant={selectedEyeShape === shape.id ? "default" : "outline"}
                                             className={cn(
                                                 "h-auto py-6 rounded-2xl border-2 transition-all hover:scale-105",
-                                                selectedEyeShape === shape.id ? "border-pink-500 bg-pink-500/10 text-pink-500 shadow-lg shadow-pink-500/20" : ""
+                                                selectedEyeShape === shape.id ? "border-primary bg-primary/10 text-primary shadow-lg shadow-primary/20" : ""
                                             )}
                                             onClick={() => setSelectedEyeShape(shape.id)}
                                         >
@@ -2306,9 +2306,13 @@ export default function CreateCharacterPage() {
                                 }`}
                             disabled={!getStepValidation() || isGenerating}
                             onClick={() => {
-                                const finalStep = gender === 'lady' ? 6 : 3;
-                                if (currentStep === finalStep) {
+                                const summaryStep = gender === 'lady' ? 6 : 3;
+                                const generationStep = gender === 'lady' ? 7 : 4;
+                                
+                                if (currentStep === summaryStep) {
                                     setShowNameDialog(true);
+                                } else if (currentStep === generationStep) {
+                                    handleSaveCharacter();
                                 } else {
                                     setCurrentStep(currentStep + 1);
                                 }
