@@ -29,13 +29,14 @@ export default function CreateCharacterPage() {
     const searchParams = useSearchParams();
     const gender = searchParams.get('gender') || 'lady'; // Default to 'lady' if not specified
 
-    const totalSteps = gender === 'lady' ? 7 : 5; // Re-indexed: 0-Ethnicity/Age/Eyes, 1-Hair, 2-Body, 3-Personality, 4-Relationship, 5-Summary, 6-Generation
+    const totalSteps = gender === 'lady' ? 9 : 5; // Re-indexed for lady: 0-Ethnicity/Age, 1-Eyes, 2-Hair, 3-Body, 4-Personality, 5-Relationship, 6-Outfit, 7-Summary, 8-Generation
 
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedStyle, setSelectedStyle] = useState<'realistic' | 'anime'>('realistic'); // Default to realistic
     const [selectedEthnicity, setSelectedEthnicity] = useState<string | null>(null);
     const [selectedAge, setSelectedAge] = useState<number>(25); // Default age 25
     const [selectedEyeColor, setSelectedEyeColor] = useState<string | null>(null);
+    const [selectedEyeShape, setSelectedEyeShape] = useState<string | null>(null);
     const [selectedHairStyle, setSelectedHairStyle] = useState<string | null>(null);
     const [selectedHairColor, setSelectedHairColor] = useState<string | null>(null);
     const [selectedBodyType, setSelectedBodyType] = useState<string | null>(null);
@@ -43,6 +44,7 @@ export default function CreateCharacterPage() {
     const [selectedButtSize, setSelectedButtSize] = useState<string | null>(null);
     const [selectedPersonality, setSelectedPersonality] = useState<string | null>(null);
     const [selectedRelationship, setSelectedRelationship] = useState<string | null>(null);
+    const [selectedOutfit, setSelectedOutfit] = useState<string | null>(null);
     const [isPublic, setIsPublic] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export default function CreateCharacterPage() {
 
     const supabase = createClientComponentClient();
     const router = useRouter();
-    const { user, loading: authLoading } = useAuth();
+    const { user, isLoading: authLoading } = useAuth();
     const { openLoginModal } = useAuthModal();
     const [showPremiumModal, setShowPremiumModal] = useState(false);
 
@@ -430,7 +432,7 @@ export default function CreateCharacterPage() {
 
     // Auto-start generation when reaching the generation step
     // Lady: step 6 (7th step), Gent: step 4 (5th step)
-    const generationStep = gender === 'lady' ? 6 : 4;
+    const generationStep = gender === 'lady' ? 8 : 4;
     useEffect(() => {
         if (currentStep === generationStep && !generatedImageUrl && !isGenerating) {
             handleGenerateImage();
@@ -443,18 +445,20 @@ export default function CreateCharacterPage() {
     const getStepValidation = () => {
         if (gender === 'lady') {
             switch (currentStep) {
-                case 0: return !!(selectedEthnicity && selectedAge && selectedEyeColor);
-                case 1: return !!(selectedHairStyle && selectedHairColor);
-                case 2: return !!(selectedBodyType && selectedBreastSize && selectedButtSize);
-                case 3: return !!selectedPersonality;
-                case 4: return !!selectedRelationship;
-                case 5: return true; // Summary step
-                case 6: return !!generatedImageUrl; // Generation step
+                case 0: return !!(selectedEthnicity && selectedAge);
+                case 1: return !!(selectedEyeColor && selectedEyeShape);
+                case 2: return !!(selectedHairStyle && selectedHairColor);
+                case 3: return !!(selectedBodyType && selectedBreastSize && selectedButtSize);
+                case 4: return !!selectedPersonality;
+                case 5: return !!selectedRelationship;
+                case 6: return !!selectedOutfit;
+                case 7: return true; // Summary step
+                case 8: return !!generatedImageUrl; // Generation step
                 default: return false;
             }
         } else { // gent
             switch (currentStep) {
-                case 0: return !!selectedBodyType; // Gents only need body type
+                case 0: return !!selectedBodyType;
                 case 1: return !!selectedPersonality;
                 case 2: return !!selectedRelationship;
                 case 3: return true; // Summary step
@@ -466,9 +470,9 @@ export default function CreateCharacterPage() {
 
     const getNextButtonText = () => {
         if (gender === 'lady') {
-            if (currentStep === 4) return 'Granska karaktär →';
-            if (currentStep === 5) return 'Skapa min AI →';
-            if (currentStep === 6) return 'Fortsätt →';
+            if (currentStep === 6) return 'Granska karaktär →';
+            if (currentStep === 7) return 'Skapa min AI →';
+            if (currentStep === 8) return 'Fortsätt →';
         } else { // gent
             if (currentStep === 2) return 'Granska karaktär →';
             if (currentStep === 3) return 'Skapa min AI →';
@@ -478,82 +482,130 @@ export default function CreateCharacterPage() {
     };
 
     // Step 5 is summary/preview step for lady, step 3 for gent
+    const [activeTab, setActiveTab] = useState<'appearance' | 'character'>('appearance');
+
     const renderStepSummary = () => {
-        const charAttributes = [
-            { label: 'Ethnicity', value: selectedEthnicity, type: 'ethnicity' },
-            { label: 'Age', value: selectedAge.toString(), type: 'age' },
-            { label: 'Eye Color', value: selectedEyeColor, type: 'eyeColor' },
-            { label: 'Hair Style', value: selectedHairStyle, type: 'hairStyle' },
-            { label: 'Hair Color', value: selectedHairColor, type: 'hairColor' },
-            { label: 'Body Type', value: selectedBodyType, type: 'bodyType' },
-            { label: 'Personality', value: selectedPersonality, type: 'personality' },
-            { label: 'Relationship', value: selectedRelationship, type: 'relationship' },
-        ];
+        if (gender === 'gent') {
+            return (
+                <div className="space-y-8">
+                    <div className="text-center">
+                        <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-2">Review Your AI Character</h2>
+                        <p className="text-muted-foreground">Everything looks perfect!</p>
+                    </div>
+                </div>
+            );
+        }
 
         return (
-            <div className="space-y-8">
-                <div className="text-center">
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-2">Granska din AI-flickvän</h2>
-                    <p className="text-muted-foreground">Allt ser perfekt ut! Redo att ge henne liv?</p>
+            <div className="max-w-5xl mx-auto bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 flex flex-col md:flex-row min-h-[600px] relative">
+                <div className="absolute top-8 right-8 z-20 text-white/40 cursor-pointer hover:text-white transition-colors">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                    <div className="bg-secondary/30 rounded-3xl p-6 border border-border/50 backdrop-blur-sm">
-                        <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                            <Sparkles className="h-5 w-5 text-primary" />
-                            Physique & Details
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            {charAttributes.map((attr) => (
-                                <div key={attr.label} className="bg-background/40 p-3 rounded-2xl border border-border/30 hover:border-primary/30 transition-colors">
-                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">{attr.label}</p>
-                                    <p className="text-sm font-medium flex items-center gap-2">
-                                        <span className="text-lg">{getEmoji(attr.type, attr.value)}</span>
-                                        {getDisplayValue(attr.value, attr.type)}
-                                    </p>
-                                </div>
-                            ))}
+                <div className="w-full md:w-[45%] p-6 md:p-8">
+                    <div className="relative h-full w-full rounded-[2rem] overflow-hidden aspect-[3/4] md:aspect-auto">
+                        <img
+                            src={selectedEthnicity ? getImageUrl('ethnicity', selectedEthnicity, '') : '/placeholder.jpg'}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                </div>
+
+                <div className="w-full md:w-[55%] p-6 md:p-12 md:pl-0 flex flex-col">
+                    <div className="mb-8">
+                        <div className="flex items-center gap-2 mb-2">
+                            <h2 className="text-4xl font-bold text-white tracking-tight">AI Flickvän, {selectedAge}</h2>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                                <span className="text-white/40"><User size={16} /></span>
+                                <span className="text-white font-medium text-sm">{getDisplayValue(selectedRelationship || 'stranger', 'relationship')}</span>
+                            </div>
+                            <button className="bg-white/5 p-2 rounded-full border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all">
+                                <Sparkles size={20} />
+                            </button>
                         </div>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="bg-secondary/30 rounded-3xl p-6 border border-border/50 backdrop-blur-sm">
-                            <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                                <MessageSquare className="h-5 w-5 text-primary" />
-                                Anpassade inställningar
-                            </h3>
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Beskrivning (Valfritt)</label>
+                    <div className="flex bg-white/5 p-1 rounded-2xl w-fit mb-8 border border-white/10">
+                        <button
+                            onClick={() => setActiveTab('appearance')}
+                            className={cn(
+                                "px-8 py-2.5 rounded-xl text-sm font-bold transition-all",
+                                activeTab === 'appearance' ? "bg-white/20 text-white shadow-lg" : "text-white/40 hover:text-white/60"
+                            )}>
+                            Utseende
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('character')}
+                            className={cn(
+                                "px-8 py-2.5 rounded-xl text-sm font-bold transition-all",
+                                activeTab === 'character' ? "bg-white/20 text-white shadow-lg" : "text-white/40 hover:text-white/60"
+                            )}>
+                            Karaktär
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                        {activeTab === 'appearance' ? (
+                            <div className="grid grid-cols-2 gap-3 mb-12">
+                                {[
+                                    { label: 'Ethnicity', value: selectedEthnicity, type: 'ethnicity' },
+                                    { label: 'Age', value: `${selectedAge}yo` },
+                                    { label: 'Eye Color', value: selectedEyeColor, type: 'eyeColor' },
+                                    { label: 'Body Type', value: selectedBodyType, type: 'bodyType' },
+                                    { label: 'Breast Size', value: selectedBreastSize, type: 'breastSize' },
+                                    { label: 'Hair Style', value: selectedHairStyle, type: 'hairStyle' },
+                                    { label: 'Hair Color', value: selectedHairColor, type: 'hairColor' },
+                                    { label: 'Outfit', value: selectedOutfit || 'Bikini', type: 'outfit' }
+                                ].map((attr, i) => (
+                                    <div key={i} className="group relative h-24 rounded-2xl overflow-hidden border border-white/5 bg-white/5 hover:border-primary/50 transition-all duration-300">
+                                        <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
+                                            <img
+                                                src={getImageUrl(attr.type || '', String(attr.value), '')}
+                                                className="w-full h-full object-cover grayscale"
+                                                alt=""
+                                            />
+                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-transparent p-4 flex flex-col justify-center">
+                                            <span className="text-[10px] uppercase font-bold text-white/30 tracking-widest">{attr.label}</span>
+                                            <span className="text-sm font-bold text-white truncate">{getDisplayValue(String(attr.value), attr.type || '')}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="space-y-4 mb-2">
+                                <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
+                                    <h4 className="text-white/40 text-[10px] uppercase font-bold tracking-widest mb-2">Personlighet</h4>
+                                    <p className="text-white font-medium">{getDisplayValue(selectedPersonality || '', 'personality')}</p>
+                                </div>
+                                <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
+                                    <h4 className="text-white/40 text-[10px] uppercase font-bold tracking-widest mb-2">Publik status</h4>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-white font-medium">{isPublic ? 'Offentlig' : 'Privat'}</span>
+                                        <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+                                    </div>
+                                </div>
+                                <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
                                     <textarea
                                         value={characterDescription}
                                         onChange={(e) => setCharacterDescription(e.target.value)}
-                                        placeholder={`Lägg till fler detaljer om ${gender === 'lady' ? 'hennes' : 'hans'} personlighet eller bakgrund...`}
-                                        className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary outline-none transition-all resize-none"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Prompt-mall (Avancerat)</label>
-                                    <textarea
-                                        value={promptTemplate}
-                                        onChange={(e) => setPromptTemplate(e.target.value)}
-                                        placeholder="Ange instruktioner för AI:ns beteende..."
-                                        className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm font-mono focus:ring-2 focus:ring-primary outline-none transition-all resize-none"
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-background/40 rounded-2xl border border-border/30">
-                                    <div className="space-y-0.5">
-                                        <label htmlFor="isPublic" className="text-sm font-bold cursor-pointer">Gör karaktären offentlig</label>
-                                        <p className="text-xs text-muted-foreground italic">Andra användare kan se och chatta med henne</p>
-                                    </div>
-                                    <Switch
-                                        id="isPublic"
-                                        checked={isPublic}
-                                        onCheckedChange={setIsPublic}
+                                        placeholder="Beskriv hennes karaktär..."
+                                        className="w-full h-24 bg-transparent border-none text-white text-sm focus:ring-0 resize-none p-0 outline-none"
                                     />
                                 </div>
                             </div>
-                        </div>
+                        )}
+                    </div>
+
+                    <div className="pt-6">
+                        <button
+                            onClick={() => setShowNameDialog(true)}
+                            className="w-full py-5 rounded-[1.5rem] bg-gradient-to-r from-[#ff4d8d] to-[#ff6b95] text-white font-black text-lg tracking-wider shadow-2xl shadow-pink-500/20 hover:scale-[1.02] hover:shadow-pink-500/40 active:scale-[0.98] transition-all uppercase">
+                            Gör min AI levande
+                        </button>
                     </div>
                 </div>
             </div>
@@ -849,6 +901,24 @@ export default function CreateCharacterPage() {
                 'athletic': 'Athletic',
                 'skinny': 'Skinny'
             },
+            'eyeShape': {
+                'almond': 'Almond',
+                'round': 'Round',
+                'monolid': 'Monolid',
+                'hooded': 'Hooded',
+                'downturned': 'Downturned',
+                'upturned': 'Upturned'
+            },
+            'outfit': {
+                'bikini': 'Bikini',
+                'dress': 'Elegant Dress',
+                'lingerie': 'Lingerie',
+                'casual': 'Casual Wear',
+                'sporty': 'Sporty Outfit',
+                'office': 'Office Wear',
+                'uniform': 'Uniform',
+                'traditional': 'Traditional'
+            },
             personality: {
                 'caregiver': 'Caregiver',
                 'sage': 'Sage',
@@ -1081,20 +1151,28 @@ export default function CreateCharacterPage() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    )}
 
+
+                    {currentStep === 1 && gender === 'lady' && (
+                        <div className="space-y-12">
                             {/* Choose Eye Color Section */}
                             <div className="space-y-6">
                                 <div className="text-center">
                                     <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
                                         <Eye className="h-6 w-6 text-pink-500" />
-                                        Choose Eye Color*
+                                        Välj Ögonfärg*
                                     </h2>
+                                    <p className="text-muted-foreground text-sm mt-1">Välj den färg som bäst passar din AI</p>
                                 </div>
                                 <div className="flex flex-wrap justify-center gap-4">
                                     {[
-                                        { id: 'brown', label: 'Brown', fallback: '/character creation/eye  color/realistic/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp' },
-                                        { id: 'blue', label: 'Blue', fallback: '/character creation/eye  color/realistic/blue-f7e75e814204c4d8464d36f525b0f6e9191557a585cb4be01e91ca8eb45416d0.webp' },
-                                        { id: 'green', label: 'Green', fallback: '/character creation/eye  color/realistic/green-8a705cc5c2c435ac0f7addd110f4dd2b883a2e35b6403659c3e30cc7a741359c.webp' }
+                                        { id: 'brown', label: 'Brun', fallback: '/character creation/eye color/realistic/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp' },
+                                        { id: 'blue', label: 'Blå', fallback: '/character creation/eye color/realistic/blue-f7e75e814204c4d8464d36f525b0f6e9191557a585cb4be01e91ca8eb45416d0.webp' },
+                                        { id: 'green', label: 'Grön', fallback: '/character creation/eye color/realistic/green-8a705cc5c2c435ac0f7addd110f4dd2b883a2e35b6403659c3e30cc7a741359c.webp' },
+                                        { id: 'hazel', label: 'Hazel', fallback: '' },
+                                        { id: 'grey', label: 'Grå', fallback: '' }
                                     ].map((eye) => (
                                         <div
                                             key={eye.id}
@@ -1106,7 +1184,7 @@ export default function CreateCharacterPage() {
                                         >
                                             <div className="w-16 h-16 rounded-full overflow-hidden border border-border group-hover:ring-2 group-hover:ring-pink-500/50 transition-all">
                                                 <img
-                                                    src={getImageUrl('eyeColor', eye.id, eye.fallback)}
+                                                    src={eye.fallback ? getImageUrl('eyeColor', eye.id, eye.fallback) : `https://images.unsplash.com/photo-1544474601-574300305a76?q=80&w=150`}
                                                     alt={eye.label}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -1119,11 +1197,46 @@ export default function CreateCharacterPage() {
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Choose Eye Shape Section */}
+                            <div className="space-y-6 pt-8 border-t border-border/50">
+                                <div className="text-center">
+                                    <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
+                                        <Eye className="h-6 w-6 text-pink-500" />
+                                        Välj Ögonform*
+                                    </h2>
+                                    <p className="text-muted-foreground text-sm mt-1">Välj den ögonform som bäst definierar hennes blick</p>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    {[
+                                        { id: 'almond', label: 'Almond' },
+                                        { id: 'round', label: 'Round' },
+                                        { id: 'monolid', label: 'Monolid' },
+                                        { id: 'hooded', label: 'Hooded' },
+                                        { id: 'downturned', label: 'Downturned' },
+                                        { id: 'upturned', label: 'Upturned' }
+                                    ].map((shape) => (
+                                        <Button
+                                            key={shape.id}
+                                            variant={selectedEyeShape === shape.id ? "default" : "outline"}
+                                            className={cn(
+                                                "h-auto py-6 rounded-2xl border-2 transition-all hover:scale-105",
+                                                selectedEyeShape === shape.id ? "border-pink-500 bg-pink-500/10 text-pink-500 shadow-lg shadow-pink-500/20" : ""
+                                            )}
+                                            onClick={() => setSelectedEyeShape(shape.id)}
+                                        >
+                                            <div className="flex flex-col items-center gap-2">
+                                                <span className="font-bold uppercase tracking-wider text-xs">{shape.label}</span>
+                                            </div>
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
 
 
-                    {currentStep === 1 && gender === 'lady' && (
+                    {currentStep === 2 && gender === 'lady' && (
                         <>
                             {/* Choose Hair Style Section */}
                             <div className="mb-6 sm:mb-8 md:mb-12">
@@ -1565,7 +1678,7 @@ export default function CreateCharacterPage() {
                         </>
                     )}
 
-                    {((currentStep === 2 && gender === 'lady') || (currentStep === 0 && gender === 'gent')) && (
+                    {((currentStep === 3 && gender === 'lady') || (currentStep === 0 && gender === 'gent')) && (
                         <>
                             {/* Choose Body Type Section */}
                             <div className="mb-6 sm:mb-8 md:mb-12">
@@ -2112,15 +2225,15 @@ export default function CreateCharacterPage() {
                         </>
                     )}
 
-                    {/* Step 3 (Lady) / Step 1 (Gent): Personality */}
-                    {((gender === 'lady' && currentStep === 3) || (gender === 'gent' && currentStep === 1)) && (
+                    {/* Step 4 (Lady) / Step 1 (Gent): Personality */}
+                    {((gender === 'lady' && currentStep === 4) || (gender === 'gent' && currentStep === 1)) && (
                         <div className="space-y-8">
                             <div className="text-center">
                                 <h2 className="text-3xl font-bold flex items-center justify-center gap-2">
                                     <Sparkles className="h-8 w-8 text-primary" />
-                                    Personality Traits
+                                    Personlighetsegenskaper
                                 </h2>
-                                <p className="text-muted-foreground">Select {gender === 'lady' ? 'her' : 'his'} core personality</p>
+                                <p className="text-muted-foreground">Välj {gender === 'lady' ? 'hennes' : 'hans'} kärnpersonlighet</p>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                 {(gender === 'lady'
@@ -2146,15 +2259,15 @@ export default function CreateCharacterPage() {
                         </div>
                     )}
 
-                    {/* Step 4 (Lady) / Step 2 (Gent): Relationship */}
-                    {((gender === 'lady' && currentStep === 4) || (gender === 'gent' && currentStep === 2)) && (
+                    {/* Step 5 (Lady) / Step 2 (Gent): Relationship */}
+                    {((gender === 'lady' && currentStep === 5) || (gender === 'gent' && currentStep === 2)) && (
                         <div className="space-y-8">
                             <div className="text-center">
                                 <h2 className="text-3xl font-bold flex items-center justify-center gap-2">
                                     <Heart className="h-8 w-8 text-primary" />
-                                    Relationship
+                                    Relation
                                 </h2>
-                                <p className="text-muted-foreground">Define your current status with {gender === 'lady' ? 'her' : 'him'}</p>
+                                <p className="text-muted-foreground">Definiera din nuvarande status med {gender === 'lady' ? 'henne' : 'honom'}</p>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                 {['stranger', 'school-mate', 'colleague', 'mentor', 'girlfriend', 'sex-friend', 'wife', 'mistress', 'friend', 'best-friend', 'step-sister', 'step-mom'].map((key) => (
@@ -2177,15 +2290,56 @@ export default function CreateCharacterPage() {
                         </div>
                     )}
 
-                    {/* Step 5 (Lady) / Step 3 (Gent): Summary */}
-                    {((gender === 'lady' && currentStep === 5) || (gender === 'gent' && currentStep === 3)) && renderStepSummary()}
+                    {/* Step 6: Outfit (Lady only) */}
+                    {gender === 'lady' && currentStep === 6 && (
+                        <div className="space-y-10">
+                            <div className="text-center">
+                                <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
+                                    <Sparkles className="h-6 w-6 text-pink-500" />
+                                    Välj outfit*
+                                </h2>
+                                <p className="text-muted-foreground text-sm mt-1">Styla din AI med den perfekta klädseln</p>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {[
+                                    { id: 'bikini', label: 'Bikini', icon: '👙' },
+                                    { id: 'dress', label: 'Klänning', icon: '👗' },
+                                    { id: 'lingerie', label: 'Underkläder', icon: '🎀' },
+                                    { id: 'casual', label: 'Vardagligt', icon: '👕' },
+                                    { id: 'sporty', label: 'Sportigt', icon: '👟' },
+                                    { id: 'office', label: 'Kontor', icon: '💼' },
+                                    { id: 'uniform', label: 'Uniform', icon: '👮‍♀️' },
+                                    { id: 'traditional', label: 'Traditionellt', icon: '🎎' }
+                                ].map((outfit) => (
+                                    <Button
+                                        key={outfit.id}
+                                        variant={selectedOutfit === outfit.id ? "default" : "outline"}
+                                        className={cn(
+                                            "h-auto py-8 rounded-2xl border-2 transition-all hover:scale-105 group",
+                                            selectedOutfit === outfit.id ? "border-pink-500 bg-pink-500/10 text-pink-500 shadow-lg shadow-pink-500/20" : ""
+                                        )}
+                                        onClick={() => setSelectedOutfit(outfit.id)}
+                                    >
+                                        <div className="flex flex-col items-center gap-3">
+                                            <span className="text-3xl group-hover:scale-125 transition-transform">{outfit.icon}</span>
+                                            <span className="font-bold uppercase tracking-wider text-xs">{outfit.label}</span>
+                                        </div>
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                    {/* Step 6 (Lady) / Step 4 (Gent): Generation */}
-                    {((gender === 'lady' && currentStep === 6) || (gender === 'gent' && currentStep === 4)) && renderStep7()}
+                    {/* Step 7 (Lady) / Step 3 (Gent): Summary */}
+                    {((gender === 'lady' && currentStep === 7) || (gender === 'gent' && currentStep === 3)) && renderStepSummary()}
+
+                    {/* Step 8 (Lady) / Step 4 (Gent): Generation */}
+                    {((gender === 'lady' && currentStep === 8) || (gender === 'gent' && currentStep === 4)) && renderStep7()}
 
 
 
-                    {/* Navigation Buttons */}
+
+                    {/* Navigation Buttons for Lady's new indexing */}
                     <div className={`flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6 ${currentStep === 0 ? 'justify-end' : 'justify-between'} relative z-20`}>
                         {currentStep > 0 && (
                             <button
@@ -2203,9 +2357,8 @@ export default function CreateCharacterPage() {
                                 }`}
                             disabled={!getStepValidation() || isGenerating}
                             onClick={() => {
-                                const finalStep = gender === 'lady' ? 6 : 4;
+                                const finalStep = gender === 'lady' ? 7 : 3;
                                 if (currentStep === finalStep) {
-                                    // Show the naming dialog when user clicks Continue on final step
                                     setShowNameDialog(true);
                                 } else {
                                     setCurrentStep(currentStep + 1);
@@ -2221,80 +2374,84 @@ export default function CreateCharacterPage() {
 
 
             {/* Character Naming Dialog */}
-            {showNameDialog && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 max-w-md w-full shadow-2xl border border-border">
-                        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-center text-card-foreground">Namnge din AI-karaktär</h2>
-                        <p className="text-muted-foreground mb-4 sm:mb-6 text-center text-xs sm:text-sm md:text-base">Välj ett unikt namn för att ge din AI liv</p>
+            {
+                showNameDialog && (
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 max-w-md w-full shadow-2xl border border-border">
+                            <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-center text-card-foreground">Namnge din AI-karaktär</h2>
+                            <p className="text-muted-foreground mb-4 sm:mb-6 text-center text-xs sm:text-sm md:text-base">Välj ett unikt namn för att ge din AI liv</p>
 
-                        <input
-                            type="text"
-                            value={characterName}
-                            onChange={(e) => setCharacterName(e.target.value)}
-                            placeholder="Ange karaktärens namn..."
-                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none text-foreground mb-4 sm:mb-6 transition-colors text-sm sm:text-base"
-                            maxLength={50}
-                            autoFocus
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter' && characterName.trim()) {
-                                    handleSaveCharacter();
-                                }
-                            }}
-                        />
+                            <input
+                                type="text"
+                                value={characterName}
+                                onChange={(e) => setCharacterName(e.target.value)}
+                                placeholder="Ange karaktärens namn..."
+                                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none text-foreground mb-4 sm:mb-6 transition-colors text-sm sm:text-base"
+                                maxLength={50}
+                                autoFocus
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter' && characterName.trim()) {
+                                        handleSaveCharacter();
+                                    }
+                                }}
+                            />
 
-                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                            <button
-                                onClick={() => setShowNameDialog(false)}
-                                disabled={isSaving}
-                                className="flex-1 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold transition-all text-xs sm:text-sm md:text-base"
-                            >
-                                Avbryt
-                            </button>
-                            <button
-                                onClick={handleSaveCharacter}
-                                disabled={isSaving || !characterName.trim()}
-                                className={`flex-1 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg font-semibold transition-all text-xs sm:text-sm md:text-base ${isSaving || !characterName.trim()
-                                    ? 'bg-secondary text-muted-foreground cursor-not-allowed'
-                                    : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                                    }`}
-                            >
-                                {isSaving ? 'Spara...' : 'Namnge karaktär'}
-                            </button>
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                <button
+                                    onClick={() => setShowNameDialog(false)}
+                                    disabled={isSaving}
+                                    className="flex-1 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold transition-all text-xs sm:text-sm md:text-base"
+                                >
+                                    Avbryt
+                                </button>
+                                <button
+                                    onClick={handleSaveCharacter}
+                                    disabled={isSaving || !characterName.trim()}
+                                    className={`flex-1 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg font-semibold transition-all text-xs sm:text-sm md:text-base ${isSaving || !characterName.trim()
+                                        ? 'bg-secondary text-muted-foreground cursor-not-allowed'
+                                        : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                                        }`}
+                                >
+                                    {isSaving ? 'Spara...' : 'Namnge karaktär'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
 
 
 
             {/* Error Modal */}
-            {errorModal.isOpen && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 max-w-md w-full shadow-2xl border border-border">
-                        <div className="text-center mb-6">
-                            <div className="mx-auto w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
+            {
+                errorModal.isOpen && (
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 max-w-md w-full shadow-2xl border border-border">
+                            <div className="text-center mb-6">
+                                <div className="mx-auto w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <h2 className="text-xl sm:text-2xl font-bold mb-2 text-card-foreground">{errorModal.title}</h2>
+                                <p className="text-muted-foreground text-sm sm:text-base">
+                                    {errorModal.message}
+                                </p>
                             </div>
-                            <h2 className="text-xl sm:text-2xl font-bold mb-2 text-card-foreground">{errorModal.title}</h2>
-                            <p className="text-muted-foreground text-sm sm:text-base">
-                                {errorModal.message}
-                            </p>
-                        </div>
 
-                        <div className="flex justify-center">
-                            <button
-                                onClick={() => setErrorModal({ ...errorModal, isOpen: false })}
-                                className="w-full px-4 py-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all text-sm sm:text-base"
-                            >
-                                Close
-                            </button>
+                            <div className="flex justify-center">
+                                <button
+                                    onClick={() => setErrorModal({ ...errorModal, isOpen: false })}
+                                    className="w-full px-4 py-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all text-sm sm:text-base"
+                                >
+                                    Close
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <PremiumUpgradeModal
                 isOpen={showPremiumModal}
