@@ -509,7 +509,6 @@ export default function CreateCharacterPage() {
         }
 
         return (
-        return (
             <div className="max-w-5xl mx-auto bg-[#0a0a0a] rounded-xl sm:rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 flex flex-col md:flex-row min-h-0 md:min-h-[600px] relative">
                 <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 text-white/40 cursor-pointer hover:text-white transition-colors">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
@@ -622,7 +621,6 @@ export default function CreateCharacterPage() {
                     </div>
                 </div>
             </div>
-        );
         );
     };
 
