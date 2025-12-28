@@ -138,7 +138,7 @@ export function SiteFooter() {
   }
 
   return (
-    <div className="w-full bg-background text-foreground py-8 sm:py-10 md:py-12 mt-auto rounded-[2px] border border-border overflow-x-hidden">
+    <div className="w-full bg-zinc-900 text-zinc-400 dark:bg-background dark:text-muted-foreground py-8 sm:py-10 md:py-12 mt-auto rounded-[2px] border-t border-border/10 dark:border-border overflow-x-hidden">
       {isAdmin && (
         <div className="container mx-auto px-4 md:px-6 py-2 flex justify-end gap-2 max-w-full">
           {isEditing ? (
@@ -178,20 +178,20 @@ export function SiteFooter() {
           {/* Logo and Description */}
           <div className="space-y-4">
             <Link href="/" className="inline-block">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-bold text-zinc-100 dark:text-foreground">
                 Dintyp<span className="text-primary">.se</span>
               </h2>
             </Link>
-            <p className="text-muted-foreground text-sm">{tempData.companyDescription}</p>
+            <p className="text-zinc-400 dark:text-muted-foreground text-sm">{tempData.companyDescription}</p>
           </div>
 
           {/* AI-flickvänner Section */}
           <div className="space-y-3">
-            <h3 className="text-base font-medium">AI-flickvänner</h3>
+            <h3 className="text-base font-medium text-zinc-100 dark:text-foreground">AI-flickvänner</h3>
             <ul className="space-y-2">
               {tempData.features.map((item: any) => (
                 <li key={item.id}>
-                  <Link href={item.url} className="text-muted-foreground hover:text-foreground text-sm transition-colors block">
+                  <Link href={item.url} className="text-zinc-400 hover:text-zinc-100 dark:text-muted-foreground dark:hover:text-foreground text-sm transition-colors block">
                     {item.title}
                   </Link>
                 </li>
@@ -201,11 +201,11 @@ export function SiteFooter() {
 
           {/* Villkor Section */}
           <div className="space-y-3">
-            <h3 className="text-base font-medium">Villkor</h3>
+            <h3 className="text-base font-medium text-zinc-100 dark:text-foreground">Villkor</h3>
             <ul className="space-y-2">
               {tempData.legal.map((item: any) => (
                 <li key={item.id}>
-                  <Link href={item.url} className="text-muted-foreground hover:text-foreground text-sm transition-colors block">
+                  <Link href={item.url} className="text-zinc-400 hover:text-zinc-100 dark:text-muted-foreground dark:hover:text-foreground text-sm transition-colors block">
                     {item.title}
                   </Link>
                 </li>
@@ -215,7 +215,7 @@ export function SiteFooter() {
 
           {/* Om oss Section */}
           <div className="space-y-3">
-            <h3 className="text-base font-medium">Om oss</h3>
+            <h3 className="text-base font-medium text-zinc-100 dark:text-foreground">Om oss</h3>
             <ul className="space-y-2">
               {tempData.aboutUs.map((item: any) => (
                 <li key={item.id}>
@@ -223,7 +223,7 @@ export function SiteFooter() {
                     href={item.url}
                     target={item.url.startsWith("http") ? "_blank" : undefined}
                     rel={item.url.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="text-muted-foreground hover:text-foreground text-sm transition-colors block"
+                    className="text-zinc-400 hover:text-zinc-100 dark:text-muted-foreground dark:hover:text-foreground text-sm transition-colors block"
                   >
                     {item.title}
                   </Link>
@@ -244,12 +244,12 @@ export function SiteFooter() {
                     type="text"
                     value={tempData.companyName}
                     onChange={(e) => handleTextChange("companyName", e.target.value)}
-                    className="bg-muted border border-border rounded px-2 py-1 w-full"
+                    className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 w-full dark:bg-muted dark:border-border dark:text-foreground"
                   />
                 ) : (
-                  <>
+                  <span className="text-zinc-100 dark:text-foreground">
                     Dintyp<span className="text-primary">.se</span>
-                  </>
+                  </span>
                 )}
               </h2>
             </Link>
@@ -258,17 +258,19 @@ export function SiteFooter() {
                 <textarea
                   value={tempData.companyDescription}
                   onChange={(e) => handleTextChange("companyDescription", e.target.value)}
-                  className="bg-muted border border-border rounded px-2 py-1 w-full h-24"
+                  className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 w-full h-24 dark:bg-muted dark:border-border dark:text-foreground"
                 />
               ) : (
-                tempData.companyDescription
+                <span className="text-zinc-400 dark:text-muted-foreground">
+                  {tempData.companyDescription}
+                </span>
               )}
             </p>
           </div>
 
           {/* Column 2: AI-flickvänner */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">AI-flickvänner</h3>
+            <h3 className="text-lg font-medium text-zinc-100 dark:text-foreground">AI-flickvänner</h3>
             <ul className="space-y-3">
               {tempData.features.map((item: any) => (
                 <li key={item.id}>
@@ -278,13 +280,13 @@ export function SiteFooter() {
                         type="text"
                         value={item.title}
                         onChange={(e) => handleItemChange("features", item.id, "title", e.target.value)}
-                        className="bg-muted border border-border rounded px-2 py-1 flex-1"
+                        className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 flex-1 dark:bg-muted dark:border-border dark:text-foreground"
                       />
                       <input
                         type="text"
                         value={item.url}
                         onChange={(e) => handleItemChange("features", item.id, "url", e.target.value)}
-                        className="bg-muted border border-border rounded px-2 py-1 w-20"
+                        className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 w-20 dark:bg-muted dark:border-border dark:text-foreground"
                         placeholder="URL"
                       />
                       <button onClick={() => handleRemoveItem("features", item.id)} className="text-destructive hover:opacity-80">
@@ -292,7 +294,7 @@ export function SiteFooter() {
                       </button>
                     </div>
                   ) : (
-                    <Link href={item.url} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+                    <Link href={item.url} className="text-zinc-400 hover:text-zinc-100 dark:text-muted-foreground dark:hover:text-foreground text-sm transition-colors">
                       {item.title}
                     </Link>
                   )}
@@ -310,20 +312,20 @@ export function SiteFooter() {
 
           {/* Column 3: Villkor */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Villkor</h3>
+            <h3 className="text-lg font-medium text-zinc-100 dark:text-foreground">Villkor</h3>
             <ul className="space-y-3">
               {tempData.legal.map((item: any) => (
                 <li key={item.id}>
                   {isEditing ? (
                     <div className="flex items-center gap-2 mb-2">
-                      <input type="text" value={item.title} onChange={(e) => handleItemChange("legal", item.id, "title", e.target.value)} className="bg-muted border border-border rounded px-2 py-1 flex-1" />
-                      <input type="text" value={item.url} onChange={(e) => handleItemChange("legal", item.id, "url", e.target.value)} className="bg-muted border border-border rounded px-2 py-1 w-20" placeholder="URL" />
+                      <input type="text" value={item.title} onChange={(e) => handleItemChange("legal", item.id, "title", e.target.value)} className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 flex-1 dark:bg-muted dark:border-border dark:text-foreground" />
+                      <input type="text" value={item.url} onChange={(e) => handleItemChange("legal", item.id, "url", e.target.value)} className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 w-20 dark:bg-muted dark:border-border dark:text-foreground" placeholder="URL" />
                       <button onClick={() => handleRemoveItem("legal", item.id)} className="text-destructive hover:opacity-80">
                         <Trash size={16} />
                       </button>
                     </div>
                   ) : (
-                    <Link href={item.url} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+                    <Link href={item.url} className="text-zinc-400 hover:text-zinc-100 dark:text-muted-foreground dark:hover:text-foreground text-sm transition-colors">
                       {item.title}
                     </Link>
                   )}
@@ -341,20 +343,20 @@ export function SiteFooter() {
 
           {/* Column 4: Om oss */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Om oss</h3>
+            <h3 className="text-lg font-medium text-zinc-100 dark:text-foreground">Om oss</h3>
             <ul className="space-y-3">
               {tempData.aboutUs.map((item: any) => (
                 <li key={item.id}>
                   {isEditing ? (
                     <div className="flex items-center gap-2 mb-2">
-                      <input type="text" value={item.title} onChange={(e) => handleItemChange("aboutUs", item.id, "title", e.target.value)} className="bg-muted border border-border rounded px-2 py-1 flex-1" />
-                      <input type="text" value={item.url} onChange={(e) => handleItemChange("aboutUs", item.id, "url", e.target.value)} className="bg-muted border border-border rounded px-2 py-1 w-20" placeholder="URL" />
+                      <input type="text" value={item.title} onChange={(e) => handleItemChange("aboutUs", item.id, "title", e.target.value)} className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 flex-1 dark:bg-muted dark:border-border dark:text-foreground" />
+                      <input type="text" value={item.url} onChange={(e) => handleItemChange("aboutUs", item.id, "url", e.target.value)} className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded px-2 py-1 w-20 dark:bg-muted dark:border-border dark:text-foreground" placeholder="URL" />
                       <button onClick={() => handleRemoveItem("aboutUs", item.id)} className="text-destructive hover:opacity-80">
                         <Trash size={16} />
                       </button>
                     </div>
                   ) : (
-                    <Link href={item.url} target={item.url.startsWith("http") ? "_blank" : undefined} rel={item.url.startsWith("http") ? "noopener noreferrer" : undefined} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+                    <Link href={item.url} target={item.url.startsWith("http") ? "_blank" : undefined} rel={item.url.startsWith("http") ? "noopener noreferrer" : undefined} className="text-zinc-400 hover:text-zinc-100 dark:text-muted-foreground dark:hover:text-foreground text-sm transition-colors">
                       {item.title}
                     </Link>
                   )}
