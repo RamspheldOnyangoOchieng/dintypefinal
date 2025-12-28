@@ -1173,8 +1173,8 @@ export default function CreateCharacterPage() {
                                         { id: 'brown', label: 'Brun', fallback: '/character creation/eye color/realistic/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp' },
                                         { id: 'blue', label: 'Blå', fallback: '/character creation/eye color/realistic/blue-f7e75e814204c4d8464d36f525b0f6e9191557a585cb4be01e91ca8eb45416d0.webp' },
                                         { id: 'green', label: 'Grön', fallback: '/character creation/eye color/realistic/green-8a705cc5c2c435ac0f7addd110f4dd2b883a2e35b6403659c3e30cc7a741359c.webp' },
-                                        { id: 'hazel', label: 'Hazel', fallback: '' },
-                                        { id: 'grey', label: 'Grå', fallback: '' }
+                                        { id: 'hazel', label: 'Hazel', fallback: 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906815/attribute-images/eyeColor/eyeColor_hazel_realistic_1766906813010.jpg' },
+                                        { id: 'grey', label: 'Grå', fallback: 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906815/attribute-images/eyeColor/eyeColor_gray_realistic_1766906813010.jpg' }
                                     ].map((eye) => (
                                         <div
                                             key={eye.id}
