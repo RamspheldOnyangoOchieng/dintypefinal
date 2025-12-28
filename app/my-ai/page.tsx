@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { Heart, MessageCircle, Trash2, Plus, Sparkles } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Plus, Sparkles, Edit } from 'lucide-react';
 import { useAuthModal } from '@/components/auth-modal-context';
 import { useAuth } from '@/components/auth-context';
 import { PremiumUpgradeModal } from '@/components/premium-upgrade-modal';
@@ -232,20 +232,29 @@ export default function MyAIPage() {
                         <MessageCircle className="h-4 w-4" />
                         STARTA CHATT
                       </button>
-                      <button
-                        onClick={() => handleDelete(character.id)}
-                        disabled={deletingId === character.id}
-                        className="w-full h-12 flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 backdrop-blur-md border border-white/20 text-white hover:border-red-500/40 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
-                      >
-                        {deletingId === character.id ? (
-                          <div className="h-4 w-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
-                        ) : (
-                          <>
-                            <Trash2 className="h-3.5 w-3.5 opacity-60" />
-                            TA BORT
-                          </>
-                        )}
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => router.push(`/characters/${character.id}/edit`)}
+                          className="flex-1 h-12 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white rounded-xl font-bold text-xs transition-all"
+                        >
+                          <Edit className="h-3.5 w-3.5 opacity-60" />
+                          REDIGERA
+                        </button>
+                        <button
+                          onClick={() => handleDelete(character.id)}
+                          disabled={deletingId === character.id}
+                          className="flex-1 h-12 flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 backdrop-blur-md border border-white/20 text-white hover:border-red-500/40 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
+                        >
+                          {deletingId === character.id ? (
+                            <div className="h-4 w-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                          ) : (
+                            <>
+                              <Trash2 className="h-3.5 w-3.5 opacity-60" />
+                              TA BORT
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

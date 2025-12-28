@@ -21,12 +21,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { MoreVertical, Edit, Trash2, Plus, Globe, MessageSquare } from "lucide-react"
+import { useAuth } from "@/components/auth-context"
 
 interface CharacterListProps {
   characters: CharacterProfile[]
 }
 
 export function CharacterList({ characters }: CharacterListProps) {
+  const { user } = useAuth()
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
 
@@ -116,47 +118,49 @@ export function CharacterList({ characters }: CharacterListProps) {
                 <div />
               )}
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white hover:bg-white/20 transition-all">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-[#111] border-white/10 text-white p-1 rounded-xl shadow-2xl">
-                  <DropdownMenuItem asChild className="rounded-lg hover:bg-white/10 focus:bg-white/10 transition-colors">
-                    <Link href={`/characters/${character.id}/edit`} className="flex items-center w-full px-2 py-1.5">
-                      <Edit className="mr-2 h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">Edit Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button className="flex items-center w-full px-2 py-1.5 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Character
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="bg-[#0f0f0f] border-white/10 text-white rounded-[2rem] p-8">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-2xl font-bold">Delete "{character.name}"?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-white/40 text-base">
-                          This action is permanent and will erase all memory and prompts associated with this AI.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter className="mt-6">
-                        <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl transition-all">Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => character.id && handleDelete(character.id)}
-                          disabled={isDeleting === character.id}
-                          className="bg-red-500 hover:bg-red-600 border-none rounded-xl font-bold transition-all"
-                        >
-                          {isDeleting === character.id ? "Erasing..." : "Confirm Delete"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {(user?.isAdmin || (!character.is_public && (character.user_id === user?.id || (character as any).userId === user?.id))) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white hover:bg-white/20 transition-all">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-[#111] border-white/10 text-white p-1 rounded-xl shadow-2xl">
+                    <DropdownMenuItem asChild className="rounded-lg hover:bg-white/10 focus:bg-white/10 transition-colors">
+                      <Link href={`/characters/${character.id}/edit`} className="flex items-center w-full px-2 py-1.5">
+                        <Edit className="mr-2 h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">Edit Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button className="flex items-center w-full px-2 py-1.5 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Character
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-[#0f0f0f] border-white/10 text-white rounded-[2rem] p-8">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-2xl font-bold">Delete "{character.name}"?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-white/40 text-base">
+                            This action is permanent and will erase all memory and prompts associated with this AI.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="mt-6">
+                          <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl transition-all">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => character.id && handleDelete(character.id)}
+                            disabled={isDeleting === character.id}
+                            className="bg-red-500 hover:bg-red-600 border-none rounded-xl font-bold transition-all"
+                          >
+                            {isDeleting === character.id ? "Erasing..." : "Confirm Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
 

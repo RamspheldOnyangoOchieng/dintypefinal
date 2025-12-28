@@ -1,5 +1,6 @@
 import { getAdminClient } from "./supabase-admin"
-import { createClient } from "@/lib/supabase-browser"
+import { createClient as createBrowserClient } from "@/lib/supabase-browser"
+import { createClient as createServerClient } from "@/lib/supabase-server"
 import { getAnonymousId } from "./anonymous-id"
 
 export type CharacterProfile = {
@@ -33,11 +34,12 @@ export type Tag = {
 export class StorageService {
   // Get user ID (either authenticated or anonymous)
   static async getUserId() {
-    const supabase = createClient()
+    const isServer = typeof window === 'undefined'
+    const supabase = isServer ? await createServerClient() : createBrowserClient()
     const {
       data: { session },
     } = await supabase.auth.getSession()
-    return session?.user?.id || getAnonymousId()
+    return session?.user?.id || (isServer ? '' : getAnonymousId())
   }
 
   static async getCharacters() {
@@ -136,7 +138,12 @@ export class StorageService {
       .single()
 
     if (!charError && character) {
-      return character
+      return {
+        ...character,
+        prompt_template: character.prompt_template || character.system_prompt || '',
+        image_url: character.image_url || character.image || '',
+        user_id: character.user_id || character.userId || ''
+      }
     }
 
     // Fallback to character_profiles table (old system)
@@ -148,7 +155,12 @@ export class StorageService {
       .single()
 
     if (error) throw new Error(`Failed to get character: ${error.message}`)
-    return data
+    return {
+      ...data,
+      prompt_template: data.prompt_template || data.system_prompt || '',
+      image_url: data.image_url || data.image || '',
+      user_id: data.user_id || data.userId || ''
+    }
   }
 
   static async updateCharacter(id: string, updates: Partial<CharacterProfile>) {

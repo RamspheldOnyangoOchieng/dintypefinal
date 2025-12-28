@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { getAdminClient } from "@/lib/supabase-admin"
 import { createClient } from "@/lib/supabase-server"
 import type { CharacterProfile } from "@/lib/storage-service"
+import { isUserAdmin } from "@/lib/admin-auth"
 
 export async function getCharacters() {
   try {
@@ -67,7 +68,15 @@ export async function getCharacterById(id: string) {
       return null
     }
 
-    return data
+    // Normalize image and prompt fields
+    const imageUrl = data.image || data.image_url || ''
+    return {
+      ...data,
+      image: imageUrl,
+      image_url: imageUrl,
+      prompt_template: data.prompt_template || data.system_prompt || '',
+      user_id: data.user_id || data.userId || ''
+    }
   } catch (error) {
     console.error("Error in getCharacterById:", error)
     return null
@@ -159,7 +168,10 @@ export async function updateCharacter(id: string, formData: FormData) {
       .eq("id", id)
       .single()
 
-    if (character?.user_id !== user.id && character?.userId !== user.id) {
+    // Check for ownership or admin status
+    const isAdmin = await isUserAdmin(supabase, user.id)
+
+    if (!isAdmin && character?.user_id !== user.id && character?.userId !== user.id) {
       return { error: "You do not have permission to update this character" }
     }
 
@@ -218,7 +230,9 @@ export async function deleteCharacter(id: string) {
       .eq("id", id)
       .single()
 
-    if (character?.user_id !== user.id && character?.userId !== user.id) {
+    const isAdmin = await isUserAdmin(supabase, user.id)
+
+    if (!isAdmin && character?.user_id !== user.id && character?.userId !== user.id) {
       return { error: "You do not have permission to delete this character" }
     }
 
