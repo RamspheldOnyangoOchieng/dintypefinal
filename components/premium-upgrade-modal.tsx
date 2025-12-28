@@ -40,16 +40,16 @@ export function PremiumUpgradeModal({
   let displayBadge = "Premium"
 
   if (mode === 'expired') {
-    displayImage = displayImage || "/premium_expired_upsell_modal_1766902000000.png"
+    displayImage = displayImage || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963043/premium-modals/premium_expired.jpg"
     displayDescription = displayDescription || "Premium Plan expired. Renew your Premium Plan."
     displayBadge = "Expired"
   } else if (mode === 'tokens-depleted') {
-    displayImage = displayImage || "/premium_tokens_depleted_upsell_1766902100000.png"
+    displayImage = displayImage || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963046/premium-modals/tokens_depleted.jpg"
     displayDescription = displayDescription || "You used your 100 free premium tokens. Buy more tokens to use premium features"
     displayButtonText = displayButtonText || "Köp Tokens"
     displayBadge = "Tokens"
   } else {
-    displayImage = displayImage || "/realistic_girlfriend_premium_upgrade_1766900253700.png"
+    displayImage = displayImage || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"
     displayDescription = displayDescription || "Upgrade to Premium to unlock unlimited features."
   }
 

@@ -1486,7 +1486,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         onClose={() => setIsPremiumModalOpen(false)}
         feature="Meddelandegräns"
         description="Daily message limit reached. Upgrade to premium to continue."
-        imageSrc={character?.image || "/realistic_girlfriend_premium_upgrade_1766900253700.png"}
+        imageSrc={character?.image || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"}
       />
 
       <PremiumUpgradeModal
@@ -1495,7 +1495,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         mode="tokens-depleted"
         feature="Tokens Slut"
         description="Du har inga tokens kvar. Köp mer för att generera fler bilder eller använda premiumfunktioner."
-        imageSrc="/premium_tokens_depleted_upsell_1766902100000.png"
+        imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963046/premium-modals/tokens_depleted.jpg"
       />
 
       <PremiumUpgradeModal

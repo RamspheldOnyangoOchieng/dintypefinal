@@ -2447,7 +2447,7 @@ export default function CreateCharacterPage() {
                 }}
                 feature="Skapa AI-flickvänner"
                 description="Upgrade to Premium to generate AI girlfriends."
-                imageSrc="/realistic_girlfriend_create_character_upgrade_1766900675037.png"
+                imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963048/premium-modals/create_character_premium.jpg"
             />
 
             <PremiumUpgradeModal
@@ -2456,7 +2456,7 @@ export default function CreateCharacterPage() {
                 mode="tokens-depleted"
                 feature="Tokens Slut"
                 description="You used your 100 free premium tokens. Buy more tokens to use premium features"
-                imageSrc="/premium_tokens_depleted_upsell_1766902100000.png"
+                imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963046/premium-modals/tokens_depleted.jpg"
             />
 
             <PremiumUpgradeModal

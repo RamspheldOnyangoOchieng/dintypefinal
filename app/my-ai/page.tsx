@@ -331,7 +331,7 @@ export default function MyAIPage() {
         onClose={() => setShowPremiumModal(false)}
         feature="Skapa AI Flickvänner"
         description="Uppgradera till Premium för att skapa AI flickvänner"
-        imageSrc="/realistic_girlfriend_create_character_upgrade_1766900675037.png"
+        imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963048/premium-modals/create_character_premium.jpg"
       />
 
       <PremiumUpgradeModal

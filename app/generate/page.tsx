@@ -1123,7 +1123,7 @@ export default function GenerateImagePage() {
         onClose={() => setShowPremiumModal(false)}
         feature="Uppgradera till Premium"
         description="Upgrade to Premium to generate unlimited images."
-        imageSrc="/realistic_girlfriend_generate_unlimited_upgrade_1766901000000.png"
+        imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"
       />
 
       {/* Tokens Depleted Modal (for Premium Users) */}
@@ -1133,7 +1133,7 @@ export default function GenerateImagePage() {
         mode="tokens-depleted"
         feature="Tokens Slut"
         description="You used your 100 free premium tokens. Buy more tokens to use premium features"
-        imageSrc="/premium_tokens_depleted_upsell_1766902100000.png"
+        imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963046/premium-modals/tokens_depleted.jpg"
       />
 
 
