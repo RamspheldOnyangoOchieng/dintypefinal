@@ -12,9 +12,6 @@ const groqApiKey = process.env.GROQ_API_KEY!;
 const CHARACTER_CREATION_TOKEN_COST = 0;
 
 export async function POST(request: NextRequest) {
-    let tokensDeducted = false;
-    let userId: string | undefined;
-
     try {
         // Get user using standard server client which handles cookies correctly
         const supabase = await createClient();
@@ -28,11 +25,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        userId = user.id;
+        const userId = user.id;
         console.log('✅ Authenticated user:', userId.substring(0, 8));
 
         const body = await request.json();
-        const { characterName, imageUrl, characterDetails, gender, description: userDescription, promptTemplate } = body;
+        const { characterName, imageUrl, characterDetails, gender, description: userDescription, promptTemplate, isPublic = false } = body;
 
         if (!characterName || !imageUrl) {
             return NextResponse.json(
@@ -62,52 +59,9 @@ export async function POST(request: NextRequest) {
         }
 
         console.log(`✅ Active girlfriend check passed: ${activeCheck.currentUsage}/${activeCheck.limit}`);
-
-        // Check token balance before proceeding (ensure tokens exist)
-        console.log(`💳 Checking token balance for user ${userId.substring(0, 8)}...`);
-
-        // Ensure user has token balance record
-        const { ensureUserTokens } = await import('@/lib/ensure-user-tokens');
-        const balance = await ensureUserTokens(userId);
-
-        console.log(`💰 Current balance: ${balance} tokens, required: ${CHARACTER_CREATION_TOKEN_COST} tokens`);
-
-        if (balance < CHARACTER_CREATION_TOKEN_COST) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Insufficient tokens',
-                    details: `Character creation requires ${CHARACTER_CREATION_TOKEN_COST} tokens. Your current balance: ${balance} tokens`,
-                    required_tokens: CHARACTER_CREATION_TOKEN_COST,
-                    current_balance: balance
-                },
-                { status: 402 }
-            );
-        }
-
-        // Deduct tokens for character creation
-        console.log(`💳 Deducting ${CHARACTER_CREATION_TOKEN_COST} tokens for character creation...`);
-        const deductionResult = await deductTokens(
-            userId,
-            CHARACTER_CREATION_TOKEN_COST,
-            `Character creation: ${characterName}`,
-            {
-                character_name: characterName,
-                operation: 'create_character',
-                includes: ['ai_description_generation', 'character_storage']
-            }
-        );
-
-        if (!deductionResult) {
-            console.error("❌ Token deduction failed");
-            return NextResponse.json({
-                success: false,
-                error: "Failed to deduct tokens. Please try again."
-            }, { status: 402 });
-        }
-
-        tokensDeducted = true;
-        console.log(`✅ Successfully deducted ${CHARACTER_CREATION_TOKEN_COST} tokens`);
+        
+        // Token check removed from save as per user request (logic moved to page entry)
+        // Cost is 0 anyway, so we just proceed to saving if they passed the premium gate
 
 
 
@@ -153,7 +107,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Insert character into database with permanent image URL
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('characters')
             .insert({
                 user_id: userId,
@@ -165,7 +119,7 @@ export async function POST(request: NextRequest) {
                 system_prompt: systemPrompt,
                 personality: characterDetails.personality || 'Friendly',
                 voice: 'default',
-                is_public: false,
+                is_public: isPublic,
                 share_revenue: true,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
@@ -180,41 +134,6 @@ export async function POST(request: NextRequest) {
             .select()
             .single();
 
-        if (error) {
-            console.error('❌ Database error:', error);
-
-            // Refund tokens since character creation failed
-            if (tokensDeducted && userId) {
-                console.log(`🔄 Character creation failed. Refunding ${CHARACTER_CREATION_TOKEN_COST} tokens...`);
-                try {
-                    await refundTokens(
-                        userId,
-                        CHARACTER_CREATION_TOKEN_COST,
-                        `Refund for failed character creation: ${characterName}`,
-                        {
-                            character_name: characterName,
-                            error_message: error.message,
-                            refund_reason: 'Database insertion failed'
-                        }
-                    );
-                    console.log(`✅ Successfully refunded ${CHARACTER_CREATION_TOKEN_COST} tokens`);
-                } catch (refundError) {
-                    console.error("❌ Error during token refund:", refundError);
-                }
-            }
-
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: error.message,
-                    refunded: tokensDeducted
-                },
-                { status: 500 }
-            );
-        }
-
-        console.log('✅ Character saved successfully:', data.id);
-
         return NextResponse.json({
             success: true,
             character: data,
@@ -223,31 +142,10 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('❌ Error saving character:', error);
-
-        // Refund tokens if they were deducted and an error occurred
-        if (tokensDeducted && userId) {
-            console.log(`🔄 Unexpected error occurred. Refunding ${CHARACTER_CREATION_TOKEN_COST} tokens...`);
-            try {
-                await refundTokens(
-                    userId,
-                    CHARACTER_CREATION_TOKEN_COST,
-                    `Refund for failed character creation due to server error`,
-                    {
-                        error_message: error instanceof Error ? error.message : String(error),
-                        refund_reason: 'Server error during character creation'
-                    }
-                );
-                console.log(`✅ Successfully refunded ${CHARACTER_CREATION_TOKEN_COST} tokens`);
-            } catch (refundError) {
-                console.error("❌ Error during emergency token refund:", refundError);
-            }
-        }
-
         return NextResponse.json(
             {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to save character',
-                refunded: tokensDeducted
+                error: error instanceof Error ? error.message : 'Failed to save character'
             },
             { status: 500 }
         );

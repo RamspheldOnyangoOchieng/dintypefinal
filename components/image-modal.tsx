@@ -71,18 +71,17 @@ export function ImageModal({
       <DialogContent className="max-w-4xl p-0 bg-[#0A0A0A] border-[#252525] rounded-lg [&>button]:hidden">
         <DialogTitle className="sr-only">Image View</DialogTitle>
         <div className="relative">
-          {/* Close button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-black/80 text-white rounded-full transition-all"
-            onClick={() => onOpenChange(false)}
-          >
-            <X className="h-5 w-5" />
-          </Button>
-
-          {/* Image container */}
           <div className="relative aspect-square max-h-[80vh] overflow-hidden rounded-lg">
+            {/* Close button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-black/80 text-white rounded-full transition-all"
+              onClick={() => onOpenChange(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+
             <Image
               src={images[currentIndex] || "/placeholder.svg"}
               alt={`Image ${currentIndex + 1}`}

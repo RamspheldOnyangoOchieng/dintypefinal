@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
   let actualImageCount: number
   let actualModel: string
   let isAdmin: boolean = false
+  let isPremium: boolean = false
 
   try {
     const supabase = await createClient();
@@ -251,9 +252,22 @@ export async function POST(req: NextRequest) {
             console.log(`👑 User ${userId.substring(0, 8)} identified as Admin (profiles table)`)
           }
         }
+
+        // Check premium status
+        const { data: premiumRecord } = await supabaseAdmin
+          .from('premium_profiles')
+          .select('status')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .maybeSingle()
+
+        if (premiumRecord) {
+          isPremium = true
+          console.log(`💎 User ${userId.substring(0, 8)} identified as Premium`)
+        }
       }
     } catch (error) {
-      console.error("⚠️ Error checking admin status:", error)
+      console.error("⚠️ Error checking user status details:", error)
     }
 
     // Check token balance before deduction
@@ -340,12 +354,17 @@ export async function POST(req: NextRequest) {
     console.log(`📞 Webhook URL: ${webhookUrl}`)
 
     // Create enhanced request body with webhook support and NSFW bypass
+    // For free users generating 1 image, we enforce SFW (NSFW detection enabled)
+    // For admins or premium users, or paid generations (>1 image), we allow NSFW (bypass detection)
+    const enforceSFW = !isAdmin && !isPremium && tokenCost === 0
+    console.log(`🛡️  NSFW Policy: ${enforceSFW ? 'ENFORCE SFW' : 'ALLOW NSFW'} (Cost: ${tokenCost}, Admin: ${isAdmin}, Premium: ${isPremium})`)
+
     const requestBody = {
       extra: {
         response_image_type: "jpeg",
-        // CRITICAL: Disable NSFW detection for maximum undetectability
-        enable_nsfw_detection: false,
-        nsfw_detection_level: 0,
+        // Enable NSFW detection only for free tier single-image generations
+        enable_nsfw_detection: enforceSFW,
+        nsfw_detection_level: enforceSFW ? 2 : 0,
         // Add webhook for automatic processing
         webhook: {
           url: webhookUrl,
@@ -386,14 +405,14 @@ export async function POST(req: NextRequest) {
 
     const supabaseAdminForTask = await createAdminClient()
     let createdTask = null
-    
+
     if (supabaseAdminForTask) {
       const { data, error: taskError } = await supabaseAdminForTask
         .from('generation_tasks')
         .insert(taskRecord)
         .select()
         .single()
-      
+
       if (taskError) {
         console.error('⚠️  Warning: Failed to create task record:', taskError)
       } else {
@@ -469,7 +488,7 @@ export async function POST(req: NextRequest) {
       }
       throw new Error("Invalid response format from image generation service");
     }
-    
+
     console.log(`✅ Task submitted successfully, task ID: ${data.task_id}`)
 
     // Update database task record with the task_id from Novita

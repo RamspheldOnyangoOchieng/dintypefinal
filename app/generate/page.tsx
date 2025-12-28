@@ -63,6 +63,8 @@ export default function GenerateImagePage() {
     requiredTokens: 5
   })
   const [showPremiumModal, setShowPremiumModal] = useState(false)
+  const [freeGenerationsCount, setFreeGenerationsCount] = useState(0)
+  const [isCheckingUsage, setIsCheckingUsage] = useState(true)
 
 
 
@@ -121,6 +123,29 @@ export default function GenerateImagePage() {
 
     loadSuggestions()
   }, [toast])
+
+  // Fetch free usage count
+  useEffect(() => {
+    async function checkUsage() {
+      if (!user) return
+      setIsCheckingUsage(true)
+      try {
+        const response = await fetch('/api/user-usage-stats')
+        const data = await response.json()
+        if (data.success) {
+          // For now, using imagesGenerated as a proxy for free usage
+          // in a production app, we'd specifically track free vs paid generations
+          setFreeGenerationsCount(data.imagesGenerated || 0)
+        }
+      } catch (error) {
+        console.error("Error checking usage stats:", error)
+      } finally {
+        setIsCheckingUsage(false)
+      }
+    }
+
+    checkUsage()
+  }, [user])
 
   // Handle category change
   const handleCategoryChange = async (category: string) => {
@@ -201,6 +226,12 @@ export default function GenerateImagePage() {
     if (!user) {
       // Show login modal instead of redirecting
       openLoginModal()
+      return
+    }
+
+    // Check free limit for non-premium users
+    if (!isPremium && !user.isAdmin && freeGenerationsCount >= 1) {
+      setShowPremiumModal(true)
       return
     }
 
@@ -394,6 +425,11 @@ export default function GenerateImagePage() {
         // Refresh auth context user data to update token balance
         if (typeof refreshUser === 'function') {
           refreshUser().catch(e => console.error("Failed to refresh user after generation:", e))
+        }
+
+        // Increment free generations count if this was a free one
+        if (!isPremium && !user?.isAdmin && selectedCount === "1") {
+          setFreeGenerationsCount(prev => prev + 1)
         }
       } else {
         throw new Error("No Task ID or direct images returned from the API.");
@@ -797,7 +833,15 @@ export default function GenerateImagePage() {
               return (
                 <button
                   key={option.value}
-                  onClick={() => !isDisabled && setSelectedCount(option.value)}
+                  onClick={() => {
+                    if (isDisabled) return
+                    // If free user already used their 1 free image, show premium modal on click
+                    if (!isPremium && !user?.isAdmin && freeGenerationsCount >= 1) {
+                      setShowPremiumModal(true)
+                      return
+                    }
+                    setSelectedCount(option.value)
+                  }}
                   disabled={isDisabled}
                   className={`flex flex-col items-center gap-1 ${isMobile ? 'px-2 py-2' : 'px-3 md:px-6 py-2 md:py-3'} rounded-lg transition-all relative ${selectedCount === option.value
                     ? "bg-primary text-primary-foreground"

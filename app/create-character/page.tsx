@@ -3,10 +3,14 @@
 import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/components/auth-context";
 import { useAuthModal } from "@/components/auth-modal-context";
+import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
     Sparkles,
     MessageSquare,
@@ -39,6 +43,7 @@ export default function CreateCharacterPage() {
     const [selectedButtSize, setSelectedButtSize] = useState<string | null>(null);
     const [selectedPersonality, setSelectedPersonality] = useState<string | null>(null);
     const [selectedRelationship, setSelectedRelationship] = useState<string | null>(null);
+    const [isPublic, setIsPublic] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
     const [enhancedPrompt, setEnhancedPrompt] = useState<string | null>(null);
@@ -56,7 +61,21 @@ export default function CreateCharacterPage() {
 
     const supabase = createClientComponentClient();
     const router = useRouter();
+    const { user, loading: authLoading } = useAuth();
     const { openLoginModal } = useAuthModal();
+    const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+    // Initial check for premium access
+    useEffect(() => {
+        if (!authLoading) {
+            if (!user) {
+                openLoginModal();
+                router.push('/my-ai');
+            } else if (!user.isPremium && !user.isAdmin) {
+                setShowPremiumModal(true);
+            }
+        }
+    }, [user, authLoading]);
 
     // Load female images from database when gender is 'lady'
     useEffect(() => {
@@ -447,15 +466,15 @@ export default function CreateCharacterPage() {
 
     const getNextButtonText = () => {
         if (gender === 'lady') {
-            if (currentStep === 4) return 'Review Character →';
-            if (currentStep === 5) return 'Create my AI →';
-            if (currentStep === 6) return 'Continue →';
+            if (currentStep === 4) return 'Granska karaktär →';
+            if (currentStep === 5) return 'Skapa min AI →';
+            if (currentStep === 6) return 'Fortsätt →';
         } else { // gent
-            if (currentStep === 2) return 'Review Character →';
-            if (currentStep === 3) return 'Create my AI →';
-            if (currentStep === 4) return 'Continue →';
+            if (currentStep === 2) return 'Granska karaktär →';
+            if (currentStep === 3) return 'Skapa min AI →';
+            if (currentStep === 4) return 'Fortsätt →';
         }
-        return 'Next →';
+        return 'Nästa →';
     };
 
     // Step 5 is summary/preview step for lady, step 3 for gent
@@ -474,8 +493,8 @@ export default function CreateCharacterPage() {
         return (
             <div className="space-y-8">
                 <div className="text-center">
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-2">Review Your AI Character</h2>
-                    <p className="text-muted-foreground">Everything looks perfect! Ready to bring her to life?</p>
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-2">Granska din AI-flickvän</h2>
+                    <p className="text-muted-foreground">Allt ser perfekt ut! Redo att ge henne liv?</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -501,25 +520,36 @@ export default function CreateCharacterPage() {
                         <div className="bg-secondary/30 rounded-3xl p-6 border border-border/50 backdrop-blur-sm">
                             <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
                                 <MessageSquare className="h-5 w-5 text-primary" />
-                                Custom Settings
+                                Anpassade inställningar
                             </h3>
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Description (Optional)</label>
+                                    <label className="text-sm font-medium text-muted-foreground">Beskrivning (Valfritt)</label>
                                     <textarea
                                         value={characterDescription}
                                         onChange={(e) => setCharacterDescription(e.target.value)}
-                                        placeholder={`Add more details about ${gender === 'lady' ? 'her' : 'his'} personality or background...`}
+                                        placeholder={`Lägg till fler detaljer om ${gender === 'lady' ? 'hennes' : 'hans'} personlighet eller bakgrund...`}
                                         className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary outline-none transition-all resize-none"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Prompt Template (Advanced)</label>
+                                    <label className="text-sm font-medium text-muted-foreground">Prompt-mall (Avancerat)</label>
                                     <textarea
                                         value={promptTemplate}
                                         onChange={(e) => setPromptTemplate(e.target.value)}
-                                        placeholder="Enter instructions for the AI's behavior..."
+                                        placeholder="Ange instruktioner för AI:ns beteende..."
                                         className="w-full h-24 bg-background/50 border border-border/50 rounded-2xl p-4 text-sm font-mono focus:ring-2 focus:ring-primary outline-none transition-all resize-none"
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between p-4 bg-background/40 rounded-2xl border border-border/30">
+                                    <div className="space-y-0.5">
+                                        <label htmlFor="isPublic" className="text-sm font-bold cursor-pointer">Gör karaktären offentlig</label>
+                                        <p className="text-xs text-muted-foreground italic">Andra användare kan se och chatta med henne</p>
+                                    </div>
+                                    <Switch
+                                        id="isPublic"
+                                        checked={isPublic}
+                                        onCheckedChange={setIsPublic}
                                     />
                                 </div>
                             </div>
@@ -537,8 +567,8 @@ export default function CreateCharacterPage() {
                 <>
                     {/* Creating your AI Section - Loading */}
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold mb-2 text-card-foreground">Creating your AI</h2>
-                        <p className="text-muted-foreground">Please wait while we generate your perfect AI character...</p>
+                        <h2 className="text-3xl font-bold mb-2 text-card-foreground">Skapar din AI</h2>
+                        <p className="text-muted-foreground">Vänligen vänta medan vi genererar din perfekta AI-karaktär...</p>
                     </div>
 
                     {/* Loading Animation */}
@@ -693,6 +723,7 @@ export default function CreateCharacterPage() {
                     characterDetails,
                     enhancedPrompt,
                     gender: gender,
+                    isPublic,
                 }),
             });
 
@@ -714,11 +745,6 @@ export default function CreateCharacterPage() {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 const errorMessage = errorData.error || errorData.details || 'Failed to save character';
-
-                // If it's a token error (402), make it clear
-                if (response.status === 402) {
-                    throw new Error(`Insufficient tokens: ${errorMessage}`);
-                }
 
                 throw new Error(errorMessage);
             }
@@ -940,7 +966,7 @@ export default function CreateCharacterPage() {
                 <div className="text-center mb-4 sm:mb-6 md:mb-8">
                     <div className="flex items-center justify-center mb-2 sm:mb-4">
                         <span className="text-lg sm:text-xl md:text-2xl">🧬</span>
-                        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold ml-1 sm:ml-2">Create my AI</h1>
+                        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold ml-1 sm:ml-2">Skapa min AI</h1>
                     </div>
                 </div>
 
@@ -2097,7 +2123,7 @@ export default function CreateCharacterPage() {
                                 <p className="text-muted-foreground">Select {gender === 'lady' ? 'her' : 'his'} core personality</p>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {(gender === 'lady' 
+                                {(gender === 'lady'
                                     ? ['caregiver', 'sage', 'innocent', 'jester', 'temptress', 'dominant', 'submissive', 'lover', 'nympho', 'mean', 'confidant', 'experimenter']
                                     : ['confident', 'caring', 'dominant', 'playful', 'mysterious', 'romantic']
                                 ).map((key) => (
@@ -2106,8 +2132,8 @@ export default function CreateCharacterPage() {
                                         variant={selectedPersonality === key ? "default" : "outline"}
                                         className={cn(
                                             "h-auto py-4 px-6 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300",
-                                            selectedPersonality === key 
-                                                ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 scale-105" 
+                                            selectedPersonality === key
+                                                ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 scale-105"
                                                 : "hover:border-primary/50 hover:bg-primary/5"
                                         )}
                                         onClick={() => setSelectedPersonality(key)}
@@ -2137,8 +2163,8 @@ export default function CreateCharacterPage() {
                                         variant={selectedRelationship === key ? "default" : "outline"}
                                         className={cn(
                                             "h-auto py-4 px-6 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300",
-                                            selectedRelationship === key 
-                                                ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 scale-105" 
+                                            selectedRelationship === key
+                                                ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 scale-105"
                                                 : "hover:border-primary/50 hover:bg-primary/5"
                                         )}
                                         onClick={() => setSelectedRelationship(key)}
@@ -2153,7 +2179,7 @@ export default function CreateCharacterPage() {
 
                     {/* Step 5 (Lady) / Step 3 (Gent): Summary */}
                     {((gender === 'lady' && currentStep === 5) || (gender === 'gent' && currentStep === 3)) && renderStepSummary()}
-                    
+
                     {/* Step 6 (Lady) / Step 4 (Gent): Generation */}
                     {((gender === 'lady' && currentStep === 6) || (gender === 'gent' && currentStep === 4)) && renderStep7()}
 
@@ -2167,7 +2193,7 @@ export default function CreateCharacterPage() {
                                 onClick={() => setCurrentStep(currentStep - 1)}
                                 disabled={isGenerating}
                             >
-                                ← Previous
+                                ← Föregående
                             </button>
                         )}
                         <button
@@ -2198,14 +2224,14 @@ export default function CreateCharacterPage() {
             {showNameDialog && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 max-w-md w-full shadow-2xl border border-border">
-                        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-center text-card-foreground">Name Your AI Character</h2>
-                        <p className="text-muted-foreground mb-4 sm:mb-6 text-center text-xs sm:text-sm md:text-base">Choose a unique name to bring your AI to life</p>
+                        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-center text-card-foreground">Namnge din AI-karaktär</h2>
+                        <p className="text-muted-foreground mb-4 sm:mb-6 text-center text-xs sm:text-sm md:text-base">Välj ett unikt namn för att ge din AI liv</p>
 
                         <input
                             type="text"
                             value={characterName}
                             onChange={(e) => setCharacterName(e.target.value)}
-                            placeholder="Enter character name..."
+                            placeholder="Ange karaktärens namn..."
                             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-background border border-border focus:border-primary focus:outline-none text-foreground mb-4 sm:mb-6 transition-colors text-sm sm:text-base"
                             maxLength={50}
                             autoFocus
@@ -2222,7 +2248,7 @@ export default function CreateCharacterPage() {
                                 disabled={isSaving}
                                 className="flex-1 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold transition-all text-xs sm:text-sm md:text-base"
                             >
-                                Cancel
+                                Avbryt
                             </button>
                             <button
                                 onClick={handleSaveCharacter}
@@ -2232,7 +2258,7 @@ export default function CreateCharacterPage() {
                                     : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                                     }`}
                             >
-                                {isSaving ? 'Naming...' : 'Name Character'}
+                                {isSaving ? 'Spara...' : 'Namnge karaktär'}
                             </button>
                         </div>
                     </div>
@@ -2269,6 +2295,17 @@ export default function CreateCharacterPage() {
                     </div>
                 </div>
             )}
+
+            <PremiumUpgradeModal
+                isOpen={showPremiumModal}
+                onClose={() => {
+                    setShowPremiumModal(false);
+                    router.push('/my-ai');
+                }}
+                feature="Skapa AI Flickvänner"
+                description="Uppgradera till Premium för att skapa AI flickvänner"
+                imageSrc="/realistic_girlfriend_create_character_upgrade_1766900675037.png"
+            />
         </div>
     );
 }

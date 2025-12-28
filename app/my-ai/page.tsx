@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Heart, MessageCircle, Trash2, Plus, Sparkles } from 'lucide-react';
 import { useAuthModal } from '@/components/auth-modal-context';
+import { useAuth } from '@/components/auth-context';
+import { PremiumUpgradeModal } from '@/components/premium-upgrade-modal';
 
 interface Character {
   id: string;
@@ -26,6 +28,8 @@ export default function MyAIPage() {
   const router = useRouter();
   const supabase = createClientComponentClient();
   const { openLoginModal } = useAuthModal();
+  const { user } = useAuth();
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchCharacters();
@@ -100,6 +104,16 @@ export default function MyAIPage() {
   }
 
   function handleCreateNew() {
+    if (!user) {
+      openLoginModal();
+      return;
+    }
+
+    if (!user.isPremium && !user.isAdmin) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     router.push('/create-character');
   }
 
@@ -273,6 +287,14 @@ export default function MyAIPage() {
           </div>
         )}
       </div>
+
+      <PremiumUpgradeModal
+        isOpen={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        feature="Skapa AI Flickvänner"
+        description="Uppgradera till Premium för att skapa AI flickvänner"
+        imageSrc="/realistic_girlfriend_create_character_upgrade_1766900675037.png"
+      />
     </div>
   );
 }
