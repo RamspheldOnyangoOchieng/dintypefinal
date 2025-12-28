@@ -13,7 +13,7 @@ async function CharactersContent() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Characters</h1>
         <Button asChild>
-          <Link href="/characters/new">
+          <Link href="/create-character">
             <Plus className="mr-2 h-4 w-4" />
             New Character
           </Link>
