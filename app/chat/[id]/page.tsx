@@ -14,6 +14,7 @@ import {
   Menu,
   Loader2,
   User,
+  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -98,6 +99,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [isSaving, setIsSaving] = useState(false)
   const [lastMessages, setLastMessages] = useState<Record<string, Message | null>>({})
   const [isProfileOpen, setIsProfileOpen] = useState(true)
+  const [premiumModalFeature, setPremiumModalFeature] = useState("Meddelandegräns")
+  const [premiumModalDescription, setPremiumModalDescription] = useState("Daily message limit reached. Upgrade to premium to continue.")
   const [isGeneratingProfilePhoto, setIsGeneratingProfilePhoto] = useState(false)
 
   // Use a ref for the interval to ensure we always have the latest reference
@@ -284,6 +287,13 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         return
       }
 
+      if (response.status === 403) {
+        setPremiumModalFeature("Premium-bilder")
+        setPremiumModalDescription("Du behöver Premium för att generera nya profilbilder. Uppgradera nu för att låsa upp obegränsad bildgenerering.")
+        setIsPremiumModalOpen(true)
+        return
+      }
+
       if (!response.ok) {
         throw new Error(data.error || "Failed to generate image")
       }
@@ -309,7 +319,13 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
     } catch (error) {
       console.error("Error generating profile photo:", error)
-      alert(error instanceof Error ? error.message : "Failed to generate profile photo")
+      if (error instanceof Error && (error.message.includes("Upgrade to Premium") || error.message.includes("403"))) {
+        setPremiumModalFeature("Premium-bilder")
+        setPremiumModalDescription("Du behöver Premium för att generera nya profilbilder. Uppgradera nu för att låsa upp obegränsad bildgenerering.")
+        setIsPremiumModalOpen(true)
+      } else {
+        alert(error instanceof Error ? error.message : "Failed to generate profile photo")
+      }
     } finally {
       setIsGeneratingProfilePhoto(false)
     }
@@ -433,7 +449,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         setMessages([welcomeMessage])
 
         // Save welcome message to localStorage
-        saveMessageToLocalStorage(characterId, welcomeMessage)
+        saveMessageToLocalStorage(characterId!, welcomeMessage)
       }
     } catch (error) {
       console.error("Error loading chat history:", error)
@@ -588,6 +604,14 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
         if (response.status === 402) {
           setShowTokensDepletedModal(true)
+          setIsGeneratingImage(false)
+          return
+        }
+
+        if (response.status === 403) {
+          setPremiumModalFeature("Premium-bilder")
+          setPremiumModalDescription("Du behöver Premium för att generera bilder i chatten. Uppgradera nu för att låsa upp obegränsad bildgenerering.")
+          setIsPremiumModalOpen(true)
           setIsGeneratingImage(false)
           return
         }
@@ -747,7 +771,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           }
 
           setMessages((prev) => [...prev, errorMessage])
-          saveMessageToLocalStorage(characterId, errorMessage)
+          saveMessageToLocalStorage(characterId!, errorMessage)
 
           setIsGeneratingImage(false)
 
@@ -777,7 +801,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       }
 
       setMessages((prev) => [...prev, errorMessage])
-      saveMessageToLocalStorage(characterId, errorMessage)
+      saveMessageToLocalStorage(characterId!, errorMessage)
     }
   }
 
@@ -829,6 +853,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         try {
           const messageCheck = await checkMessageLimit(user.id)
           if (!messageCheck.allowed) {
+            setPremiumModalFeature("Meddelandegräns")
+            setPremiumModalDescription("Dagligen meddelandegräns uppnådd. Uppgradera till premium för att fortsätta chatta obegränsat.")
             setIsPremiumModalOpen(true)
             setDebugInfo(prev => ({ ...prev, lastAction: "messageLimitReached" }))
             return
@@ -977,7 +1003,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         setMessages((prev) => [...prev, errorMessage])
 
         // Save error message to localStorage
-        saveMessageToLocalStorage(characterId, errorMessage)
+        saveMessageToLocalStorage(characterId!, errorMessage)
 
         setApiKeyError("Failed to connect to the AI service. Please check your API key configuration.")
       } finally {
@@ -1014,7 +1040,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         setMessages([welcomeMessage])
 
         // Save welcome message to localStorage
-        saveMessageToLocalStorage(characterId, welcomeMessage)
+        saveMessageToLocalStorage(characterId!, welcomeMessage)
       }
     } catch (error) {
       console.error("Error clearing chat:", error)
@@ -1053,7 +1079,9 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   }
 
   // Show loading while unwrapping params or loading characters
-  if (!characterId || (charactersLoading && !character)) {
+  // We also check if the character exists in the current list but hasn't been set to state yet
+  const foundInContext = characterId ? characters.find(c => c.id === characterId) : null;
+  if (!characterId || (charactersLoading && !character) || (foundInContext && !character)) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -1484,8 +1512,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       <PremiumUpgradeModal
         isOpen={isPremiumModalOpen}
         onClose={() => setIsPremiumModalOpen(false)}
-        feature="Meddelandegräns"
-        description="Daily message limit reached. Upgrade to premium to continue."
+        feature={premiumModalFeature}
+        description={premiumModalDescription}
         imageSrc={character?.image || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"}
       />
 
