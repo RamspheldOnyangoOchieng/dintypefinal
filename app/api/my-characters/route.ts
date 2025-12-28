@@ -36,9 +36,29 @@ export async function GET(request: NextRequest) {
 
         console.log(`✅ Found ${characters?.length || 0} characters`);
 
+        // 4. Implement Lockdown logic
+        const { getUserPlanInfo } = await import('@/lib/subscription-limits');
+        const planInfo = await getUserPlanInfo(user.id);
+        const isCurrentlyPremium = planInfo.planType === 'premium';
+        const { data: adminUser } = await supabase.from('admin_users').select('id').eq('user_id', user.id).maybeSingle();
+        const isAdmin = !!adminUser;
+
+        const processedCharacters = (characters || []).map(char => {
+            const charMetadata = (char.metadata as any) || {};
+            const wasPremiumCreated = charMetadata.created_during_subscription === true;
+
+            // Lock if it was created during premium but user is no longer premium (and not admin)
+            const isLocked = wasPremiumCreated && !isCurrentlyPremium && !isAdmin;
+
+            return {
+                ...char,
+                is_locked: isLocked
+            };
+        });
+
         return NextResponse.json({
             success: true,
-            characters: characters || []
+            characters: processedCharacters
         });
 
     } catch (error) {

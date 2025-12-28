@@ -11,6 +11,8 @@ export type User = {
   email: string
   isAdmin: boolean
   isPremium: boolean
+  isExpired: boolean
+  wasPremium: boolean
   tokenBalance: number
   creditBalance: number
   createdAt: string
@@ -98,6 +100,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Check premium status and balances from robust endpoint
         let isPremium = false
+        let isExpired = false
+        let wasPremium = false
         let tokenBalance = 0
         let creditBalance = 0
         try {
@@ -105,6 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (premiumResponse.ok) {
             const premiumData = await premiumResponse.json()
             isPremium = premiumData.isPremium
+            isExpired = premiumData.isExpired
+            wasPremium = premiumData.wasPremium
             tokenBalance = premiumData.tokenBalance || 0
             creditBalance = premiumData.creditBalance || 0
           }
@@ -118,6 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: user.email || "",
           isAdmin: adminStatus,
           isPremium: isPremium,
+          isExpired: isExpired,
+          wasPremium: wasPremium,
           tokenBalance: tokenBalance,
           creditBalance: creditBalance,
           createdAt: user.created_at || new Date().toISOString(),
@@ -149,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         // Fetch users from auth.users via Supabase functions or API
-        const { data, error } = await supabase.from("users_view").select("*")
+        const { data, error } = await supabase.from("users").select("*")
 
         if (error) {
           console.error("Error fetching users:", error)
@@ -214,6 +222,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Check premium status and balances
         let isPremium = false
+        let isExpired = false
+        let wasPremium = false
         let tokenBalance = 0
         let creditBalance = 0
         try {
@@ -221,6 +231,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (premiumResponse.ok) {
             const premiumData = await premiumResponse.json()
             isPremium = premiumData.isPremium
+            isExpired = premiumData.isExpired
+            wasPremium = premiumData.wasPremium
             tokenBalance = premiumData.tokenBalance || 0
             creditBalance = premiumData.creditBalance || 0
           }
@@ -234,6 +246,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: data.user.email || "",
           isAdmin: adminStatus,
           isPremium: isPremium,
+          isExpired: isExpired,
+          wasPremium: wasPremium,
           tokenBalance: tokenBalance,
           creditBalance: creditBalance,
           createdAt: data.user.created_at || new Date().toISOString(),
@@ -378,7 +392,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deleteUser = async (id: string) => {
     try {
       // First check if the user exists
-      const { data: userData, error: userError } = await supabase.from("users_view").select("*").eq("id", id).single()
+      const { data: userData, error: userError } = await supabase.from("users").select("*").eq("id", id).single()
 
       if (userError || !userData) {
         console.error("Error finding user:", userError)
@@ -431,38 +445,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (authUser) {
-        const adminStatus = await isAdmin(authUser.id)
+        const authUser = result.data.user
+        if (authUser) {
+          const adminStatus = await isAdmin(authUser.id)
 
-        let isPremium = false
-        let tokenBalance = 0
-        let creditBalance = 0
-        try {
-          // Use the more robust check-premium-status endpoint
-          const premiumResponse = await fetch(`/api/check-premium-status`)
-          if (premiumResponse.ok) {
-            const premiumData = await premiumResponse.json()
-            isPremium = premiumData.isPremium
-            tokenBalance = premiumData.tokenBalance || 0
-            creditBalance = premiumData.creditBalance || 0
+          let isPremium = false
+          let isExpired = false
+          let wasPremium = false
+          let tokenBalance = 0
+          let creditBalance = 0
+          try {
+            // Use the more robust check-premium-status endpoint
+            const premiumResponse = await fetch(`/api/check-premium-status`)
+            if (premiumResponse.ok) {
+              const premiumData = await premiumResponse.json()
+              isPremium = premiumData.isPremium
+              isExpired = premiumData.isExpired
+              wasPremium = premiumData.wasPremium
+              tokenBalance = premiumData.tokenBalance || 0
+              creditBalance = premiumData.creditBalance || 0
+            }
+          } catch (e) {
+            console.error("Failed to check premium status during refresh")
           }
-        } catch (e) {
-          console.error("Failed to check premium status during refresh")
-        }
 
-        setUser({
-          id: authUser.id,
-          username: authUser.user_metadata?.username || authUser.email?.split("@")[0] || "User",
-          email: authUser.email || "",
-          isAdmin: adminStatus,
-          isPremium: isPremium,
-          tokenBalance: tokenBalance,
-          creditBalance: creditBalance,
-          createdAt: authUser.created_at || new Date().toISOString(),
-          avatar: authUser.user_metadata?.avatar_url,
-        })
-      }
+          setUser({
+            id: authUser.id,
+            username: authUser.user_metadata?.username || authUser.email?.split("@")[0] || "User",
+            email: authUser.email || "",
+            isAdmin: adminStatus,
+            isPremium: isPremium,
+            isExpired: isExpired,
+            wasPremium: wasPremium,
+            tokenBalance: tokenBalance,
+            creditBalance: creditBalance,
+            createdAt: authUser.created_at || new Date().toISOString(),
+            avatar: authUser.user_metadata?.avatar_url,
+          })
+        }
     } catch (error) {
       console.error("Error refreshing user:", error)
     }

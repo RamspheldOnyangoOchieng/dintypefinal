@@ -22,15 +22,16 @@ export async function POST(request: NextRequest) {
     for (const restriction of allRestrictions) {
       const { data, error } = await supabase
         .from('plan_restrictions')
-        .update({
+        .upsert({
+          plan_type: restriction.plan_type,
+          restriction_key: restriction.restriction_key,
           restriction_value: restriction.restriction_value,
+          description: restriction.description || '',
           updated_at: new Date().toISOString()
-        })
-        .eq('plan_type', restriction.plan_type)
-        .eq('restriction_key', restriction.restriction_key)
+        }, { onConflict: 'plan_type,restriction_key' })
 
       if (error) {
-        console.error(`Error updating ${restriction.plan_type}.${restriction.restriction_key}:`, error)
+        console.error(`Error upserting ${restriction.plan_type}.${restriction.restriction_key}:`, error)
         return NextResponse.json({
           success: false,
           error: `Failed to update ${restriction.restriction_key}`

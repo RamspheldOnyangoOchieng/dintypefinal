@@ -479,24 +479,30 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
           WITH CHECK (auth.role() = 'authenticated');
           
         -- Create a view for listing users with admin status
-        CREATE OR REPLACE VIEW users_view AS
+        DROP VIEW IF EXISTS users_view;
+        CREATE OR REPLACE VIEW users AS
         SELECT 
           au.id,
           au.email,
           au.created_at,
-          au.user_metadata->>'username' as username,
-          (admin.id IS NOT NULL) as is_admin
-        FROM 
-          auth.users au
-        LEFT JOIN 
-          admin_users admin ON au.id = admin.user_id;
+          au.last_sign_in_at,
+          (SELECT username FROM profiles WHERE id = au.id) as username,
+          (EXISTS (SELECT 1 FROM admin_users WHERE user_id = au.id)) as is_admin,
+          (SELECT is_premium FROM profiles WHERE id = au.id) as is_premium
+        FROM auth.users au;
+        
+        GRANT SELECT ON users TO authenticated;
+        GRANT SELECT ON users TO anon;
       `
 
-      // Try to execute the SQL directly
-      const { error: sqlError } = await supabase.rpc("exec_sql", { sql: createTableSQL })
+      const { error } = await (supabase as any).rpc("exec_sql", { sql: createTableSQL })
 
-      if (sqlError) {
-        console.error("Error creating admin_users table:", sqlError)
+      if (error) {
+        console.error("Error creating admin_users table:", error)
+        // Try fallback if exec_sql doesn't exist
+        if (error.message.includes("Could not find the function")) {
+          console.warn("exec_sql function not found, cannot create table via RPC")
+        }
         return false
       }
 

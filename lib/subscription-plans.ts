@@ -16,7 +16,30 @@ export async function getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
     throw new Error("Failed to fetch subscription plans")
   }
 
-  return data || []
+  // Get subscriber counts for each plan
+  const plans = data || []
+  const supabaseAdmin = await createAdminClient()
+
+  if (supabaseAdmin) {
+    const { data: counts } = await supabaseAdmin
+      .from("premium_profiles")
+      .select("plan_id")
+      .not("plan_id", "is", null)
+
+    if (counts) {
+      const countsMap = counts.reduce((acc: any, curr: any) => {
+        acc[curr.plan_id] = (acc[curr.plan_id] || 0) + 1
+        return acc
+      }, {})
+
+      return plans.map(plan => ({
+        ...plan,
+        subscriber_count: countsMap[plan.id] || 0
+      }))
+    }
+  }
+
+  return plans
 }
 
 export async function getSubscriptionPlanById(id: string): Promise<SubscriptionPlan | null> {

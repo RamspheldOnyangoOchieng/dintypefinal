@@ -11,4 +11,5 @@ export interface SubscriptionPlan {
   updated_at: string
   promotional_image: string | null
   features_image: string | null
+  subscriber_count?: number
 }

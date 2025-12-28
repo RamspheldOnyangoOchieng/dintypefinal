@@ -20,6 +20,7 @@ import { InsufficientTokensDialog } from "@/components/insufficient-tokens-dialo
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAuthModal } from "@/components/auth-modal-context"
+import { containsNSFW } from "@/lib/nsfw-filter"
 
 // Remove the static imageOptions array and replace with dynamic calculation
 // Get selected option for token calculation - move this logic up and make it dynamic
@@ -63,6 +64,7 @@ export default function GenerateImagePage() {
     requiredTokens: 5
   })
   const [showPremiumModal, setShowPremiumModal] = useState(false)
+  const [showTokensDepletedModal, setShowTokensDepletedModal] = useState(false)
   const [freeGenerationsCount, setFreeGenerationsCount] = useState(0)
   const [isCheckingUsage, setIsCheckingUsage] = useState(true)
 
@@ -229,8 +231,25 @@ export default function GenerateImagePage() {
       return
     }
 
+    // Check for NSFW content in prompt for free users
+    if (!isPremium && !user.isAdmin && containsNSFW(prompt)) {
+      toast({
+        title: "NSFW Content Detected",
+        description: "Free users can only generate SFW images. Please upgrade to Premium to generate NSFW content.",
+        variant: "destructive",
+      })
+      setShowPremiumModal(true)
+      return
+    }
+
     // Check free limit for non-premium users
     if (!isPremium && !user.isAdmin && freeGenerationsCount >= 1) {
+      setShowPremiumModal(true)
+      return
+    }
+
+    // Check image count for free users
+    if (!isPremium && !user.isAdmin && selectedCount !== "1") {
       setShowPremiumModal(true)
       return
     }
@@ -364,7 +383,13 @@ export default function GenerateImagePage() {
                   currentBalance: errorJson.currentBalance || 0,
                   requiredTokens: errorJson.requiredTokens || tokensRequired
                 })
-                setShowInsufficientTokens(true)
+
+                if (isPremium) {
+                  setShowTokensDepletedModal(true)
+                } else {
+                  setShowInsufficientTokens(true)
+                }
+
                 setIsGenerating(false)
                 return
               }
@@ -830,11 +855,15 @@ export default function GenerateImagePage() {
             {imageOptions.map((option) => {
               // Don't disable options while checking premium status or for admins
               const isDisabled = !isCheckingPremium && !isPremium && !user?.isAdmin && option.value !== "1"
+              const isSelected = selectedCount === option.value
               return (
                 <button
                   key={option.value}
                   onClick={() => {
-                    if (isDisabled) return
+                    if (!isPremium && !user?.isAdmin && option.value !== "1") {
+                      setShowPremiumModal(true)
+                      return
+                    }
                     // If free user already used their 1 free image, show premium modal on click
                     if (!isPremium && !user?.isAdmin && freeGenerationsCount >= 1) {
                       setShowPremiumModal(true)
@@ -842,28 +871,29 @@ export default function GenerateImagePage() {
                     }
                     setSelectedCount(option.value)
                   }}
-                  disabled={isDisabled}
-                  className={`flex flex-col items-center gap-1 ${isMobile ? 'px-2 py-2' : 'px-3 md:px-6 py-2 md:py-3'} rounded-lg transition-all relative ${selectedCount === option.value
-                    ? "bg-primary text-primary-foreground"
+                  className={`flex flex-col items-center gap-1 ${isMobile ? 'px-3 py-2' : 'px-8 py-4'} rounded-xl transition-all relative border-2 ${isSelected
+                    ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
                     : isDisabled
-                      ? "bg-muted text-muted-foreground/50 cursor-not-allowed"
-                      : "bg-card text-muted-foreground hover:bg-muted"
+                      ? "bg-card/50 text-muted-foreground border-muted/50 cursor-pointer"
+                      : "bg-card border-border text-foreground hover:border-primary/50"
                     }`}
                 >
-                  <span className={`${isMobile ? 'text-sm' : 'text-base md:text-lg'} font-semibold`}>{option.label}</span>
-                  {option.value !== "1" && (
-                    <>
-                      <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>{option.tokens} tokens</span>
-                      <span className={`${isMobile ? 'text-[10px]' : 'text-[10px]'} text-amber-500 font-medium uppercase tracking-wider`}>Premium</span>
-                    </>
-                  )}
-                  {option.value === "1" && (
-                    <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-500 font-medium`}>FREE</span>
+                  <span className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold`}>{option.label}</span>
+                  {option.value !== "1" ? (
+                    <div className="flex flex-col items-center">
+                      <div className={`flex items-center gap-1 ${isSelected ? 'text-primary-foreground/90' : 'text-amber-500'} font-black text-[9px] uppercase tracking-tighter`}>
+                        <Sparkles className="h-2.5 w-2.5" />
+                        <span>Premium Required</span>
+                      </div>
+                      <span className={`${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'} text-[9px] font-medium`}>{option.tokens} tokens</span>
+                    </div>
+                  ) : (
+                    <span className={`${isSelected ? 'text-primary-foreground/90' : 'text-emerald-500'} font-black text-[9px] uppercase tracking-wider`}>GRATIS SFW</span>
                   )}
                   {isDisabled && (
-                    <span className="absolute top-1 right-1 text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-medium">
-                      Premium
-                    </span>
+                    <div className="absolute -top-2 -right-2 bg-amber-500 text-black p-0.5 rounded-full shadow-md">
+                      <Lock className="h-3 w-3" />
+                    </div>
                   )}
                 </button>
               )
@@ -1091,8 +1121,19 @@ export default function GenerateImagePage() {
       <PremiumUpgradeModal
         isOpen={showPremiumModal}
         onClose={() => setShowPremiumModal(false)}
-        feature="Multiple Image Generation!"
-        description="Become a Premium user now and generate 4, 6, or 8 images simultaneously. Save time and explore more creative possibilities!"
+        feature="Uppgradera till Premium"
+        description="Upgrade to Premium to generate unlimited images."
+        imageSrc="/realistic_girlfriend_generate_unlimited_upgrade_1766901000000.png"
+      />
+
+      {/* Tokens Depleted Modal (for Premium Users) */}
+      <PremiumUpgradeModal
+        isOpen={showTokensDepletedModal}
+        onClose={() => setShowTokensDepletedModal(false)}
+        mode="tokens-depleted"
+        feature="Tokens Slut"
+        description="You used your 100 free premium tokens. Buy more tokens to use premium features"
+        imageSrc="/premium_tokens_depleted_upsell_1766902100000.png"
       />
 
 

@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { logApiCost } from "@/lib/budget-monitor"
+import { createAdminClient } from "@/lib/supabase-admin"
 
 // Define types for the API
 type NovitaTxt2ImgRequestBody = {
@@ -204,6 +206,11 @@ export async function POST(req: NextRequest) {
     // If we found a task ID, return it
     if (taskId) {
       console.log("Found task ID:", taskId)
+
+      // Try to get user ID from some source (img2img usually doesn't have it easily in current structure, but let's try)
+      // For now, log as system or try to extract from character/request if possible
+      await logApiCost("Image generation (img2img)", 0, 0.05, "").catch(e => {})
+
       return NextResponse.json({ taskId })
     }
 

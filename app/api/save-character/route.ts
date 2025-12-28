@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 import { uploadImageToSupabase } from '@/lib/storage-utils';
 import { deductTokens, refundTokens, getUserTokenBalance } from '@/lib/token-utils';
-import { checkActiveGirlfriendsLimit } from '@/lib/subscription-limits';
+import { checkActiveGirlfriendsLimit, getUserPlanInfo } from '@/lib/subscription-limits';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -38,14 +38,79 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // 1. Check if user is premium or admin (Free users cannot generate/save AI girls)
+        const planInfo = await getUserPlanInfo(userId);
+        const { data: adminUser } = await supabase.from('admin_users').select('id').eq('user_id', userId).maybeSingle();
+        const isAdmin = !!adminUser;
+        const isPremium = planInfo.planType === 'premium';
+
+        if (!isPremium && !isAdmin) {
+            console.log(`❌ Non-premium user ${userId.substring(0, 8)} tried to save a character`);
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Gratisanvändare kan inte skapa AI-flickvänner. Uppgradera till Premium.',
+                    upgrade_required: true
+                },
+                { status: 403 }
+            );
+        }
+
         console.log('🎨 Creating character:', characterName, 'for user:', userId);
 
-        // Check active girlfriends limit before proceeding
+        // 2. Check and deduct tokens
+        const CHARACTER_CREATION_TOKEN_COST = 7; // 2 for profile + 5 for image
+        console.log(`💰 Checking token balance for 7 tokens...`);
+        const balance = await getUserTokenBalance(userId);
+
+        if (balance < CHARACTER_CREATION_TOKEN_COST && !isAdmin) {
+            console.log(`❌ Insufficient tokens: ${balance} < ${CHARACTER_CREATION_TOKEN_COST}`);
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: `Du behöver ${CHARACTER_CREATION_TOKEN_COST} tokens för att skapa en karaktär (du har ${balance}).`,
+                    insufficient_tokens: true,
+                    currentBalance: balance,
+                    requiredTokens: CHARACTER_CREATION_TOKEN_COST
+                },
+                { status: 402 }
+            );
+        }
+
+        // Deduct tokens
+        if (!isAdmin) {
+            const deductionSuccess = await deductTokens(
+                userId,
+                CHARACTER_CREATION_TOKEN_COST,
+                `Skapade AI-karaktär: ${characterName}`,
+                {
+                    activity_type: 'character_creation',
+                    character_name: characterName,
+                    profile_cost: 2,
+                    image_cost: 5
+                }
+            );
+
+            if (!deductionSuccess) {
+                return NextResponse.json(
+                    { success: false, error: 'Token deduction failed' },
+                    { status: 500 }
+                );
+            }
+            console.log(`✅ Deducted ${CHARACTER_CREATION_TOKEN_COST} tokens`);
+        }
+
+        // 3. Check active girlfriends limit before proceeding
         console.log(`👥 Checking active girlfriends limit for user ${userId.substring(0, 8)}...`);
         const activeCheck = await checkActiveGirlfriendsLimit(userId);
 
         if (!activeCheck.allowed) {
             console.log(`❌ Active girlfriend limit reached: ${activeCheck.currentUsage}/${activeCheck.limit}`);
+            // Refund tokens if limit reached
+            if (!isAdmin) {
+                await refundTokens(userId, CHARACTER_CREATION_TOKEN_COST, `Refund: Active girlfriend limit reached for ${characterName}`);
+            }
+
             return NextResponse.json(
                 {
                     success: false,
@@ -59,11 +124,6 @@ export async function POST(request: NextRequest) {
         }
 
         console.log(`✅ Active girlfriend check passed: ${activeCheck.currentUsage}/${activeCheck.limit}`);
-        
-        // Token check removed from save as per user request (logic moved to page entry)
-        // Cost is 0 anyway, so we just proceed to saving if they passed the premium gate
-
-
 
         // Download and upload image to Supabase Storage
         console.log('📥 Downloading and uploading image to Supabase Storage...');
@@ -112,55 +172,61 @@ export async function POST(request: NextRequest) {
 
         // Insert character into database with permanent image URL
         console.log('📝 Inserting character into database...');
-        const { data, error } = await supabase
-                .from('characters')
-                .insert({
-                    user_id: userId,
-                    userId: userId, // Set both for compatibility
-                    name: characterName,
-                    age: ageValue,
-                    image: permanentImageUrl,
-                    image_url: permanentImageUrl,
-                    // removed avatar_url - column does not exist
-                    description: description,
-                    system_prompt: systemPrompt,
-                    systemPrompt: systemPrompt, // Set both
-                    personality: characterDetails.personality || 'Friendly',
-                    // removed voice - column does not exist
-                    // removed is_active - column does not exist
-                    is_public: isPublic,
-                    isPublic: isPublic, // Set both
-                    share_revenue: true,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    // removed metadata - column does not exist
-                    ethnicity: characterDetails.ethnicity || null,
-                    relationship: characterDetails.relationship || null,
-                    body: characterDetails.bodyType || null,
-                    occupation: 'Student', 
-                    hobbies: 'Reading, Music',
-                    language: 'English',
-                    gender: mappedGender,
-                    category: mappedCategory,
-                    is_new: true,
-                })
+        const { data, error } = await (supabase
+            .from('characters') as any)
+            .insert({
+                user_id: userId,
+                userId: userId, // Set both for compatibility
+                name: characterName,
+                age: ageValue,
+                image: permanentImageUrl,
+                image_url: permanentImageUrl,
+                description: description,
+                system_prompt: systemPrompt,
+                systemPrompt: systemPrompt, // Set both
+                personality: characterDetails.personality || 'Friendly',
+                is_public: isPublic,
+                isPublic: isPublic, // Set both
+                share_revenue: true,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                ethnicity: characterDetails.ethnicity || null,
+                relationship: characterDetails.relationship || null,
+                body: characterDetails.bodyType || null,
+                occupation: 'Student',
+                hobbies: 'Reading, Music',
+                language: 'English',
+                gender: mappedGender,
+                category: mappedCategory,
+                is_new: true,
+                metadata: {
+                    created_during_subscription: isPremium || isAdmin,
+                    plan_type: planInfo.planType,
+                    characterDetails: characterDetails
+                }
+            })
             .select()
             .single();
 
         if (error) {
             console.error('❌ Database error saving character:', error);
+            // Refund tokens on database error
+            if (!isAdmin) {
+                await refundTokens(userId, CHARACTER_CREATION_TOKEN_COST, `Refund: Database error during save for ${characterName}`);
+            }
             return NextResponse.json(
                 { success: false, error: `Database error: ${error.message}` },
                 { status: 500 }
             );
         }
 
-        console.log('✅ Character saved successfully:', data?.id);
+        const savedCharacter = data as any;
+        console.log('✅ Character saved successfully:', savedCharacter?.id);
 
         return NextResponse.json({
             success: true,
-            character: data,
-            tokens_used: CHARACTER_CREATION_TOKEN_COST
+            character: savedCharacter,
+            tokens_used: isAdmin ? 0 : CHARACTER_CREATION_TOKEN_COST
         });
 
     } catch (error) {
@@ -272,7 +338,7 @@ function buildCharacterDescription(details: any): string {
 function extractAge(age: any): number {
     // If it's already a number, return it
     if (typeof age === 'number') return age;
-    
+
     // If it's not a string or empty, return default
     if (!age || typeof age !== 'string') return 25;
 

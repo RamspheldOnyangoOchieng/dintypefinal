@@ -41,18 +41,66 @@ export async function deductTokens(userId: string, amount: number, description: 
       throw new Error("Failed to initialize Supabase admin client")
     }
 
-    // 1. Get current balance
+    // 1. Get current balance and check if user is premium
     const { data: userData, error: userError } = await supabaseAdmin
       .from("user_tokens")
-      .select("balance")
+      .select("balance, auto_refill_count, last_refill_date")
       .eq("user_id", userId)
       .maybeSingle()
 
     if (userError) throw userError
-    
+
+    // Check premium status
+    const { data: subscription } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select('plan_type, status, current_period_end')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    const isPremium = subscription?.plan_type === 'premium' &&
+      (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date())
+
     // If no record exists, consider balance as 0
-    const balance = userData?.balance || 0
-    
+    let balance = userData?.balance || 0
+
+    // AUTOMATIC REFILL LOGIC: If premium and insufficient, give 100 tokens if not already refilled this month
+    if (balance < amount && isPremium) {
+      const now = new Date()
+      const lastRefill = userData?.last_refill_date ? new Date(userData.last_refill_date) : null
+      const alreadyRefilledThisMonth = lastRefill &&
+        lastRefill.getMonth() === now.getMonth() &&
+        lastRefill.getFullYear() === now.getFullYear()
+
+      if (!alreadyRefilledThisMonth) {
+        console.log(`🎁 Automatic 100 token refill for premium user ${userId.substring(0, 8)}`)
+
+        // Grant 100 tokens
+        const refillAmount = 100
+        balance += refillAmount
+
+        // Update user_tokens with refill tracking
+        await supabaseAdmin
+          .from("user_tokens")
+          .upsert({
+            user_id: userId,
+            balance: balance,
+            auto_refill_count: (userData?.auto_refill_count || 0) + 1,
+            last_refill_date: now.toISOString(),
+            updated_at: now.toISOString()
+          })
+
+        // Record refill transaction
+        await supabaseAdmin.from("token_transactions").insert({
+          user_id: userId,
+          amount: refillAmount,
+          type: "bonus",
+          description: "Automatic premium token refill (100 tokens)",
+          created_at: now.toISOString()
+        })
+      }
+    }
+
     if (balance < amount) {
       console.warn(`⚠️ User ${userId.substring(0, 8)} has insufficient tokens (${balance} < ${amount})`)
       throw new Error("Insufficient tokens")

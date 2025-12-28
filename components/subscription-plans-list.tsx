@@ -83,6 +83,7 @@ export default function SubscriptionPlansList({ initialPlans }: SubscriptionPlan
             <TableHead>Price</TableHead>
             <TableHead>Discount</TableHead>
             <TableHead>Popular</TableHead>
+            <TableHead>Subscribers</TableHead>
             <TableHead>Features</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -145,6 +146,11 @@ export default function SubscriptionPlansList({ initialPlans }: SubscriptionPlan
                   >
                     {plan.is_popular ? <Star className="h-4 w-4" /> : <StarOff className="h-4 w-4" />}
                   </Button>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className="bg-[#252525] text-white hover:bg-[#303030]">
+                    {plan.subscriber_count || 0} users
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   {plan.features.length > 0 ? (

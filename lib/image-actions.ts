@@ -69,9 +69,26 @@ export async function getAllImages(options?: {
       }
     }
 
+    // Enhance images with is_locked status based on current plan
+    const { getUserPlanInfo } = await import("@/lib/subscription-limits")
+    const { isAdmin: checkIsAdmin } = await import("@/lib/admin-privileges")
+    const planInfo = await getUserPlanInfo(userId)
+    const isAdmin = (await checkIsAdmin(userId)).isAdmin
+    const isCurrentlyPremium = planInfo.planType === 'premium'
+
+    const enhancedImages = (data || []).map(img => {
+      const wasPremiumWhenCreated = (img.metadata as any)?.plan_type === 'premium'
+      // Lock if it was premium content but user is no longer premium (and not admin)
+      const isLocked = wasPremiumWhenCreated && !isCurrentlyPremium && !isAdmin
+      return {
+        ...img,
+        is_locked: isLocked
+      }
+    })
+
     return {
       success: true,
-      images: data || [],
+      images: enhancedImages,
     }
   } catch (error) {
     console.error("[Server Action] Unexpected error:", error)
@@ -103,7 +120,23 @@ export async function getImage(id: string) {
       return { success: false, error: error.message }
     }
 
-    return { success: true, image: data }
+    // Calculate is_locked for single image
+    const { getUserPlanInfo } = await import("@/lib/subscription-limits")
+    const { isAdmin: checkIsAdmin } = await import("@/lib/admin-privileges")
+    const planInfo = await getUserPlanInfo(userId)
+    const isAdmin = (await checkIsAdmin(userId)).isAdmin
+    const isCurrentlyPremium = planInfo.planType === 'premium'
+    
+    const wasPremiumWhenCreated = (data.metadata as any)?.plan_type === 'premium'
+    const isLocked = wasPremiumWhenCreated && !isCurrentlyPremium && !isAdmin
+
+    return { 
+      success: true, 
+      image: {
+        ...data,
+        is_locked: isLocked
+      } 
+    }
   } catch (error) {
     console.error("Error fetching image:", error)
     return {

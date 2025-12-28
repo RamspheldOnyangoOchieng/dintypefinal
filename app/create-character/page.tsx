@@ -24,6 +24,7 @@ import {
     ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { UserTokenBalance } from "@/components/user-token-balance";
 
 export default function CreateCharacterPage() {
     const searchParams = useSearchParams();
@@ -66,15 +67,15 @@ export default function CreateCharacterPage() {
     const { user, isLoading: authLoading } = useAuth();
     const { openLoginModal } = useAuthModal();
     const [showPremiumModal, setShowPremiumModal] = useState(false);
+    const [showTokensDepletedModal, setShowTokensDepletedModal] = useState(false);
+    const [showExpiredModal, setShowExpiredModal] = useState(false);
 
-    // Initial check for premium access
+    // Initial check for authentication
     useEffect(() => {
         if (!authLoading) {
             if (!user) {
                 openLoginModal();
                 router.push('/my-ai');
-            } else if (!user.isPremium && !user.isAdmin) {
-                setShowPremiumModal(true);
             }
         }
     }, [user, authLoading]);
@@ -611,7 +612,13 @@ export default function CreateCharacterPage() {
 
                     <div className="pt-4 md:pt-6">
                         <button
-                            onClick={() => setShowNameDialog(true)}
+                            onClick={() => {
+                                if (!user?.isPremium && !user?.isAdmin) {
+                                    setShowPremiumModal(true);
+                                    return;
+                                }
+                                setShowNameDialog(true);
+                            }}
                             className="w-full py-4 sm:py-5 rounded-lg sm:rounded-[1.5rem] bg-gradient-to-r from-primary to-blue-600 text-white font-black text-base sm:text-lg tracking-wider shadow-2xl shadow-primary/20 hover:scale-[1.02] hover:shadow-primary/40 active:scale-[0.98] transition-all uppercase">
                             Gör min AI levande
                         </button>
@@ -710,6 +717,12 @@ export default function CreateCharacterPage() {
                 }),
             });
 
+            if (response.status === 402) {
+                setShowTokensDepletedModal(true);
+                setIsGenerating(false);
+                return;
+            }
+
             if (!response.ok) {
                 let errorMessage = 'Failed to generate image';
                 try {
@@ -805,7 +818,13 @@ export default function CreateCharacterPage() {
                 }),
             });
 
-            // Handle auth errors from API
+            // Handle auth and token errors from API
+            if (response.status === 402) {
+                setShowTokensDepletedModal(true);
+                setIsSaving(false);
+                return;
+            }
+
             if (response.status === 401 || response.status === 403) {
                 // Check if it's actually an "Access Denied" or "Limit Reached" error from the backend rather than just missing auth
                 const errorData = await response.json().catch(() => ({}));
@@ -1059,11 +1078,18 @@ export default function CreateCharacterPage() {
         <div className="min-h-screen bg-background">
             <div className="max-w-4xl mx-auto pt-8 sm:pt-12 md:pt-16 px-2 sm:px-4 md:px-6">
                 {/* Header */}
-                <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                    <div className="flex items-center justify-center mb-2 sm:mb-4">
-                        <span className="text-lg sm:text-xl md:text-2xl">🧬</span>
-                        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold ml-1 sm:ml-2">Skapa min AI</h1>
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 md:mb-10 gap-4">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xl sm:text-2xl md:text-3xl">🧬</span>
+                        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black italic tracking-tighter text-foreground leading-tight">
+                            Skapa min AI
+                        </h1>
                     </div>
+                    {user && (
+                        <UserTokenBalance 
+                            className="bg-card/40 backdrop-blur-md border-primary/20"
+                        />
+                    )}
                 </div>
 
                 {/* Loading indicator for male images */}
@@ -2310,6 +2336,14 @@ export default function CreateCharacterPage() {
                                 const generationStep = gender === 'lady' ? 7 : 4;
 
                                 if (currentStep === summaryStep) {
+                                    if (user?.isExpired) {
+                                        setShowExpiredModal(true);
+                                        return;
+                                    }
+                                    if (!user?.isPremium && !user?.isAdmin) {
+                                        setShowPremiumModal(true);
+                                        return;
+                                    }
                                     setShowNameDialog(true);
                                 } else if (currentStep === generationStep) {
                                     handleSaveCharacter();
@@ -2410,11 +2444,27 @@ export default function CreateCharacterPage() {
                 isOpen={showPremiumModal}
                 onClose={() => {
                     setShowPremiumModal(false);
-                    router.push('/my-ai');
                 }}
-                feature="Skapa AI Flickvänner"
-                description="Uppgradera till Premium för att skapa AI flickvänner"
+                feature="Skapa AI-flickvänner"
+                description="Upgrade to Premium to generate AI girlfriends."
                 imageSrc="/realistic_girlfriend_create_character_upgrade_1766900675037.png"
+            />
+
+            <PremiumUpgradeModal
+                isOpen={showTokensDepletedModal}
+                onClose={() => setShowTokensDepletedModal(false)}
+                mode="tokens-depleted"
+                feature="Tokens Slut"
+                description="You used your 100 free premium tokens. Buy more tokens to use premium features"
+                imageSrc="/premium_tokens_depleted_upsell_1766902100000.png"
+            />
+
+            <PremiumUpgradeModal
+                isOpen={showExpiredModal}
+                onClose={() => setShowExpiredModal(false)}
+                mode="expired"
+                feature="Premium Expired"
+                description="Premium Plan expired. Renew your Premium Plan."
             />
         </div>
     );

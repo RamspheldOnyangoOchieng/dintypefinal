@@ -13,7 +13,9 @@ import {
   Send,
   Menu,
   Loader2,
+  User,
 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
 import { useSidebar } from "@/components/sidebar-context"
@@ -31,6 +33,7 @@ import {
   getChatHistoryFromLocalStorage,
   clearChatHistoryFromLocalStorage,
 } from "@/lib/local-storage-chat"
+import { saveMessageToDatabase } from "@/lib/chat-storage"
 import { SupabaseDebug } from "@/components/supabase-debug"
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
 import { isAskingForImage, extractImagePrompt, imageUrlToBase64 } from "@/lib/image-utils"
@@ -39,7 +42,7 @@ import { containsNSFW } from "@/lib/nsfw-filter"
 
 export default function ChatPage({ params }: { params: { id: string } }) {
   const [characterId, setCharacterId] = useState<string | null>(null);
-  const { characters, isLoading: charactersLoading } = useCharacters();
+  const { characters, isLoading: charactersLoading, updateCharacter } = useCharacters();
   const [character, setCharacter] = useState<any>(null);
 
   // Handle params unwrapping for Next.js 15
@@ -88,10 +91,14 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string[] | null>(null)
   const [isMounted, setIsMounted] = useState(false)
+  const [showTokensDepletedModal, setShowTokensDepletedModal] = useState(false)
+  const [showExpiredModal, setShowExpiredModal] = useState(false)
   const [chatsWithHistory, setChatsWithHistory] = useState<string[]>([])
   const [showVideo, setShowVideo] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [lastMessages, setLastMessages] = useState<Record<string, Message | null>>({})
+  const [isProfileOpen, setIsProfileOpen] = useState(true)
+  const [isGeneratingProfilePhoto, setIsGeneratingProfilePhoto] = useState(false)
 
   // Use a ref for the interval to ensure we always have the latest reference
   const imageCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -232,6 +239,82 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     setLastMessages(newLastMessages)
   }, [characters, isMounted, messages])
 
+  // Handle generating a new profile photo for the character
+  const handleGenerateProfilePhoto = async () => {
+    if (!character || isGeneratingProfilePhoto) return
+
+    if (!user) {
+      openLoginModal()
+      return
+    }
+
+    try {
+      setIsGeneratingProfilePhoto(true)
+      console.log("🎨 Generating new profile photo for:", character.name)
+
+      // Reconstruct character details for the generation API
+      // Try to get from metadata if it exists, otherwise use what we have
+      const details = character.metadata?.characterDetails || {
+        style: character.category === 'anime' ? 'anime' : 'realistic',
+        ethnicity: character.ethnicity || 'White',
+        age: character.age ? `${Math.floor(character.age / 10) * 10}s` : '20s',
+        eyeColor: 'brown',
+        hairStyle: 'long',
+        hairColor: 'brown',
+        bodyType: character.body || 'average',
+        breastSize: 'medium',
+        buttSize: 'medium',
+        personality: character.personality || 'friendly',
+        relationship: character.relationship || 'companion',
+      }
+
+      const response = await fetch("/api/generate-character-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          characterDetails: details,
+          gender: character.gender === 'male' ? 'gent' : 'lady'
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.status === 402) {
+        setShowTokensDepletedModal(true)
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate image")
+      }
+
+      console.log("✅ New image generated:", data.imageUrl)
+
+      // Update character images array
+      const currentImages = character.images || []
+      const updatedImages = [...currentImages, data.imageUrl]
+
+      // Save to database
+      const success = await updateCharacter(character.id, {
+        images: updatedImages
+      })
+
+      if (success) {
+        console.log("✅ Character profile updated with new image")
+        // The characters context update will trigger the useMemo to update galleryImages
+        setCurrentImageIndex(galleryImages.length) // Navigate to the new image
+      } else {
+        console.warn("⚠️ Failed to update character in database")
+      }
+
+    } catch (error) {
+      console.error("Error generating profile photo:", error)
+      alert(error instanceof Error ? error.message : "Failed to generate profile photo")
+    } finally {
+      setIsGeneratingProfilePhoto(false)
+    }
+  }
+
   // Handle image error
   const handleImageError = useCallback(
     (id: string) => {
@@ -326,7 +409,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       console.log("Loading chat history for character:", characterId)
 
       // Get history from localStorage
-      const history = getChatHistoryFromLocalStorage(characterId)
+      const history = getChatHistoryFromLocalStorage(character.id)
 
       console.log(`Loaded ${history.length} messages from localStorage`)
       setDebugInfo((prev) => ({
@@ -467,7 +550,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
       if (isMounted) {
         setMessages((prev) => [...prev, loadingMessage])
-        saveMessageToLocalStorage(characterId, loadingMessage)
+        saveMessageToLocalStorage(characterId!, loadingMessage)
       }
 
       // Convert the image to base64
@@ -502,6 +585,12 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         })
 
         responseData = await response.json()
+
+        if (response.status === 402) {
+          setShowTokensDepletedModal(true)
+          setIsGeneratingImage(false)
+          return
+        }
 
         if (!response.ok || !responseData.taskId) {
           console.warn("Real API failed, falling back to mock API:", responseData)
@@ -605,7 +694,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             }
 
             setMessages((prev) => [...prev, imageMessage])
-            saveMessageToLocalStorage(characterId, imageMessage)
+            saveMessageToLocalStorage(characterId!, imageMessage)
 
             // Clear task ID and processing flag
             currentTaskIdRef.current = null
@@ -627,7 +716,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             }
 
             setMessages((prev) => [...prev, errorMessage])
-            saveMessageToLocalStorage(characterId, errorMessage)
+            saveMessageToLocalStorage(characterId!, errorMessage)
 
             // Clear task ID and processing flag
             currentTaskIdRef.current = null
@@ -731,6 +820,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
     if (inputValue.trim() && !isLoading) {
       // Check message limit before sending
+      if (user?.isExpired) {
+        setShowExpiredModal(true)
+        return
+      }
+
       if (user?.id) {
         try {
           const messageCheck = await checkMessageLimit(user.id)
@@ -780,7 +874,9 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
       try {
         // Save user message to localStorage
-        saveMessageToLocalStorage(characterId, newMessage)
+        // Use saveMessageToLocalStorage with the checked character ID
+        saveMessageToLocalStorage(character.id, newMessage)
+        saveMessageToDatabase(character.id, newMessage)
         setDebugInfo((prev) => ({ ...prev, lastAction: "userMessageSaved" }))
 
 
@@ -823,8 +919,9 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         // Add AI response to chat
         setMessages((prev) => [...prev, assistantMessage])
 
-        // Save assistant message to localStorage
-        saveMessageToLocalStorage(characterId, assistantMessage)
+        // Save assistant message to localStorage and database
+        saveMessageToLocalStorage(characterId!, assistantMessage)
+        saveMessageToDatabase(characterId!, assistantMessage)
         setDebugInfo((prev) => ({ ...prev, lastAction: "aiMessageSaved" }))
 
         // Increment message usage for limit tracking AND deduct tokens
@@ -894,7 +991,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     setDebugInfo((prev) => ({ ...prev, lastAction: "clearingChat" }))
 
     try {
-      const success = clearChatHistoryFromLocalStorage(characterId)
+      const success = clearChatHistoryFromLocalStorage(character.id)
       setDebugInfo((prev) => ({
         ...prev,
         lastAction: success ? "chatCleared" : "chatClearFailed",
@@ -960,7 +1057,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row bg-background h-screen" style={{ position: 'relative', top: 0 }}>
+    <div className="flex flex-col md:flex-row bg-background h-[100dvh] md:h-screen w-full overflow-hidden" style={{ position: 'relative', top: 0 }}>
       {/* Left Sidebar - Chat List */}
       <div className="hidden md:block md:w-72 border-b md:border-b-0 md:border-r border-border flex flex-col rounded-tr-2xl rounded-br-2xl">
         <div className="p-4 border-b border-border flex items-center justify-between">
@@ -1048,26 +1145,39 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               {/* Use regular img tag for Cloudinary images */}
               <img
                 src={
-                  imageErrors["profile"]
+                  imageErrors[character.id]
                     ? "/placeholder.svg?height=40&width=40"
                     : (character?.image_url || character?.image || "/placeholder.svg?height=40&width=40")
                 }
                 alt={character?.name || "Character"}
                 className="w-full h-full rounded-full object-cover"
-                onError={() => handleImageError("profile")}
+                onError={() => handleImageError(character.id)}
                 loading="lazy"
               />
             </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <h4 className="font-medium truncate">{character?.name ? character.name.split(" ") : t("general.loading")}</h4>
-              <span className="text-xs text-muted-foreground">
+            <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+              <h4 className="font-bold truncate text-foreground leading-tight">
+                {character?.name || t("general.loading")}
+              </h4>
+              <span className="text-[10px] md:text-xs text-muted-foreground truncate">
                 {messages.length > 0 ? messages[messages.length - 1].timestamp : t("chat.noMessagesYet")}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
             <ClearChatDialog onConfirm={handleClearChat} isClearing={isClearingChat} />
-            {/* Phone call removed - will be added to roadmap */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "hidden lg:flex text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation transition-colors",
+                isProfileOpen && "text-primary"
+              )}
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              title={isProfileOpen ? "Hide Profile" : "Show Profile"}
+            >
+              <User className="h-5 w-5" />
+            </Button>
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation">
               <MoreVertical className="h-5 w-5" />
             </Button>
@@ -1077,10 +1187,14 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 scroll-smooth overscroll-behavior-contain min-h-0" data-messages-container>
           {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div key={message.id} className={`flex w-full ${message.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[90%] md:max-w-[70%] ${message.role === "user" ? "bg-[#252525] text-white" : "bg-[#252525] text-white"
-                  } rounded-2xl p-3 md:p-4 shadow-sm`}
+                className={cn(
+                  "max-w-[85%] md:max-w-[80%] lg:max-w-[70%] rounded-2xl p-3 md:p-4 shadow-sm transition-all duration-300",
+                  message.role === "user"
+                    ? "bg-[#252525] text-white rounded-tr-none"
+                    : "bg-[#252525] text-white rounded-tl-none border border-white/5"
+                )}
               >
                 <div className="flex justify-between items-start">
                   <p className="text-current leading-relaxed break-words">{message.content}</p>
@@ -1184,7 +1298,10 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Right Sidebar - Profile */}
-      <div className="hidden lg:block lg:w-80 border-l border-border">
+      <div className={cn(
+        "hidden border-l border-border transition-all duration-300 ease-in-out bg-background/50 backdrop-blur-sm",
+        isProfileOpen ? "lg:block lg:w-80" : "lg:hidden w-0 overflow-hidden"
+      )}>
         <div className="h-full overflow-auto">
           {/* Profile Images Carousel */}
           <div className="relative aspect-square">
@@ -1296,9 +1413,17 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               <Button
                 variant="outline"
                 className="w-full bg-[#252525] text-white border-primary hover:bg-[#353535] hover:border-primary/80"
-                onClick={() => router.push("/generate")}
+                onClick={handleGenerateProfilePhoto}
+                disabled={isGeneratingProfilePhoto}
               >
-                {t("generate.generateImage")}
+                {isGeneratingProfilePhoto ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Genererar...
+                  </>
+                ) : (
+                  t("generate.generateImage")
+                )}
               </Button>
             </div>
             <h3 className="text-lg font-medium mb-4">{t("chat.aboutMe")}</h3>
@@ -1333,11 +1458,31 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         imageSrc={character?.image || "/realistic_girlfriend_premium_upgrade_1766900253700.png"}
       />
 
+      <PremiumUpgradeModal
+        isOpen={showTokensDepletedModal}
+        onClose={() => setShowTokensDepletedModal(false)}
+        mode="tokens-depleted"
+        feature="Tokens Slut"
+        description="Du har inga tokens kvar. Köp mer för att generera fler bilder eller använda premiumfunktioner."
+        imageSrc="/premium_tokens_depleted_upsell_1766902100000.png"
+      />
+
+      <PremiumUpgradeModal
+        isOpen={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+        mode="expired"
+        feature="Premium Utgått"
+        description="Ditt Premium-medlemskap har utgått. Förnya för att fortsätta chatta och skapa obegränsat."
+      />
+
       {selectedImage && (
         <ImageModal
-          isOpen={!!selectedImage}
-          onClose={() => setSelectedImage(null)}
-          imageSrc={selectedImage[0]}
+          open={!!selectedImage}
+          onOpenChange={(open) => !open && setSelectedImage(null)}
+          images={selectedImage}
+          initialIndex={0}
+          onDownload={(url) => window.open(url, '_blank')}
+          onShare={(url) => navigator.share?.({ url })}
         />
       )}
     </div>

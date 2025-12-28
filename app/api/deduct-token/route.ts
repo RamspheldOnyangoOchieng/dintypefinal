@@ -37,7 +37,7 @@ export async function POST(req: Request) {
                     insufficientTokens: true,
                     currentBalance,
                     requiredTokens: deductionAmount
-                }), { status: 400 })
+                }), { status: 402 })
             }
 
             return new NextResponse(JSON.stringify({ error: 'Failed to deduct tokens' }), { status: 500 })

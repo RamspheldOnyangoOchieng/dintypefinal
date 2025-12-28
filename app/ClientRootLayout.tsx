@@ -14,10 +14,22 @@ import { AnalyticsLoader } from "@/components/use-consent"
 import { usePathname } from "next/navigation"
 import type React from "react"
 import "./globals.css"
+import { useAuth } from "@/components/auth-context"
+import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
+import { useState, useEffect } from "react"
 
 function RootLayoutContent({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidebar()
   const pathname = usePathname()
+  const { user, isLoading } = useAuth()
+  const [showExpiredModal, setShowExpiredModal] = useState(false)
+
+  useEffect(() => {
+    if (!isLoading && user?.isExpired && !sessionStorage.getItem('expired_modal_shown')) {
+      setShowExpiredModal(true)
+      sessionStorage.setItem('expired_modal_shown', 'true')
+    }
+  }, [user?.isExpired, isLoading])
 
   const noHeaderPaths = ["/chat", "/generate", "/premium", "/affiliate", "/admin"]
   const noFooterPaths = ["/chat"]
@@ -35,6 +47,14 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
         {showFooter && <SiteFooter />}
       </div>
+
+      <PremiumUpgradeModal 
+        isOpen={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+        mode="expired"
+        feature="Premium Expired"
+        description="Premium Plan expired. Renew your Premium Plan."
+      />
     </div>
   )
 }

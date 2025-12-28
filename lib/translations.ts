@@ -12,6 +12,7 @@ export type TranslationKey =
   | "general.create"
   | "general.chat"
   | "general.collection"
+  | "navigation.home"
   | "auth.welcomeBack"
   | "general.premium"
   | "general.aiCharacters"
@@ -178,6 +179,7 @@ export type TranslationKey =
   | "reset.updatedDescription"
   | "reset.invalidEmail"
   | "reset.missingConfig"
+  | "reset.sessionExpired"
   | "chat.aboutMe"
   | "profile.age"
   | "profile.body"
@@ -338,6 +340,7 @@ export const translations: Record<"en" | "sv", Translations> = {
     "general.siteName": "AI Character Explorer",
     "general.welcome": "Welcome",
     "general.home": "Home",
+    "navigation.home": "Back to Home",
     "general.legal": "Legal",
     "general.features": "Features",
     "general.popular": "Popular",
@@ -530,6 +533,7 @@ export const translations: Record<"en" | "sv", Translations> = {
     "reset.updatedDescription": "Your password has been updated. Redirecting...",
     "reset.invalidEmail": "Please enter a valid email address",
     "reset.missingConfig": "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+    "reset.sessionExpired": "Session expired or invalid. Please request a new password reset link.",
     "premium.chooseYourPlan": "Choose your Plan",
     "premium.anonymousDisclaimer": "100% anonymous. You can cancel anytime.",
     "premium.cancelAnytime": "Cancel subscription at any time",
@@ -692,6 +696,7 @@ export const translations: Record<"en" | "sv", Translations> = {
     "general.cancel": "Avbryt",
     "general.home": "Hem",
     "general.loading": "Laddar...",
+    "navigation.home": "Tillbaka till hem",
     "general.error": "Ett fel inträffade",
     "general.success": "Framgång",
     "general.explore": "Utforska",
@@ -864,6 +869,7 @@ export const translations: Record<"en" | "sv", Translations> = {
     "reset.updatedDescription": "Ditt lösenord har uppdaterats. Omdirigerar...",
     "reset.invalidEmail": "Ange en giltig e-postadress",
     "reset.missingConfig": "Supabase är inte konfigurerat. Sätt NEXT_PUBLIC_SUPABASE_URL och NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+    "reset.sessionExpired": "Sessionen har gått ut eller är ogiltig. Begär en ny länk för återställning av lösenord.",
     "premium.chooseYourPlan": "Välj din plan",
     "premium.anonymousDisclaimer": "100% anonym. Du kan avbryta när som helst.",
     "premium.cancelAnytime": "Avbryt prenumerationen när som helst",

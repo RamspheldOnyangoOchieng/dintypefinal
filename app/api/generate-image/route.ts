@@ -4,7 +4,9 @@ import { deductTokens, refundTokens, getUserTokenBalance } from "@/lib/token-uti
 import { createClient } from "@/lib/supabase-server"
 import { createAdminClient } from "@/lib/supabase-admin"
 import { getUnifiedNovitaKey } from "@/lib/unified-api-keys"
+import { containsNSFW } from "@/lib/nsfw-filter"
 import type { Database } from "@/types/supabase"
+import { logApiCost } from "@/lib/budget-monitor"
 
 // Dynamic token costs based on model and image count
 const getTokenCost = (model: string, imageCount: number = 1): number => {
@@ -270,6 +272,42 @@ export async function POST(req: NextRequest) {
       console.error("⚠️ Error checking user status details:", error)
     }
 
+    // --- ENFORCE FREE TIER LIMITS ---
+    if (!isAdmin && !isPremium) {
+      // 1. Enforce NSFW check in prompt
+      if (containsNSFW(prompt)) {
+        return NextResponse.json({
+          error: "NSFW content detected. Free users can only generate SFW images.",
+          upgrade_required: true,
+          upgradeUrl: "/premium"
+        }, { status: 403 });
+      }
+
+      // 2. Enforce 1-image-only limit for free users
+      if (actualImageCount > 1) {
+        return NextResponse.json({
+          error: "Free users can only generate 1 image at a time. Upgrade to Premium for 4, 6, or 8 images.",
+          upgrade_required: true,
+          upgradeUrl: "/premium"
+        }, { status: 403 });
+      }
+
+      // 3. Check if user already used their 1 free generation
+      const { count: imagesGenerated } = await supabase
+        .from("generated_images")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      if ((imagesGenerated || 0) >= 1) {
+        return NextResponse.json({
+          error: "You have used your 1 free SFW image generation. Upgrade to Premium for unlimited generations!",
+          upgrade_required: true,
+          upgradeUrl: "/premium"
+        }, { status: 403 });
+      }
+    }
+    // --- END FREE TIER LIMITS ---
+
     // Check token balance before deduction
     // Only deduct if cost is greater than 0 AND user is not an admin
     if (tokenCost > 0 && !isAdmin) {
@@ -490,6 +528,13 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`✅ Task submitted successfully, task ID: ${data.task_id}`)
+
+    // Log API cost for monitoring
+    const perImageCost = actualModel === 'flux' ? 0.04 : 0.02
+    const totalApiCost = perImageCost * actualImageCount
+    await logApiCost(`Image generation (${actualModel})`, 0, totalApiCost, userId).catch(err => 
+      console.error('Failed to log API cost:', err)
+    )
 
     // Update database task record with the task_id from Novita
     if (createdTask && supabaseAdminForTask) {

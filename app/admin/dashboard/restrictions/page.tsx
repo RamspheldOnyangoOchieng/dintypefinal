@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Save, RefreshCw } from "lucide-react"
+import { Loader2, Save, RefreshCw, Plus, Trash2 } from "lucide-react"
 
 interface PlanRestriction {
   id: string
@@ -82,6 +82,38 @@ export default function RestrictionsPage() {
             : r
         )
       )
+    }
+  }
+
+  // Add new restriction locally
+  const addRestriction = (planType: 'free' | 'premium') => {
+    const newKey = prompt("Enter restriction key (e.g. max_tokens_per_message):")
+    if (!newKey) return
+
+    const newRestriction: PlanRestriction = {
+      id: Math.random().toString(36).substring(7),
+      plan_type: planType,
+      restriction_key: newKey,
+      restriction_value: 'true',
+      description: 'Newly added restriction',
+      updated_at: new Date().toISOString()
+    }
+
+    if (planType === 'free') {
+      setFreeRestrictions(prev => [...prev, newRestriction])
+    } else {
+      setPremiumRestrictions(prev => [...prev, newRestriction])
+    }
+  }
+
+  // Remove restriction locally
+  const removeRestriction = (planType: 'free' | 'premium', key: string) => {
+    if (!confirm(`Remove ${key} from ${planType} plan locally? (Must save to apply)`)) return
+    
+    if (planType === 'free') {
+      setFreeRestrictions(prev => prev.filter(r => r.restriction_key !== key))
+    } else {
+      setPremiumRestrictions(prev => prev.filter(r => r.restriction_key !== key))
     }
   }
 
@@ -199,6 +231,15 @@ export default function RestrictionsPage() {
             </Button>
           )}
         </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-red-500 mt-2"
+          onClick={() => removeRestriction(planType, restriction_key)}
+        >
+          <Trash2 className="h-3 w-3 mr-1" />
+          Remove
+        </Button>
       </div>
     )
   }
@@ -259,11 +300,25 @@ export default function RestrictionsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {freeRestrictions.map((restriction) => (
-                  <div key={restriction.restriction_key} className="border-b pb-4 last:border-0">
-                    {renderRestrictionInput(restriction, 'free')}
+                {freeRestrictions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No restrictions found for free plan.
                   </div>
-                ))}
+                ) : (
+                  freeRestrictions.map((restriction) => (
+                    <div key={restriction.restriction_key} className="border-b pb-4 last:border-0">
+                      {renderRestrictionInput(restriction, 'free')}
+                    </div>
+                  ))
+                )}
+                <Button 
+                  variant="outline" 
+                  className="w-full border-dashed"
+                  onClick={() => addRestriction('free')}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Free Restriction
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -277,11 +332,25 @@ export default function RestrictionsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {premiumRestrictions.map((restriction) => (
-                  <div key={restriction.restriction_key} className="border-b pb-4 last:border-0">
-                    {renderRestrictionInput(restriction, 'premium')}
+                {premiumRestrictions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No restrictions found for premium plan.
                   </div>
-                ))}
+                ) : (
+                  premiumRestrictions.map((restriction) => (
+                    <div key={restriction.restriction_key} className="border-b pb-4 last:border-0">
+                      {renderRestrictionInput(restriction, 'premium')}
+                    </div>
+                  ))
+                )}
+                <Button 
+                  variant="outline" 
+                  className="w-full border-dashed"
+                  onClick={() => addRestriction('premium')}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Premium Restriction
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

@@ -2,9 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { uploadImageToCloudinary } from '@/lib/cloudinary-upload';
 import { generateImage } from '@/lib/novita-api';
 import { getUnifiedNovitaKey } from '@/lib/unified-api-keys';
+import { createClient } from '@/lib/supabase-server';
+import { getUserPlanInfo } from '@/lib/subscription-limits';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication and premium status
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Berättigande krävs' }, { status: 401 });
+    }
+
+    const planInfo = await getUserPlanInfo(user.id);
+    const { data: adminUser } = await supabase.from('admin_users').select('id').eq('user_id', user.id).maybeSingle();
+    const isAdmin = !!adminUser;
+
+    if (planInfo.planType !== 'premium' && !isAdmin) {
+      return NextResponse.json(
+        {
+          error: 'Upgrade to Premium to generate AI girlfriends.',
+          upgrade_required: true
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { characterDetails, gender } = body;
     // Default to 'lady' if not specified or invalid

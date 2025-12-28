@@ -81,6 +81,14 @@ export async function POST(request: NextRequest) {
 
     // Insert the new image with permanent Cloudinary URL
     console.log("💾 Saving to database...");
+
+    // Check premium status
+    const { getUserPlanInfo } = await import("@/lib/subscription-limits");
+    const planInfo = await getUserPlanInfo(userId);
+    const { data: adminUser } = await supabaseAdmin.from('admin_users').select('id').eq('user_id', userId).maybeSingle();
+    const isAdmin = !!adminUser;
+    const isPremium = planInfo.planType === 'premium';
+
     const { data, error } = await supabaseAdmin
       .from("generated_images")
       .insert({
@@ -89,7 +97,11 @@ export async function POST(request: NextRequest) {
         image_url: permanentImageUrl, // Permanent Cloudinary URL
         model_used: modelUsed,
         created_at: new Date().toISOString(),
-      })
+        metadata: {
+          created_during_subscription: isPremium || isAdmin,
+          plan_type: planInfo.planType
+        }
+      } as any)
       .select()
       .single()
 

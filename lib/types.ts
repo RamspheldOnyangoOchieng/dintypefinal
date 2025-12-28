@@ -4,6 +4,8 @@ export type Character = {
   age: number
   image: string
   images?: string[] // Array of additional profile images
+  imageUrl?: string // Alternative field name from backend
+  image_url?: string // Alternative field name from backend
   videoUrl?: string // Add this field
   description: string
   personality: string
@@ -20,6 +22,7 @@ export type Character = {
   category?: string
   tags?: string[]
   isPublic?: boolean
+  metadata?: any
 }
 
 export type CharacterInsert = Omit<Character, "id" | "createdAt">

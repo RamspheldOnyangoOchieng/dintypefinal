@@ -13,14 +13,18 @@ interface PremiumUpgradeModalProps {
   feature: string
   description: string
   imageSrc?: string
+  buttonText?: string
+  mode?: 'upgrade' | 'expired' | 'tokens-depleted'
 }
 
 export function PremiumUpgradeModal({
   isOpen,
   onClose,
   feature = "Obegränsat Skapande",
-  description = "Skapa utan gränser",
-  imageSrc = "/realistic_girlfriend_premium_upgrade_1766900253700.png"
+  description,
+  imageSrc,
+  buttonText,
+  mode = 'upgrade'
 }: PremiumUpgradeModalProps) {
   const router = useRouter()
 
@@ -29,13 +33,41 @@ export function PremiumUpgradeModal({
     router.push("/premium")
   }
 
-  const benefits = [
-    "Skapa AI-videor",
-    "Skapa egna AI-flickvänner",
-    "Obegränsat antal meddelanden",
-    "Ta bort bildoskärpa",
-    "Få 100 GRATIS tokens / månad"
-  ]
+  // Set defaults based on mode if not provided
+  let displayImage = imageSrc
+  let displayDescription = description
+  let displayButtonText = buttonText || "Uppgradera till Premium"
+  let displayBadge = "Premium"
+
+  if (mode === 'expired') {
+    displayImage = displayImage || "/premium_expired_upsell_modal_1766902000000.png"
+    displayDescription = displayDescription || "Premium Plan expired. Renew your Premium Plan."
+    displayBadge = "Expired"
+  } else if (mode === 'tokens-depleted') {
+    displayImage = displayImage || "/premium_tokens_depleted_upsell_1766902100000.png"
+    displayDescription = displayDescription || "You used your 100 free premium tokens. Buy more tokens to use premium features"
+    displayButtonText = displayButtonText || "Köp Tokens"
+    displayBadge = "Tokens"
+  } else {
+    displayImage = displayImage || "/realistic_girlfriend_premium_upgrade_1766900253700.png"
+    displayDescription = displayDescription || "Upgrade to Premium to unlock unlimited features."
+  }
+
+  const benefits = mode === 'tokens-depleted'
+    ? [
+      "Fortsätt skapa AI-karaktärer",
+      "Generera högkvalitativa bilder",
+      "Använd exklusiva röstmeddelanden",
+      "Chatten förblir GRATIS",
+      "Enkelt att fylla på"
+    ]
+    : [
+      "Skapa AI-videor",
+      "Skapa egna AI-flickvänner",
+      "Obegränsat antal meddelanden",
+      "Ta bort bildoskärpa",
+      "Få 100 GRATIS tokens / månad"
+    ]
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -51,7 +83,7 @@ export function PremiumUpgradeModal({
           {/* Left side - Image */}
           <div className="md:w-1/2 relative h-64 md:h-auto group">
             <Image
-              src={imageSrc}
+              src={displayImage}
               alt="Premium Feature"
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -62,24 +94,26 @@ export function PremiumUpgradeModal({
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#0a0a0a] hidden md:block opacity-60" />
 
             {/* Premium Badge */}
-            <div className="absolute top-4 left-4 bg-[#ff4b7d] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg">
-              Premium
+            <div className={`absolute top-4 left-4 ${mode === 'expired' ? 'bg-red-500' : 'bg-[#ff4b7d]'} px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg`}>
+              {displayBadge}
             </div>
           </div>
 
           {/* Right side - Content */}
           <div className="md:w-1/2 p-8 md:p-10 flex flex-col justify-center bg-[#0a0a0a] relative overflow-hidden">
             {/* Subtle background glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#ff4b7d]/10 rounded-full blur-3xl" />
+            <div className={`absolute -top-24 -right-24 w-48 h-48 ${mode === 'expired' ? 'bg-red-500/10' : 'bg-[#ff4b7d]/10'} rounded-full blur-3xl`} />
 
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <Crown className="h-5 w-5 text-[#ff4b7d]" />
-                <span className="text-sm font-bold uppercase tracking-widest text-zinc-500">Premium Medlemskap</span>
+                <Crown className={`h-5 w-5 ${mode === 'expired' ? 'text-red-500' : 'text-[#ff4b7d]'}`} />
+                <span className="text-sm font-bold uppercase tracking-widest text-zinc-500">
+                  {mode === 'expired' ? 'Subscription Expired' : mode === 'tokens-depleted' ? 'Token Wallet' : 'Premium Medlemskap'}
+                </span>
               </div>
 
               <h2 className="text-2xl md:text-3xl font-black text-white mb-6 leading-tight tracking-tight transition-all duration-500">
-                {description || "Uppgradera till Premium för att skapa obegränsat antal bilder"}
+                {displayDescription}
               </h2>
 
               <div className="space-y-3 mb-8">
@@ -95,9 +129,9 @@ export function PremiumUpgradeModal({
 
               <Button
                 onClick={handleUpgrade}
-                className="w-full py-6 text-sm font-bold bg-[#ff4b7d] hover:bg-[#ff4b7d]/90 text-white rounded-xl shadow-[0_10px_20px_rgba(255,75,125,0.3)] transition-all transform hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wider"
+                className={`w-full py-6 text-sm font-bold ${mode === 'expired' ? 'bg-red-600 hover:bg-red-700' : 'bg-[#ff4b7d] hover:bg-[#ff4b7d]/90'} text-white rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wider`}
               >
-                {feature === "Meddelandegräns" ? "Uppgradera till Premium" : "Uppgradera till Premium"}
+                {displayButtonText}
               </Button>
             </div>
           </div>

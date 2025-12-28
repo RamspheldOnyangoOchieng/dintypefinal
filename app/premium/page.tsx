@@ -196,8 +196,14 @@ export default function PremiumPage() {
       return
     }
 
-    if (!isPremium) {
+    if (!isPremium && !user.isAdmin) {
       toast.error("Endast Premium-användare kan köpa tokens")
+      return
+    }
+
+    // New rule: Premium users can only buy tokens when they have used up their free ones
+    if (isPremium && !user.isAdmin && tokenBalance > 0) {
+      toast.error("Du har fortfarande tokens kvar. Du kan köpa mer när ditt saldo är 0.")
       return
     }
 

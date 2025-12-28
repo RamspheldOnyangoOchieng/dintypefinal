@@ -40,6 +40,7 @@ interface GeneratedImage {
   tags?: string[]
   favorite?: boolean
   collection_id?: string
+  is_locked?: boolean
 }
 
 interface Collection {
@@ -76,6 +77,7 @@ export default function CollectionsPage() {
   const [isAddingToCollection, setIsAddingToCollection] = useState(false)
   const [selectedImageForCollection, setSelectedImageForCollection] = useState<string | null>(null)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [showExpiredModal, setShowExpiredModal] = useState(false)
 
   const fetchImages = async () => {
     if (userId === null) return;
@@ -421,16 +423,40 @@ export default function CollectionsPage() {
             >
               <div
                 className="relative aspect-[3/4] cursor-pointer"
-                onClick={() => (isSelectionMode ? toggleSelectImage(image.id) : setSelectedImage(image))}
+                onClick={() => {
+                  if (image.is_locked) {
+                    setShowExpiredModal(true)
+                    return
+                  }
+                  if (isSelectionMode) {
+                    toggleSelectImage(image.id)
+                  } else {
+                    setSelectedImage(image)
+                  }
+                }}
               >
                 <Image
                   src={image.image_url || "/placeholder.svg"}
                   alt={image.prompt}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  className={`object-cover transition-transform duration-500 group-hover:scale-110 ${image.is_locked ? 'blur-md grayscale' : ''}`}
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
                   unoptimized
                 />
+
+                {image.is_locked && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-2 z-10 transition-colors group-hover:bg-black/60">
+                    <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center mb-2 shadow-lg ring-2 ring-amber-500/30">
+                      <Lock className="h-5 w-5 text-black" />
+                    </div>
+                    <p className="text-white text-[10px] uppercase font-black tracking-tight text-center leading-none italic">
+                      Låst Premium
+                    </p>
+                    <p className="text-white/70 text-[8px] font-bold text-center mt-1">
+                      Förnya för låsa upp
+                    </p>
+                  </div>
+                )}
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
@@ -667,6 +693,14 @@ export default function CollectionsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      {/* Modal Instances */}
+      <PremiumUpgradeModal
+        isOpen={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+        mode="expired"
+        feature="Premium-galleri"
+        description="Ditt Premium-medlemskap har utgått. Förnya för att låsa upp dina sparade bilder och fortsätta skapa utan gränser."
+      />
     </div>
   )
 }

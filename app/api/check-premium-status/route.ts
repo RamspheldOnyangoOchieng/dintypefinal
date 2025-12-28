@@ -55,7 +55,10 @@ export async function GET(request: Request) {
     }
 
     const now = new Date()
-    const isPremium = premiumProfile ? new Date((premiumProfile as any).expires_at) > now : false
+    const expiresAt = premiumProfile?.expires_at ? new Date(premiumProfile.expires_at) : null
+    const isPremium = expiresAt ? expiresAt > now : false
+    const isExpired = expiresAt ? expiresAt <= now : false
+    const wasPremium = !!premiumProfile
 
     // 2. Get token balance
     const { data: tokenData } = await supabase
@@ -80,7 +83,9 @@ export async function GET(request: Request) {
       authenticated: true,
       userId,
       isPremium,
-      expiresAt: (premiumProfile as any)?.expires_at || null,
+      isExpired,
+      wasPremium,
+      expiresAt: premiumProfile?.expires_at || null,
       planId: (premiumProfile as any)?.plan_id || null,
       tokenBalance,
       creditBalance

@@ -19,6 +19,7 @@ interface Character {
   age: number | null;
   created_at: string;
   metadata?: any;
+  is_locked?: boolean;
 }
 
 export default function MyAIPage() {
@@ -30,6 +31,7 @@ export default function MyAIPage() {
   const { openLoginModal } = useAuthModal();
   const { user } = useAuth();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchCharacters();
@@ -99,8 +101,12 @@ export default function MyAIPage() {
     }
   }
 
-  function handleChat(characterId: string) {
-    router.push(`/chat/${characterId}`);
+  function handleChat(character: Character) {
+    if (character.is_locked) {
+      setShowExpiredModal(true);
+      return;
+    }
+    router.push(`/chat/${character.id}`);
   }
 
   function handleCreateNew() {
@@ -201,11 +207,25 @@ export default function MyAIPage() {
                     <img
                       src={character.image || character.image_url || ''}
                       alt={character.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${character.is_locked ? 'blur-sm grayscale' : ''}`}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Heart className="h-16 w-16 text-primary/20" />
+                    </div>
+                  )}
+
+                  {character.is_locked && (
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-6 z-10">
+                      <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mb-4 shadow-lg ring-4 ring-amber-500/30">
+                        <Sparkles className="h-8 w-8 text-black" />
+                      </div>
+                      <h3 className="text-white font-black text-center text-lg leading-tight italic uppercase tracking-tighter mb-2">
+                        Premium-innehåll låst
+                      </h3>
+                      <p className="text-white/80 text-center text-xs font-medium leading-normal italic">
+                        Förnya ditt medlemskap för att fortsätta chatta med {character.name}.
+                      </p>
                     </div>
                   )}
 
@@ -226,11 +246,20 @@ export default function MyAIPage() {
                   <div className="absolute inset-0 flex flex-col justify-end p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                     <div className="space-y-3">
                       <button
-                        onClick={() => handleChat(character.id)}
-                        className="w-full h-12 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-black text-sm tracking-wide shadow-lg shadow-primary/20 transition-all active:scale-95"
+                        onClick={() => handleChat(character)}
+                        className={`w-full h-12 flex items-center justify-center gap-2 ${character.is_locked ? 'bg-amber-500 hover:bg-amber-600' : 'bg-primary hover:bg-primary/90'} text-white rounded-xl font-black text-sm tracking-wide shadow-lg shadow-primary/20 transition-all active:scale-95`}
                       >
-                        <MessageCircle className="h-4 w-4" />
-                        STARTA CHATT
+                        {character.is_locked ? (
+                          <>
+                            <Sparkles className="h-4 w-4" />
+                            LÅS UPP NU
+                          </>
+                        ) : (
+                          <>
+                            <MessageCircle className="h-4 w-4" />
+                            STARTA CHATT
+                          </>
+                        )}
                       </button>
                       <div className="flex gap-2">
                         <button
@@ -303,6 +332,14 @@ export default function MyAIPage() {
         feature="Skapa AI Flickvänner"
         description="Uppgradera till Premium för att skapa AI flickvänner"
         imageSrc="/realistic_girlfriend_create_character_upgrade_1766900675037.png"
+      />
+
+      <PremiumUpgradeModal
+        isOpen={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+        mode="expired"
+        feature="Premium Utgått"
+        description="Ditt Premium-medlemskap har utgått. Förnya för att låsa upp dina sparade karaktärer och fortsätta chatta."
       />
     </div>
   );
