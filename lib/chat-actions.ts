@@ -4,7 +4,8 @@ import { getApiKey } from "./db-init"
 import { isAskingForImage } from "./image-utils"
 import { checkMonthlyBudget, logApiCost } from "./budget-monitor"
 
-import { incrementMessageUsage } from "./subscription-limits"
+import { incrementMessageUsage, getUserPlanInfo } from "./subscription-limits"
+import { SFW_SYSTEM_PROMPT_SV } from "./nsfw-filter"
 
 export type Message = {
   id: string
@@ -43,8 +44,16 @@ export async function sendChatMessage(
       }
     }
 
-    // Enhance system prompt with Swedish language instructions
+    // Check if the user is on the free plan to enforce SFW responses
+    let isFreeUser = true;
+    if (userId) {
+      const planInfo = await getUserPlanInfo(userId);
+      isFreeUser = planInfo.planType === 'free';
+    }
+
+    // Enhance system prompt with Swedish language instructions and SFW if needed
     const enhancedSystemPrompt = `${systemPrompt}
+${isFreeUser ? SFW_SYSTEM_PROMPT_SV : ""}
 
 VIKTIGT - SPRÅKINSTRUKTIONER:
 - Du MÅSTE alltid svara på svenska

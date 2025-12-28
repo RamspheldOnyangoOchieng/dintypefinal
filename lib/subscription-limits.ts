@@ -90,15 +90,15 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
     }
 
     // Get today's usage
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayAtMidnight = new Date();
+    todayAtMidnight.setHours(0, 0, 0, 0);
 
     const { data: usage, error: usageError } = await supabase
       .from('user_usage_tracking')
       .select('usage_count')
       .eq('user_id', userId)
       .eq('usage_type', 'messages')
-      .gte('reset_date', today.toISOString())
+      .gt('reset_date', todayAtMidnight.toISOString())
       .single();
 
     if (usageError && usageError.code !== 'PGRST116') {
@@ -114,7 +114,7 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
       allowed,
       currentUsage,
       limit: limitNum,
-      message: allowed ? undefined : `Daily message limit reached (${limitNum} messages/day). Upgrade to Premium for unlimited messages.`
+      message: allowed ? undefined : "Daily message limit reached. Upgrade to continue."
     };
   } catch (error) {
     console.error('❌ Error in checkMessageLimit:', error);
@@ -127,23 +127,24 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
 export async function incrementMessageUsage(userId: string): Promise<void> {
   const supabase = await createAdminClient();
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const todayAtMidnight = new Date();
+  todayAtMidnight.setHours(0, 0, 0, 0);
+  
+  const tomorrowAtMidnight = new Date(todayAtMidnight);
+  tomorrowAtMidnight.setDate(tomorrowAtMidnight.getDate() + 1);
 
   const { data: existing } = await supabase
     .from('user_usage_tracking')
     .select('*')
     .eq('user_id', userId)
     .eq('usage_type', 'messages')
-    .gte('reset_date', today.toISOString())
+    .gt('reset_date', todayAtMidnight.toISOString()) // Still valid
     .single();
 
   if (existing) {
     await supabase
       .from('user_usage_tracking')
-      .update({ usage_count: existing.usage_count + 1 })
+      .update({ usage_count: (existing.usage_count || 0) + 1 })
       .eq('id', existing.id);
   } else {
     await supabase
@@ -152,7 +153,7 @@ export async function incrementMessageUsage(userId: string): Promise<void> {
         user_id: userId,
         usage_type: 'messages',
         usage_count: 1,
-        reset_date: tomorrow.toISOString()
+        reset_date: tomorrowAtMidnight.toISOString()
       });
   }
 }

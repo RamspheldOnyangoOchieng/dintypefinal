@@ -78,8 +78,8 @@ export function PremiumUpgradeModal({
                 <span className="text-sm font-bold uppercase tracking-widest text-zinc-500">Premium Medlemskap</span>
               </div>
 
-              <h2 className="text-2xl md:text-3xl font-black text-white mb-6 leading-tight tracking-tight">
-                Uppgradera till Premium för att skapa obegränsat antal bilder
+              <h2 className="text-2xl md:text-3xl font-black text-white mb-6 leading-tight tracking-tight transition-all duration-500">
+                {description || "Uppgradera till Premium för att skapa obegränsat antal bilder"}
               </h2>
 
               <div className="space-y-3 mb-8">
@@ -97,7 +97,7 @@ export function PremiumUpgradeModal({
                 onClick={handleUpgrade}
                 className="w-full py-6 text-sm font-bold bg-[#ff4b7d] hover:bg-[#ff4b7d]/90 text-white rounded-xl shadow-[0_10px_20px_rgba(255,75,125,0.3)] transition-all transform hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wider"
               >
-                Uppgradera till Premium
+                {feature === "Meddelandegräns" ? "Uppgradera till Premium" : "Uppgradera till Premium"}
               </Button>
             </div>
           </div>

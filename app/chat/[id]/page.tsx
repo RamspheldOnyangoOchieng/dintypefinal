@@ -35,6 +35,7 @@ import { SupabaseDebug } from "@/components/supabase-debug"
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
 import { isAskingForImage, extractImagePrompt, imageUrlToBase64 } from "@/lib/image-utils"
 import { ImageModal } from "@/components/image-modal"
+import { containsNSFW } from "@/lib/nsfw-filter"
 
 export default function ChatPage({ params }: { params: { id: string } }) {
   const [characterId, setCharacterId] = useState<string | null>(null);
@@ -735,11 +736,28 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           const messageCheck = await checkMessageLimit(user.id)
           if (!messageCheck.allowed) {
             setIsPremiumModalOpen(true)
+            setDebugInfo(prev => ({ ...prev, lastAction: "messageLimitReached" }))
             return
           }
         } catch (error) {
           console.error("Error checking message limit:", error)
           // Continue anyway if limit check fails
+        }
+      }
+
+      // Check for NSFW content if the user is on the free plan
+      if (!user?.isPremium && !user?.isAdmin) {
+        if (containsNSFW(inputValue)) {
+          // Block NSFW messages for free users
+          const nsfwWarning: Message = {
+            id: Math.random().toString(36).substring(2, 15),
+            role: "assistant",
+            content: "NSFW-innehåll är blockerat för gratisanvändare. Uppgradera till Premium för att låsa upp obegränsat och ocensurerat innehåll.",
+            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          }
+          setMessages((prev) => [...prev, nsfwWarning])
+          setInputValue("")
+          return
         }
       }
 
@@ -1310,9 +1328,9 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       <PremiumUpgradeModal
         isOpen={isPremiumModalOpen}
         onClose={() => setIsPremiumModalOpen(false)}
-        feature="Unlimited Messages"
-        description="Unlimited Messages"
-        imageSrc={character?.image || "/login-placeholder.jpeg"}
+        feature="Meddelandegräns"
+        description="Daily message limit reached. Upgrade to premium to continue."
+        imageSrc={character?.image || "/realistic_girlfriend_premium_upgrade_1766900253700.png"}
       />
 
       {selectedImage && (
