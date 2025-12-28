@@ -1074,7 +1074,31 @@ export default function CreateCharacterPage() {
                     </div>
                 )}
 
-
+                {/* Progress Bar */}
+                <div className="flex items-center justify-center mb-4 sm:mb-6 md:mb-8">
+                    <div className="flex items-center space-x-0.5 sm:space-x-1 md:space-x-2 overflow-x-auto pb-2">
+                        {Array.from({ length: totalSteps }, (_, step) => (
+                            <div key={step} className="flex items-center flex-shrink-0">
+                                <div className={`w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center text-xs sm:text-xs md:text-sm font-bold ${step <= currentStep
+                                    ? "bg-primary border-primary text-primary-foreground"
+                                    : "bg-secondary border-secondary text-muted-foreground"
+                                    }`}>
+                                    {step < currentStep ? (
+                                        <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                    ) : (
+                                        step + 1
+                                    )}
+                                </div>
+                                {step < totalSteps - 1 && (
+                                    <div className={`w-4 sm:w-6 md:w-12 h-1 mx-0.5 sm:mx-1 md:mx-2 ${step < currentStep ? "bg-primary" : "bg-secondary"
+                                        }`} />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
                 {/* Main Content Card */}
                 <div className="bg-card rounded-xl sm:rounded-2xl p-2 sm:p-4 md:p-8 shadow-2xl relative z-10 border border-border">

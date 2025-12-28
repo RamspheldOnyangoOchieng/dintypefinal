@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { MoreVertical, Edit, Trash2, Plus, Globe } from "lucide-react"
+import { MoreVertical, Edit, Trash2, Plus, Globe, MessageSquare } from "lucide-react"
 
 interface CharacterListProps {
   characters: CharacterProfile[]
@@ -102,15 +102,15 @@ export function CharacterList({ characters }: CharacterListProps) {
             )}
 
             {/* Glossy Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-70" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent opacity-100 transition-opacity duration-500 group-hover:opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             {/* Top Accents */}
             <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
               {character.is_public ? (
-                <div className="bg-white/10 backdrop-blur-xl border border-white/10 px-3 py-1 rounded-full flex items-center gap-2 text-white">
+                <div className="bg-black/60 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full flex items-center gap-2 text-white shadow-lg">
                   <Globe className="h-3 w-3 text-primary animate-pulse" />
-                  <span className="text-[10px] font-bold uppercase tracking-tighter">Public</span>
+                  <span className="text-[10px] font-bold uppercase tracking-tighter drop-shadow-md">Public</span>
                 </div>
               ) : (
                 <div />
@@ -163,9 +163,9 @@ export function CharacterList({ characters }: CharacterListProps) {
           {/* Character Details Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 z-20 transition-all duration-500 translate-y-2 group-hover:translate-y-0 text-white">
             <div className="mb-4">
-              <h3 className="text-2xl font-black text-white tracking-tight mb-1 group-hover:text-primary transition-colors">{character.name}</h3>
+              <h3 className="text-2xl font-black text-white tracking-tight mb-1 group-hover:text-primary transition-colors drop-shadow-lg">{character.name}</h3>
               {character.description && (
-                <p className="text-white/40 text-xs line-clamp-1 group-hover:line-clamp-3 group-hover:text-white/70 transition-all duration-500 leading-relaxed">
+                <p className="text-white/60 text-xs line-clamp-1 group-hover:line-clamp-3 group-hover:text-white/90 transition-all duration-500 leading-relaxed drop-shadow-md">
                   {character.description}
                 </p>
               )}
@@ -173,11 +173,11 @@ export function CharacterList({ characters }: CharacterListProps) {
 
             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100">
               <Button asChild className="flex-1 bg-white text-black hover:bg-white/90 font-bold rounded-xl transition-all scale-95 group-hover:scale-100">
-                <Link href={`/characters/${character.id}`}>View Agency</Link>
+                <Link href={`/characters/${character.id}`}>View Profile</Link>
               </Button>
-              <Button asChild variant="outline" className="h-10 w-10 p-0 border-white/10 hover:bg-white/10 rounded-xl bg-transparent text-white">
-                <Link href={`/chat/${character.id}`}>
-                  <Plus className="h-4 w-4" />
+              <Button asChild variant="outline" className="h-10 w-10 p-0 border-white/20 hover:bg-white/20 rounded-xl bg-black/20 backdrop-blur-md text-white group/chat transition-all duration-300">
+                <Link href={`/chat/${character.id}`} className="flex items-center justify-center">
+                  <MessageSquare className="h-4 w-4 group-hover/chat:scale-110 transition-transform" />
                 </Link>
               </Button>
             </div>
