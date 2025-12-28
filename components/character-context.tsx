@@ -123,10 +123,19 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
   // Fetch characters from Supabase
   async function fetchCharacters() {
     try {
-      const { data, error: supabaseError } = await supabase
-        .from("characters")
-        .select("*")
-        .order("created_at", { ascending: false })
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      let query = supabase.from("characters").select("*")
+      
+      // If not logged in, only fetch public characters
+      if (!session) {
+        query = query.eq('is_public', true)
+      } else {
+        // If logged in, we let RLS handle it (Public + User's own)
+        // or we could be explicit: .or(`is_public.eq.true,user_id.eq.${session.user.id}`)
+      }
+
+      const { data, error: supabaseError } = await query.order("created_at", { ascending: false })
 
       if (supabaseError) {
         throw supabaseError

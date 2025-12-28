@@ -9,8 +9,17 @@ import { ClientChatList } from "@/components/client-chat-list"
 
 export default async function ChatPage() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: rows } = await supabase.from("characters").select("*").order("created_at", { ascending: false })
+  let query = supabase.from("characters").select("*")
+
+  if (user) {
+    query = query.or(`is_public.eq.true,user_id.eq.${user.id}`)
+  } else {
+    query = query.eq('is_public', true)
+  }
+
+  const { data: rows } = await query.order("created_at", { ascending: false })
 
   const characters = (rows || []).map(r => ({
     id: r.id,

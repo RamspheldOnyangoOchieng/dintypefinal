@@ -29,6 +29,9 @@ export default function Home() {
   // Filter characters based on the active type (case-insensitive)
   const { activeType } = useCharacters()
   const filteredCharacters = characters.filter((char) => {
+    // Only show public characters on the Home page grid
+    if (!char.isPublic) return false
+    
     if (activeType === "All") return true
     // Convert both to lowercase for case-insensitive comparison
     const charCategory = (char.category || "").toLowerCase()

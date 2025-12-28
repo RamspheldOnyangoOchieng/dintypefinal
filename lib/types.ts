@@ -19,6 +19,7 @@ export type Character = {
   characterType?: "Girls" | "Anime" | "Guys" | string
   category?: string
   tags?: string[]
+  isPublic?: boolean
 }
 
 export type CharacterInsert = Omit<Character, "id" | "createdAt">
