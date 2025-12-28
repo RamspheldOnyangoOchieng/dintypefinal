@@ -106,35 +106,56 @@ export async function POST(request: NextRequest) {
             console.log('🤖 System prompt built');
         }
 
+        // Map gender and category for database constraints
+        const mappedGender = gender === 'gent' ? 'male' : 'female';
+        const mappedCategory = characterDetails.style === 'anime' ? 'anime' : (mappedGender === 'female' ? 'girls' : 'guys');
+
         // Insert character into database with permanent image URL
-        const { data, error } = await (supabase as any)
+        console.log('📝 Inserting character into database...');
+        const { data, error } = await supabase
                 .from('characters')
                 .insert({
                     user_id: userId,
+                    userId: userId, // Set both for compatibility
                     name: characterName,
                     age: ageValue,
                     image: permanentImageUrl,
                     image_url: permanentImageUrl,
-                    avatar_url: permanentImageUrl, // Also set avatar_url for compatibility
+                    // removed avatar_url - column does not exist
                     description: description,
                     system_prompt: systemPrompt,
+                    systemPrompt: systemPrompt, // Set both
                     personality: characterDetails.personality || 'Friendly',
-                    voice: 'default',
-                    is_active: true, // Explicitly set to true
+                    // removed voice - column does not exist
+                    // removed is_active - column does not exist
                     is_public: isPublic,
+                    isPublic: isPublic, // Set both
                     share_revenue: true,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
-                    metadata: characterDetails,
+                    // removed metadata - column does not exist
                     ethnicity: characterDetails.ethnicity || null,
                     relationship: characterDetails.relationship || null,
                     body: characterDetails.bodyType || null,
                     occupation: 'Student', 
                     hobbies: 'Reading, Music',
                     language: 'English',
+                    gender: mappedGender,
+                    category: mappedCategory,
+                    is_new: true,
                 })
             .select()
             .single();
+
+        if (error) {
+            console.error('❌ Database error saving character:', error);
+            return NextResponse.json(
+                { success: false, error: `Database error: ${error.message}` },
+                { status: 500 }
+            );
+        }
+
+        console.log('✅ Character saved successfully:', data?.id);
 
         return NextResponse.json({
             success: true,
