@@ -246,14 +246,22 @@ function buildCharacterDescription(details: any): string {
     return parts.join(', ') + '.';
 }
 
-function extractAge(ageString: string): number {
-    // Convert age ranges like "20s", "30s" to midpoint numbers
-    if (!ageString) return 25; // default
+function extractAge(age: any): number {
+    // If it's already a number, return it
+    if (typeof age === 'number') return age;
+    
+    // If it's not a string or empty, return default
+    if (!age || typeof age !== 'string') return 25;
 
-    const match = ageString.match(/(\d+)/);
+    // Convert age ranges like "20s", "30s" to midpoint numbers
+    const match = age.match(/(\d+)/);
     if (match) {
-        const decade = parseInt(match[1]);
-        return decade + 5; // e.g., "20s" -> 25, "30s" -> 35
+        const value = parseInt(match[1]);
+        // If it's a range like "20s", add 5
+        if (age.toLowerCase().includes('s')) {
+            return value + 5;
+        }
+        return value;
     }
 
     return 25; // default fallback
