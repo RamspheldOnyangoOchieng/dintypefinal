@@ -245,6 +245,16 @@ export default function CreateCharacterPage() {
                     'bun': '/character creation/hair styles/anime/bun-0fcc2a3c6b2b68b0c42de93cb57875e4b652ddd441f47d3cd0d2f6dc6bfc9f60.webp'
                 }
             },
+            'hairColor': {
+                'realistic': {
+                    'black': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904247/character-creation/hair-color/realistic/black.jpg',
+                    'brown': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904249/character-creation/hair-color/realistic/brown.jpg',
+                    'blonde': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904250/character-creation/hair-color/realistic/blonde.jpg',
+                    'red': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904251/character-creation/hair-color/realistic/red.jpg',
+                    'silver': 'https://images.unsplash.com/photo-1620331311520-246422ff82f9?q=80&w=400&h=400&fit=crop',
+                    'blue': 'https://images.unsplash.com/photo-1595476108010-b1d1f0ae0889?q=80&w=400&h=400&fit=crop'
+                }
+            },
             'bodyType': {
                 'realistic': {
                     'athletic': '/character creation/Body Type/realistic/body_athletic-c3a09551c478b35d5bab217b946c8d3da9eab3ac3f6c4d1fa106aa4e5d763c16.webp',
@@ -1600,79 +1610,41 @@ export default function CreateCharacterPage() {
                             {/* Choose Hair Color Section */}
                             <div className="mb-6 sm:mb-8 md:mb-12">
                                 <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">Choose Hair Color*</h2>
+                                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 text-card-foreground">Choose Hair Color*</h2>
                                 </div>
-                                {/* Ultra-small: vertical stack, Small: horizontal */}
-                                <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
-                                    {/* Blonde */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'blonde'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedHairColor('blonde')}
-                                    >
-                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'blonde' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
-                                            Blonde
-                                        </span>
-                                    </div>
-
-                                    {/* Brunette */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'brunette'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedHairColor('brunette')}
-                                    >
-                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'brunette' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
-                                            Brunette
-                                        </span>
-                                    </div>
-
-                                    {/* Black */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'black'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedHairColor('black')}
-                                    >
-                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'black' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
-                                            Black
-                                        </span>
-                                    </div>
-
-                                    {/* Red */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'red'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedHairColor('red')}
-                                    >
-                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'red' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
-                                            Red
-                                        </span>
-                                    </div>
-
-                                    {/* Gray */}
-                                    <div
-                                        className={`relative cursor-pointer rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all duration-200 ${selectedHairColor === 'gray'
-                                            ? 'bg-primary border-2 border-primary'
-                                            : 'border-2 border-border hover:border-primary'
-                                            }`}
-                                        onClick={() => setSelectedHairColor('gray')}
-                                    >
-                                        <span className={`text-xs sm:text-sm font-semibold ${selectedHairColor === 'gray' ? 'text-foreground' : 'text-muted-foreground'
-                                            }`}>
-                                            Gray
-                                        </span>
-                                    </div>
+                                
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 max-w-3xl mx-auto">
+                                    {[
+                                        { id: 'black', label: 'Black' },
+                                        { id: 'brown', label: 'Brown' },
+                                        { id: 'blonde', label: 'Blonde' },
+                                        { id: 'red', label: 'Red' },
+                                        { id: 'silver', label: 'Silver' },
+                                        { id: 'blue', label: 'Blue' }
+                                    ].map((color) => (
+                                        <div
+                                            key={color.id}
+                                            className={`relative cursor-pointer rounded-xl overflow-hidden transition-all duration-300 group ${selectedHairColor === color.id
+                                                ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-105'
+                                                : 'hover:scale-102 border border-border'
+                                                }`}
+                                            onClick={() => setSelectedHairColor(color.id)}
+                                        >
+                                            <div className="aspect-[4/3] w-full relative">
+                                                <img
+                                                    src={getImageUrl('hairColor', color.id, '')}
+                                                    alt={color.label}
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                            </div>
+                                            <div className={`py-2 px-3 text-center transition-colors ${selectedHairColor === color.id ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground group-hover:text-foreground'}`}>
+                                                <span className="text-xs sm:text-sm font-bold uppercase tracking-wider">
+                                                    {color.label}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </>
