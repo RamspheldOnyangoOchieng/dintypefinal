@@ -6,6 +6,7 @@ export type CharacterProfile = {
   id?: string
   name: string
   description: string
+  image?: string
   image_url?: string
   prompt_template?: string
   created_at?: string
