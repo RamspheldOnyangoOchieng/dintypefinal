@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Copy, Wand2, Loader2, Download, Share2, AlertCircle, ChevronLeft, FolderOpen, Clock, Image as ImageIcon, X, Coins } from "lucide-react"
+import { Copy, Wand2, Loader2, Download, Share2, AlertCircle, ChevronLeft, FolderOpen, Clock, Image as ImageIcon, X, Coins, Sparkles, Lock } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
 import { useToast } from "@/hooks/use-toast"

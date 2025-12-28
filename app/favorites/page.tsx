@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+export const dynamic = "force-dynamic"
 import { PromptList } from "@/components/prompt-list"
 import { getFavorites } from "@/app/actions/character-actions"
 

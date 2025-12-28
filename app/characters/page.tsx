@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+export const dynamic = "force-dynamic"
 import Link from "next/link"
 import { CharacterList } from "@/components/character-list"
 import { Button } from "@/components/ui/button"
