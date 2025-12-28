@@ -163,8 +163,8 @@ export default function AdminDashboardPage() {
   const stats = [
     {
       title: "Total Users",
-      value: authUsers.length.toString(),
-      change: "0%",
+      value: typeof totalUsers === 'number' ? totalUsers.toString() : "0",
+      change: "All time",
       changeType: "neutral",
       icon: Users,
     },
