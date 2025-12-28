@@ -216,7 +216,9 @@ export default function CreateCharacterPage() {
                 'realistic': {
                     'brown': '/character creation/eye  color/realistic/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp',
                     'blue': '/character creation/eye  color/realistic/blue-f7e75e814204c4d8464d36f525b0f6e9191557a585cb4be01e91ca8eb45416d0.webp',
-                    'green': '/character creation/eye  color/realistic/green-8a705cc5c2c435ac0f7addd110f4dd2b883a2e35b6403659c3e30cc7a741359c.webp'
+                    'green': '/character creation/eye  color/realistic/green-8a705cc5c2c435ac0f7addd110f4dd2b883a2e35b6403659c3e30cc7a741359c.webp',
+                    'hazel': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906815/attribute-images/eyeColor/eyeColor_hazel_realistic_1766906813010.jpg',
+                    'grey': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906820/attribute-images/eyeColor/eyeColor_grey_realistic_1766906818815.jpg'
                 },
                 'anime': {
                     'brown': '/character creation/eye  color/anime/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp',
@@ -251,8 +253,8 @@ export default function CreateCharacterPage() {
                     'brown': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904249/character-creation/hair-color/realistic/brown.jpg',
                     'blonde': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904250/character-creation/hair-color/realistic/blonde.jpg',
                     'red': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904251/character-creation/hair-color/realistic/red.jpg',
-                    'silver': 'https://images.unsplash.com/photo-1620331311520-246422ff82f9?q=80&w=400&h=400&fit=crop',
-                    'blue': 'https://images.unsplash.com/photo-1595476108010-b1d1f0ae0889?q=80&w=400&h=400&fit=crop'
+                    'silver': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906823/attribute-images/hairColor/hairColor_silver_realistic_1766906821737.jpg',
+                    'blue': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906825/attribute-images/hairColor/hairColor_blue_realistic_1766906824144.jpg'
                 }
             },
             'bodyType': {
@@ -507,15 +509,16 @@ export default function CreateCharacterPage() {
         }
 
         return (
-            <div className="max-w-5xl mx-auto bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 flex flex-col md:flex-row min-h-[600px] relative">
-                <div className="absolute top-8 right-8 z-20 text-white/40 cursor-pointer hover:text-white transition-colors">
+        return (
+            <div className="max-w-5xl mx-auto bg-[#0a0a0a] rounded-xl sm:rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 flex flex-col md:flex-row min-h-0 md:min-h-[600px] relative">
+                <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-20 text-white/40 cursor-pointer hover:text-white transition-colors">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
                 </div>
 
-                <div className="w-full md:w-[45%] p-6 md:p-8">
-                    <div className="relative h-full w-full rounded-[2rem] overflow-hidden aspect-[3/4] md:aspect-auto">
+                <div className="w-full md:w-[45%] p-4 sm:p-6 md:p-8">
+                    <div className="relative h-full w-full rounded-lg sm:rounded-[2rem] overflow-hidden aspect-[4/5] md:aspect-auto">
                         <img
-                            src={selectedEthnicity ? getImageUrl('ethnicity', selectedEthnicity, '') : '/placeholder.jpg'}
+                            src="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766907081/previews/character_selection_preview_premium.jpg"
                             alt="Preview"
                             className="w-full h-full object-cover"
                         />
@@ -523,26 +526,26 @@ export default function CreateCharacterPage() {
                 </div>
 
                 <div className="w-full md:w-[55%] p-6 md:p-12 md:pl-0 flex flex-col">
-                    <div className="mb-8">
+                    <div className="mb-6 md:mb-8">
                         <div className="flex items-center gap-2 mb-2">
-                            <h2 className="text-4xl font-bold text-white tracking-tight">AI Flickvän, {selectedAge}</h2>
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">AI Flickvän, {selectedAge}</h2>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                                <span className="text-white/40"><User size={16} /></span>
-                                <span className="text-white font-medium text-sm">{getDisplayValue(selectedRelationship || 'stranger', 'relationship')}</span>
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/10">
+                                <span className="text-white/40"><User size={14} className="sm:size-16" /></span>
+                                <span className="text-white font-medium text-xs sm:text-sm">{getDisplayValue(selectedRelationship || 'stranger', 'relationship')}</span>
                             </div>
-                            <button className="bg-white/5 p-2 rounded-full border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all">
-                                <Sparkles size={20} />
+                            <button className="bg-white/5 p-1.5 sm:p-2 rounded-full border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all">
+                                <Sparkles size={18} className="sm:size-20" />
                             </button>
                         </div>
                     </div>
 
-                    <div className="flex bg-white/5 p-1 rounded-2xl w-fit mb-8 border border-white/10">
+                    <div className="flex bg-white/5 p-1 rounded-xl sm:rounded-2xl w-fit mb-6 md:mb-8 border border-white/10">
                         <button
                             onClick={() => setActiveTab('appearance')}
                             className={cn(
-                                "px-8 py-2.5 rounded-xl text-sm font-bold transition-all",
+                                "px-4 sm:px-8 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all",
                                 activeTab === 'appearance' ? "bg-white/20 text-white shadow-lg" : "text-white/40 hover:text-white/60"
                             )}>
                             Utseende
@@ -550,16 +553,16 @@ export default function CreateCharacterPage() {
                         <button
                             onClick={() => setActiveTab('character')}
                             className={cn(
-                                "px-8 py-2.5 rounded-xl text-sm font-bold transition-all",
+                                "px-4 sm:px-8 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all",
                                 activeTab === 'character' ? "bg-white/20 text-white shadow-lg" : "text-white/40 hover:text-white/60"
                             )}>
                             Karaktär
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar max-h-[40vh] md:max-h-none">
                         {activeTab === 'appearance' ? (
-                            <div className="grid grid-cols-2 gap-3 mb-12">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-8 md:mb-12">
                                 {[
                                     { label: 'Ethnicity', value: selectedEthnicity, type: 'ethnicity' },
                                     { label: 'Age', value: `${selectedAge}yo` },
@@ -570,55 +573,56 @@ export default function CreateCharacterPage() {
                                     { label: 'Hair Color', value: selectedHairColor, type: 'hairColor' },
                                     { label: 'Outfit', value: selectedOutfit || 'Bikini', type: 'outfit' }
                                 ].map((attr, i) => (
-                                    <div key={i} className="group relative h-24 rounded-2xl overflow-hidden border border-white/5 bg-white/5 hover:border-primary/50 transition-all duration-300">
-                                        <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
+                                    <div key={i} className="group relative h-20 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden border border-white/5 bg-white/5 hover:border-primary/50 transition-all duration-300">
+                                        <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-300 hidden sm:block">
                                             <img
                                                 src={getImageUrl(attr.type || '', String(attr.value), '')}
                                                 className="w-full h-full object-cover grayscale"
                                                 alt=""
                                             />
                                         </div>
-                                        <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-transparent p-4 flex flex-col justify-center">
-                                            <span className="text-[10px] uppercase font-bold text-white/30 tracking-widest">{attr.label}</span>
-                                            <span className="text-sm font-bold text-white truncate">{getDisplayValue(String(attr.value), attr.type || '')}</span>
+                                        <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-transparent p-3 sm:p-4 flex flex-col justify-center">
+                                            <span className="text-[8px] sm:text-[10px] uppercase font-bold text-white/30 tracking-widest">{attr.label}</span>
+                                            <span className="text-xs sm:text-sm font-bold text-white truncate">{getDisplayValue(String(attr.value), attr.type || '')}</span>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="space-y-4 mb-2">
-                                <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
-                                    <h4 className="text-white/40 text-[10px] uppercase font-bold tracking-widest mb-2">Personlighet</h4>
-                                    <p className="text-white font-medium">{getDisplayValue(selectedPersonality || '', 'personality')}</p>
+                            <div className="space-y-3 sm:space-y-4 mb-2">
+                                <div className="bg-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-white/10">
+                                    <h4 className="text-white/40 text-[8px] sm:text-[10px] uppercase font-bold tracking-widest mb-1 sm:mb-2">Personlighet</h4>
+                                    <p className="text-white text-xs sm:text-base font-medium">{getDisplayValue(selectedPersonality || '', 'personality')}</p>
                                 </div>
-                                <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
-                                    <h4 className="text-white/40 text-[10px] uppercase font-bold tracking-widest mb-2">Publik status</h4>
+                                <div className="bg-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-white/10">
+                                    <h4 className="text-white/40 text-[8px] sm:text-[10px] uppercase font-bold tracking-widest mb-1 sm:mb-2">Publik status</h4>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-white font-medium">{isPublic ? 'Offentlig' : 'Privat'}</span>
+                                        <span className="text-white text-xs sm:text-base font-medium">{isPublic ? 'Offentlig' : 'Privat'}</span>
                                         <Switch checked={isPublic} onCheckedChange={setIsPublic} />
                                     </div>
                                 </div>
-                                <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
+                                <div className="bg-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-white/10">
                                     <textarea
                                         value={characterDescription}
                                         onChange={(e) => setCharacterDescription(e.target.value)}
                                         placeholder="Beskriv hennes karaktär..."
-                                        className="w-full h-24 bg-transparent border-none text-white text-sm focus:ring-0 resize-none p-0 outline-none"
+                                        className="w-full h-20 sm:h-24 bg-transparent border-none text-white text-xs sm:text-sm focus:ring-0 resize-none p-0 outline-none"
                                     />
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    <div className="pt-6">
+                    <div className="pt-4 md:pt-6">
                         <button
                             onClick={() => setShowNameDialog(true)}
-                            className="w-full py-5 rounded-[1.5rem] bg-gradient-to-r from-[#ff4d8d] to-[#ff6b95] text-white font-black text-lg tracking-wider shadow-2xl shadow-pink-500/20 hover:scale-[1.02] hover:shadow-pink-500/40 active:scale-[0.98] transition-all uppercase">
+                            className="w-full py-4 sm:py-5 rounded-lg sm:rounded-[1.5rem] bg-gradient-to-r from-[#ff4d8d] to-[#ff6b95] text-white font-black text-base sm:text-lg tracking-wider shadow-2xl shadow-pink-500/20 hover:scale-[1.02] hover:shadow-pink-500/40 active:scale-[0.98] transition-all uppercase">
                             Gör min AI levande
                         </button>
                     </div>
                 </div>
             </div>
+        );
         );
     };
 
