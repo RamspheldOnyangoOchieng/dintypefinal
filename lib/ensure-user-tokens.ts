@@ -8,7 +8,7 @@ import { createAdminClient } from '@/lib/supabase-admin';
  */
 export async function ensureUserTokens(userId: string): Promise<number> {
   const supabase = await createAdminClient();
-  const initialTokens = 50;
+  const initialTokens = 0;
 
   if (!supabase) {
     console.error('Failed to create admin client');
@@ -27,7 +27,7 @@ export async function ensureUserTokens(userId: string): Promise<number> {
       return existing.balance;
     }
 
-    // Create initial token balance (50 free tokens for all users)
+    // Create initial token balance (0 tokens for all users)
     // Removed created_at to avoid schema issues if column is missing
     const { error: insertError } = await supabase
       .from('user_tokens')
@@ -44,7 +44,8 @@ export async function ensureUserTokens(userId: string): Promise<number> {
       return initialTokens;
     }
 
-    // Log the welcome bonus (best effort)
+    // Welcome bonus removed as per user request
+    /* 
     try {
       await supabase
         .from('token_transactions')
@@ -58,8 +59,9 @@ export async function ensureUserTokens(userId: string): Promise<number> {
     } catch (e) {
       // Ignore transaction log errors
     }
+    */
 
-    console.log(`✅ Created token balance for user ${userId.substring(0, 8)}: ${initialTokens} tokens`);
+    console.log(`✅ Created token balance record for user ${userId.substring(0, 8)}`);
 
     return initialTokens;
   } catch (error) {

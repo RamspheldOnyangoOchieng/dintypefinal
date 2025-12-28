@@ -24,10 +24,10 @@ import { useAuthModal } from "@/components/auth-modal-context"
 // Remove the static imageOptions array and replace with dynamic calculation
 // Get selected option for token calculation - move this logic up and make it dynamic
 const imageOptions = [
-  { value: "1", label: "1 (Free)", tokens: 0 },
-  { value: "4", label: "4", tokens: 20 },
-  { value: "6", label: "6", tokens: 30 },
-  { value: "8", label: "8", tokens: 40 },
+  { value: "1", label: "1 Image", tokens: 0 },
+  { value: "4", label: "4 Images", tokens: 20 },
+  { value: "6", label: "6 Images", tokens: 30 },
+  { value: "8", label: "8 Images", tokens: 40 },
 ]
 
 export default function GenerateImagePage() {
@@ -843,9 +843,11 @@ export default function GenerateImagePage() {
               </Button>
             </div>
           )}
-          <div className={`${isMobile ? 'mt-1 text-xs' : 'mt-2 text-sm'} text-muted-foreground`}>
-            5 tokens per image
-          </div>
+          {selectedCount !== "1" && (
+            <div className={`${isMobile ? 'mt-1 text-xs' : 'mt-2 text-sm'} text-muted-foreground`}>
+              5 tokens per image
+            </div>
+          )}
         </div>
 
         {/* Error Message */}
