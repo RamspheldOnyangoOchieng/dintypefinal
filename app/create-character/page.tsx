@@ -92,8 +92,7 @@ export default function CreateCharacterPage() {
         try {
             const { data, error } = await supabase
                 .from('attribute_images')
-                .select('*')
-                .in('category', ['personality', 'relationship']);
+                .select('*');
 
             if (error) throw error;
 
@@ -214,11 +213,11 @@ export default function CreateCharacterPage() {
             },
             'eyeColor': {
                 'realistic': {
-                    'brown': '/character creation/eye  color/realistic/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp',
-                    'blue': '/character creation/eye  color/realistic/blue-f7e75e814204c4d8464d36f525b0f6e9191557a585cb4be01e91ca8eb45416d0.webp',
-                    'green': '/character creation/eye  color/realistic/green-8a705cc5c2c435ac0f7addd110f4dd2b883a2e35b6403659c3e30cc7a741359c.webp',
-                    'hazel': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906815/attribute-images/eyeColor/eyeColor_hazel_realistic_1766906813010.jpg',
-                    'grey': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906820/attribute-images/eyeColor/eyeColor_grey_realistic_1766906818815.jpg'
+                    'brown': femaleImages?.eyeColor?.realistic?.['brown'] || '/character creation/eye  color/realistic/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp',
+                    'blue': femaleImages?.eyeColor?.realistic?.['blue'] || '/character creation/eye  color/realistic/blue-f7e75e814204c4d8464d36f525b0f6e9191557a585cb4be01e91ca8eb45416d0.webp',
+                    'green': femaleImages?.eyeColor?.realistic?.['green'] || '/character creation/eye  color/realistic/green-8a705cc5c2c435ac0f7addd110f4dd2b883a2e35b6403659c3e30cc7a741359c.webp',
+                    'hazel': femaleImages?.eyeColor?.realistic?.['hazel'] || 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906815/attribute-images/eyeColor/eyeColor_hazel_realistic_1766906813010.jpg',
+                    'grey': femaleImages?.eyeColor?.realistic?.['grey'] || 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906820/attribute-images/eyeColor/eyeColor_grey_realistic_1766906818815.jpg'
                 },
                 'anime': {
                     'brown': '/character creation/eye  color/anime/brown-9dbba1bb37191cf2fc0d0fd3f2c118277e3f1c257a66a870484739fa1bd33c42.webp',
@@ -230,46 +229,46 @@ export default function CreateCharacterPage() {
             },
             'hairStyle': {
                 'realistic': {
-                    'straight': '/character creation/hair styles/realistic/straight-50860930cc288e0be0fef427289870b6d421a4eba489ec04600fd0b3b1b32826.webp',
-                    'short': '/character creation/hair styles/realistic/short-f0217dbf9ddb599d1d7ceff342e1a9b846f4ea5c083e66630dbeff55ce574691.webp',
-                    'long': '/character creation/hair styles/realistic/long-eb817bef0e59709224eaea96296f33b260b2574a6fc10a5a1f10bfcd5dffb9cd.webp',
-                    'curly': '/character creation/hair styles/realistic/curly-4110486ba90646770e43e75e045c0cd9db53fcec28cadbc0222985bdf39d3cea.webp',
-                    'bangs': '/character creation/hair styles/realistic/bangs-c696685cde2cdd4b88d2c80cd8bd71a1d62d94348a840e2ff3ec2b974f1b9e75.webp',
-                    'bun': '/character creation/hair styles/realistic/bun-93b58d32131d1905f6654d992d20bad3adc798ced8e028d89274aac1d7743885.webp'
+                    'straight': femaleImages?.hairStyle?.realistic?.['straight'] || '/character creation/hair styles/realistic/straight-50860930cc288e0be0fef427289870b6d421a4eba489ec04600fd0b3b1b32826.webp',
+                    'short': femaleImages?.hairStyle?.realistic?.['short'] || '/character creation/hair styles/realistic/short-f0217dbf9ddb599d1d7ceff342e1a9b846f4ea5c083e66630dbeff55ce574691.webp',
+                    'long': femaleImages?.hairStyle?.realistic?.['long'] || '/character creation/hair styles/realistic/long-eb817bef0e59709224eaea96296f33b260b2574a6fc10a5a1f10bfcd5dffb9cd.webp',
+                    'curly': femaleImages?.hairStyle?.realistic?.['curly'] || '/character creation/hair styles/realistic/curly-4110486ba90646770e43e75e045c0cd9db53fcec28cadbc0222985bdf39d3cea.webp',
+                    'bangs': femaleImages?.hairStyle?.realistic?.['bangs'] || '/character creation/hair styles/realistic/bangs-c696685cde2cdd4b88d2c80cd8bd71a1d62d94348a840e2ff3ec2b974f1b9e75.webp',
+                    'bun': femaleImages?.hairStyle?.realistic?.['bun'] || '/character creation/hair styles/realistic/bun-93b58d32131d1905f6654d992d20bad3adc798ced8e028d89274aac1d7743885.webp'
                 },
                 'anime': {
-                    'straight': '/character creation/hair styles/anime/straight-44d31e24433b284d0806280c7a6969506c1bc6047264f2ec3efae3363f9191cd.webp',
-                    'short': '/character creation/hair styles/anime/short-ea46bfb17c34dcc6ec64e6e138314c617e700cf4e74c41135cb22e30b82a0fe5.webp',
-                    'long': '/character creation/hair styles/anime/long-f64056f0882ec6947312a4ea4336c22ddc15afa3f4c617d6b028a6751f633fa0.webp',
-                    'curly': '/character creation/hair styles/anime/curly-f8fc6f08fcccf0e54034efc8b891c196e376cdd51ebbe29a3c9be66be4c3042f.webp',
-                    'bangs': '/character creation/hair styles/anime/bangs-eee819dbe88b63bcfd3fefdb0d024770e19d2bee0ef1343cd1339ad980543ccc.webp',
-                    'ponytail': '/character creation/hair styles/anime/ponytail-860f6eb8a1c955f15bf6c66051cbda9ce78bdecdd27b3321b11a06c3537feb1b.webp',
-                    'bun': '/character creation/hair styles/anime/bun-0fcc2a3c6b2b68b0c42de93cb57875e4b652ddd441f47d3cd0d2f6dc6bfc9f60.webp'
+                    'straight': femaleImages?.hairStyle?.anime?.['straight'] || '/character creation/hair styles/anime/straight-44d31e24433b284d0806280c7a6969506c1bc6047264f2ec3efae3363f9191cd.webp',
+                    'short': femaleImages?.hairStyle?.anime?.['short'] || '/character creation/hair styles/anime/short-ea46bfb17c34dcc6ec64e6e138314c617e700cf4e74c41135cb22e30b82a0fe5.webp',
+                    'long': femaleImages?.hairStyle?.anime?.['long'] || '/character creation/hair styles/anime/long-f64056f0882ec6947312a4ea4336c22ddc15afa3f4c617d6b028a6751f633fa0.webp',
+                    'curly': femaleImages?.hairStyle?.anime?.['curly'] || '/character creation/hair styles/anime/curly-f8fc6f08fcccf0e54034efc8b891c196e376cdd51ebbe29a3c9be66be4c3042f.webp',
+                    'bangs': femaleImages?.hairStyle?.anime?.['bangs'] || '/character creation/hair styles/anime/bangs-eee819dbe88b63bcfd3fefdb0d024770e19d2bee0ef1343cd1339ad980543ccc.webp',
+                    'ponytail': femaleImages?.hairStyle?.anime?.['ponytail'] || '/character creation/hair styles/anime/ponytail-860f6eb8a1c955f15bf6c66051cbda9ce78bdecdd27b3321b11a06c3537feb1b.webp',
+                    'bun': femaleImages?.hairStyle?.anime?.['bun'] || '/character creation/hair styles/anime/bun-0fcc2a3c6b2b68b0c42de93cb57875e4b652ddd441f47d3cd0d2f6dc6bfc9f60.webp'
                 }
             },
             'hairColor': {
                 'realistic': {
-                    'black': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904247/character-creation/hair-color/realistic/black.jpg',
-                    'brown': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904249/character-creation/hair-color/realistic/brown.jpg',
-                    'blonde': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904250/character-creation/hair-color/realistic/blonde.jpg',
-                    'red': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766904251/character-creation/hair-color/realistic/red.jpg',
-                    'silver': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906823/attribute-images/hairColor/hairColor_silver_realistic_1766906821737.jpg',
-                    'blue': 'https://res.cloudinary.com/ddg02aqiw/image/upload/v1766906825/attribute-images/hairColor/hairColor_blue_realistic_1766906824144.jpg'
+                    'black': '',
+                    'brown': '',
+                    'blonde': '',
+                    'red': '',
+                    'silver': '',
+                    'blue': ''
                 }
             },
             'bodyType': {
                 'realistic': {
-                    'athletic': '/character creation/Body Type/realistic/body_athletic-c3a09551c478b35d5bab217b946c8d3da9eab3ac3f6c4d1fa106aa4e5d763c16.webp',
-                    'slim': '/character creation/Body Type/realistic/body_slim-ce55ea6a36780b0dcc3d75e5c8e23eeea3ff2177c9bbcadd92e02e61e6397b96.webp',
-                    'curvy': '/character creation/Body Type/realistic/body_curvy-f18d1ee332d545ae810fd3351824967d9710c4ae8991e6184abb5af5f5ec21bc.webp',
-                    'voluptuous': '/character creation/Body Type/realistic/body_voluptuous-d4128f1812af6cff122eb24e973b08eed430b86a315cb80f2506f1258f12535c.webp',
-                    'petite': '/character creation/Body Type/realistic/body_petite-b18f62bc362b356112dcf9255804da6c878a0d63d461b683201e6119aa78ea4e.webp'
+                    'athletic': femaleImages?.bodyType?.realistic?.['athletic'] || '/character creation/Body Type/realistic/body_athletic-c3a09551c478b35d5bab217b946c8d3da9eab3ac3f6c4d1fa106aa4e5d763c16.webp',
+                    'slim': femaleImages?.bodyType?.realistic?.['slim'] || '/character creation/Body Type/realistic/body_slim-ce55ea6a36780b0dcc3d75e5c8e23eeea3ff2177c9bbcadd92e02e61e6397b96.webp',
+                    'curvy': femaleImages?.bodyType?.realistic?.['curvy'] || '/character creation/Body Type/realistic/body_curvy-f18d1ee332d545ae810fd3351824967d9710c4ae8991e6184abb5af5f5ec21bc.webp',
+                    'voluptuous': femaleImages?.bodyType?.realistic?.['voluptuous'] || '/character creation/Body Type/realistic/body_voluptuous-d4128f1812af6cff122eb24e973b08eed430b86a315cb80f2506f1258f12535c.webp',
+                    'petite': femaleImages?.bodyType?.realistic?.['petite'] || '/character creation/Body Type/realistic/body_petite-b18f62bc362b356112dcf9255804da6c878a0d63d461b683201e6119aa78ea4e.webp'
                 },
                 'anime': {
-                    'athletic': '/character creation/Body Type/anime/body_athletic-0bb37d31c6e9d0dda344526ea3e5ea019216f7bc042ecdba0465e790b9f29921.webp',
-                    'slim': '/character creation/Body Type/anime/body_slim-422415ecd930ba6275832c1e4c7105eece45afe83100640f82fa5386fa9b7c01.webp',
-                    'curvy': '/character creation/Body Type/anime/body_curvy-d53df8ea34c9a47c0e620e8376d77b95b65d7816c47d4308955e3d1ce4c7bf8a.webp',
-                    'voluptuous': '/character creation/Body Type/anime/body_voluptuous-224e774f7e5f8ee33282e73d0602b5ba2ee7113f9abb1cca1287be9b7ca038e2.webp'
+                    'athletic': femaleImages?.bodyType?.anime?.['athletic'] || '/character creation/Body Type/anime/body_athletic-0bb37d31c6e9d0dda344526ea3e5ea019216f7bc042ecdba0465e790b9f29921.webp',
+                    'slim': femaleImages?.bodyType?.anime?.['slim'] || '/character creation/Body Type/anime/body_slim-422415ecd930ba6275832c1e4c7105eece45afe83100640f82fa5386fa9b7c01.webp',
+                    'curvy': femaleImages?.bodyType?.anime?.['curvy'] || '/character creation/Body Type/anime/body_curvy-d53df8ea34c9a47c0e620e8376d77b95b65d7816c47d4308955e3d1ce4c7bf8a.webp',
+                    'voluptuous': femaleImages?.bodyType?.anime?.['voluptuous'] || '/character creation/Body Type/anime/body_voluptuous-224e774f7e5f8ee33282e73d0602b5ba2ee7113f9abb1cca1287be9b7ca038e2.webp'
                 }
             },
             'breastSize': {
@@ -397,49 +396,46 @@ export default function CreateCharacterPage() {
         };
 
         // Select the appropriate imageMap based on gender
-        const imageMap = gender === 'gent' ? maleImageMap : femaleImageMap;
+        // Check the database-fetched images first (highest priority)
+        const dynamicImages = gender === 'gent' ? maleImages : femaleImages;
+        
+        // Normalize category name for lookup (e.g., eyeColor -> eye_color)
+        let normalizedCategory = categoryName;
+        if (categoryName === 'eyeColor') normalizedCategory = 'eye_color';
+        if (categoryName === 'hairColor') normalizedCategory = 'hair_color';
+        if (categoryName === 'hairStyle') normalizedCategory = 'hair_style';
+        if (categoryName === 'bodyType') normalizedCategory = 'body';
 
-        // Debug logging for gent images
-        if (gender === 'gent') {
-            const maleImagesLoaded = Object.keys(maleImages).length > 0;
-            console.log(`🔍 Getting image for gent: ${categoryName}/${optionKey}/${selectedStyle}`, {
-                maleImagesLoaded,
-                hasCategoryInMap: !!imageMap[categoryName],
-                hasStyleInCategory: imageMap[categoryName] ? !!imageMap[categoryName][selectedStyle] : false,
-                hasOptionInStyle: imageMap[categoryName]?.[selectedStyle] ? !!imageMap[categoryName][selectedStyle][optionKey] : false,
-                actualURL: imageMap[categoryName]?.[selectedStyle]?.[optionKey] || 'NOT FOUND',
-                fallbackProvided: !!fallbackUrl
-            });
+        // Normalize option key (especially for age)
+        let normalizedOptionKey = String(optionKey).toLowerCase().replace(/\s+/g, '-');
+        if (categoryName === 'age' && typeof optionKey === 'number') {
+            const ageNum = optionKey as number;
+            if (ageNum < 20) normalizedOptionKey = '18';
+            else if (ageNum < 30) normalizedOptionKey = '20s';
+            else if (ageNum < 40) normalizedOptionKey = '30s';
+            else if (ageNum < 50) normalizedOptionKey = '40s';
+            else if (ageNum < 60) normalizedOptionKey = '50s';
+            else normalizedOptionKey = '60s';
         }
 
+        const dynamicUrl = dynamicImages[categoryName]?.[selectedStyle]?.[normalizedOptionKey] || 
+                          dynamicImages[normalizedCategory]?.[selectedStyle]?.[normalizedOptionKey];
+        if (dynamicUrl) return dynamicUrl;
+
+        // Fallback to static mapping
+        const imageMap = gender === 'gent' ? maleImageMap : femaleImageMap;
+        
         // Get the image path
         const categoryImages = imageMap[categoryName];
-        if (!categoryImages) {
-            console.warn(`⚠️  No images found for category: ${categoryName}`);
-            return fallbackUrl || defaultPlaceholder;
-        }
+        if (!categoryImages) return fallbackUrl || defaultPlaceholder;
 
-        // For style, return directly
-        if (categoryName === 'style') {
-            return categoryImages[optionKey] || fallbackUrl || defaultPlaceholder;
-        }
+        if (categoryName === 'style') return categoryImages[optionKey] || fallbackUrl || defaultPlaceholder;
 
-        // For other categories, get the style-specific images
         const styleImages = categoryImages[selectedStyle];
-        if (!styleImages) {
-            console.warn(`⚠️  No images found for style: ${selectedStyle} in category: ${categoryName}`);
-            return fallbackUrl || defaultPlaceholder;
-        }
+        if (!styleImages) return fallbackUrl || defaultPlaceholder;
 
         const finalUrl = styleImages[optionKey];
-        if (!finalUrl) {
-            if (gender === 'gent') {
-                console.warn(`⚠️  No image found for gent option: ${categoryName}/${selectedStyle}/${optionKey}, using fallback: ${fallbackUrl || defaultPlaceholder}`);
-            }
-            return fallbackUrl || defaultPlaceholder;
-        }
-
-        return finalUrl;
+        return finalUrl || fallbackUrl || defaultPlaceholder;
     };
 
     // Auto-start generation when reaching the generation step
@@ -564,13 +560,13 @@ export default function CreateCharacterPage() {
                             <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-8 md:mb-12">
                                 {[
                                     { label: 'Ethnicity', value: selectedEthnicity, type: 'ethnicity' },
-                                    { label: 'Age', value: `${selectedAge}yo` },
+                                    { label: 'Age', value: selectedAge, type: 'age' },
                                     { label: 'Eye Color', value: selectedEyeColor, type: 'eyeColor' },
                                     { label: 'Body Type', value: selectedBodyType, type: 'bodyType' },
                                     { label: 'Breast Size', value: selectedBreastSize, type: 'breastSize' },
                                     { label: 'Hair Style', value: selectedHairStyle, type: 'hairStyle' },
                                     { label: 'Hair Color', value: selectedHairColor, type: 'hairColor' },
-                                    { label: 'Outfit', value: selectedOutfit || 'Bikini', type: 'outfit' }
+                                    { label: 'Outfit', value: selectedOutfit, type: 'outfit' }
                                 ].map((attr, i) => (
                                     <div key={i} className="group relative h-20 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden border border-white/5 bg-white/5 hover:border-primary/50 transition-all duration-300">
                                         <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-300 hidden sm:block">
@@ -752,6 +748,23 @@ export default function CreateCharacterPage() {
     const handleSaveCharacter = async () => {
         if (!characterName.trim()) {
             alert('Please enter a character name');
+            return;
+        }
+
+        // If we are on the summary step and haven't generated yet,
+        // just save the name and move to the generation step
+        const summaryStep = gender === 'lady' ? 7 : 3;
+        const generationStep = gender === 'lady' ? 8 : 4;
+
+        if (currentStep === summaryStep && !generatedImageUrl) {
+            console.log('📝 Name set, moving to generation step...');
+            setShowNameDialog(false);
+            setCurrentStep(generationStep);
+            return;
+        }
+
+        if (!generatedImageUrl) {
+            console.error('❌ Cannot save: No image generated yet');
             return;
         }
 
@@ -1196,7 +1209,7 @@ export default function CreateCharacterPage() {
                                         >
                                             <div className="w-16 h-16 rounded-full overflow-hidden border border-border group-hover:ring-2 group-hover:ring-pink-500/50 transition-all">
                                                 <img
-                                                    src={eye.fallback ? getImageUrl('eyeColor', eye.id, eye.fallback) : `https://images.unsplash.com/photo-1544474601-574300305a76?q=80&w=150`}
+                                                    src={getImageUrl('eyeColor', eye.id, eye.fallback || `https://images.unsplash.com/photo-1544474601-574300305a76?q=80&w=150`)}
                                                     alt={eye.label}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -2331,9 +2344,17 @@ export default function CreateCharacterPage() {
                                 }`}
                             disabled={!getStepValidation() || isGenerating}
                             onClick={() => {
-                                const finalStep = gender === 'lady' ? 7 : 3;
-                                if (currentStep === finalStep) {
+                                const summaryStep = gender === 'lady' ? 7 : 3;
+                                const generationStep = gender === 'lady' ? 8 : 4;
+
+                                if (currentStep === summaryStep) {
                                     setShowNameDialog(true);
+                                } else if (currentStep === generationStep) {
+                                    if (generatedImageUrl) {
+                                        handleSaveCharacter();
+                                    } else if (!isGenerating) {
+                                        handleGenerateImage();
+                                    }
                                 } else {
                                     setCurrentStep(currentStep + 1);
                                 }
