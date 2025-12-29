@@ -49,7 +49,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [characterId, setCharacterId] = useState<string | null>(null);
   const { characters, isLoading: charactersLoading, updateCharacter, refreshCharacters } = useCharacters();
   const [character, setCharacter] = useState<any>(null);
-  const [isDirectFetching, setIsDirectFetching] = useState(false);
+  const [isLookupComplete, setIsLookupComplete] = useState(false);
 
   // Handle params unwrapping for Next.js 15
   useEffect(() => {
@@ -59,6 +59,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       if (newId !== characterId) {
         setCharacterId(newId);
         setCharacter(null); // Reset character state when navigating to a new ID
+        setIsLookupComplete(false); // Reset lookup state
         setMessages([]); // Reset messages when navigating
       }
     };
@@ -174,7 +175,14 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     let isMounted = true;
 
     async function loadCharacter() {
-      if (charactersLoading || !characterId || character) return;
+      // Don't run if loading context or no ID
+      if (charactersLoading || !characterId) return;
+
+      // If character already set, we consider lookup complete (though we could refine this)
+      if (character) {
+        if (isMounted) setIsLookupComplete(true);
+        return;
+      }
 
       const charId = String(characterId);
       console.log('🔍 Looking for character:', charId);
@@ -185,7 +193,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         console.log("✅ Found character in context:", foundInContext.name);
         if (isMounted) {
           setCharacter(foundInContext);
-          setIsDirectFetching(false);
+          setIsLookupComplete(true);
         }
         return;
       }
@@ -199,7 +207,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             console.log("✅ Loaded custom character from localStorage:", customChar.name);
             if (isMounted) {
               setCharacter(customChar);
-              setIsDirectFetching(false);
+              setIsLookupComplete(true);
             }
             return;
           } catch (error) {
@@ -210,7 +218,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
       // 3. Fallback: Direct database fetch
       console.log("🔎 Character not in context, trying direct fetch...");
-      if (isMounted) setIsDirectFetching(true);
       try {
         const supabase = createClient();
         const { data, error } = await supabase
@@ -221,15 +228,19 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
         if (error) throw error;
 
-        if (data) {
+        // Type guard using explicit casting if needed, though with select('*') and schema it should be fine.
+        // If data is implicitly 'never' due to types, we can cast it to 'any' for now to match the existing 'any' usage in the component
+        const typedData = data as any;
+
+        if (typedData) {
           const char = {
-            ...data,
-            isNew: data.is_new,
-            createdAt: data.created_at,
-            systemPrompt: data.system_prompt || data.systemPrompt,
-            imageUrl: data.image_url || data.image,
-            videoUrl: data.video_url || data.videoUrl,
-            isPublic: data.is_public || data.isPublic,
+            ...typedData,
+            isNew: typedData.is_new,
+            createdAt: typedData.created_at,
+            systemPrompt: typedData.system_prompt || typedData.systemPrompt,
+            imageUrl: typedData.image_url || typedData.image,
+            videoUrl: typedData.video_url || typedData.videoUrl,
+            isPublic: typedData.is_public || typedData.isPublic,
           };
           console.log("✅ Found character via direct fetch:", char.name);
           if (isMounted) setCharacter(char);
@@ -239,7 +250,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       } catch (err) {
         console.error("❌ Error fetching character directly:", err);
       } finally {
-        if (isMounted) setIsDirectFetching(false);
+        if (isMounted) setIsLookupComplete(true);
       }
     }
 
@@ -817,10 +828,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           ...character,
           images: updatedImages
         };
-        
+
         // Update localStorage
         localStorage.setItem(`character-${characterId}`, JSON.stringify(updatedChar));
-        
+
         // Update local state to trigger re-render
         setCharacter(updatedChar);
       }
@@ -1033,7 +1044,11 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   // Show loading while unwrapping params or loading characters
   const isActuallyMounted = isMounted && characterId !== null;
 
-  if (!isActuallyMounted || charactersLoading || (isDirectFetching && !character)) {
+  // We are loading if:
+  // 1. Not mounted yet
+  // 2. Context is loading
+  // 3. Character is not set AND lookup is NOT complete
+  if (!isActuallyMounted || charactersLoading || (!character && !isLookupComplete)) {
     return (
       <div className="flex items-center justify-center h-screen bg-background" key="loading-screen">
         <div className="flex flex-col items-center gap-4">
@@ -1044,8 +1059,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     );
   }
 
-  // Show "not found" if loading finished and no character exists
-  if (!character && !charactersLoading && !isDirectFetching) {
+  // Show "not found" ONLY if lookup is complete and no character exists
+  if (!character && isLookupComplete) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-background p-4 text-center">
         <div className="bg-card p-8 rounded-2xl shadow-xl max-w-md w-full border border-border">
