@@ -444,10 +444,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const refreshUser = async () => {
+    console.log("🔄 refreshUser called");
     try {
       const authUser = await getCurrentUser()
+      console.log("👤 authUser from getCurrentUser:", authUser ? "Found" : "Not Found");
+
       if (authUser) {
+        console.log("🔍 Checking admin status...");
         const adminStatus = await isAdmin(authUser.id)
+        console.log("👑 adminStatus:", adminStatus);
 
         let isPremium = false
         let isExpired = false
@@ -455,7 +460,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let tokenBalance = 0
         let creditBalance = 0
         try {
-          // Use the more robust check-premium-status endpoint
+          console.log("💎 Checking premium status...");
           const premiumResponse = await fetch(`/api/check-premium-status`)
           if (premiumResponse.ok) {
             const premiumData = await premiumResponse.json()
@@ -464,11 +469,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             wasPremium = premiumData.wasPremium
             tokenBalance = premiumData.tokenBalance || 0
             creditBalance = premiumData.creditBalance || 0
+            console.log("✅ Premium data fetched:", { isPremium, tokenBalance });
           }
         } catch (e) {
-          console.error("Failed to check premium status during refresh")
+          console.error("❌ Failed to check premium status during refresh:", e)
         }
 
+        console.log("💾 Updating user state...");
         setUser({
           id: authUser.id,
           username: authUser.user_metadata?.username || authUser.email?.split("@")[0] || "User",
@@ -482,9 +489,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           createdAt: authUser.created_at || new Date().toISOString(),
           avatar: authUser.user_metadata?.avatar_url,
         })
+        console.log("✨ User state updated successfully");
+      } else {
+        console.log("⚠️ No authUser found, skipping update");
       }
     } catch (error) {
-      console.error("Error refreshing user:", error)
+      console.error("❌ Error refreshing user:", error)
     }
   }
 

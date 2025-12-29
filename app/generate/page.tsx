@@ -995,117 +995,111 @@ export default function GenerateImagePage() {
           )}
         </div>
 
-        {isGenerating && (
-          <div key="generating-state" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
-            <div className={`bg-card ${isMobile ? 'p-6' : 'p-8'} rounded-xl mb-4`}>
-              <Loader2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-primary animate-spin`} />
-            </div>
-            <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold mb-2`}>
-              Generating Images...
-            </h3>
-            <p className={`text-muted-foreground ${isMobile ? 'max-w-sm text-sm' : 'max-w-md'} mb-4`}>
-              This may take a few moments. We're creating your images based on the prompt.
-            </p>
-
-            {/* Progress Bar */}
-            <div className={`w-full ${isMobile ? 'max-w-sm' : 'max-w-md'} mb-4`}>
-              <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mb-2`}>
-                <span>Progress</span>
-                <span>{Math.round(generationProgress)}%</span>
+        <div className="min-h-[400px]">
+          {isGenerating ? (
+            <div key="generating-state" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
+              <div className={`bg-card ${isMobile ? 'p-6' : 'p-8'} rounded-xl mb-4`}>
+                <Loader2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-primary animate-spin`} />
               </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
-                  style={{ width: `${generationProgress}%` }}
-                />
-              </div>
-            </div>
+              <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold mb-2`}>
+                Generating Images...
+              </h3>
+              <p className={`text-muted-foreground ${isMobile ? 'max-w-sm text-sm' : 'max-w-md'} mb-4`}>
+                This may take a few moments. We're creating your images based on the prompt.
+              </p>
 
-            {/* Timeout Warning */}
-            {timeoutWarning && (
-              <div className={`${isMobile ? 'mt-3 p-2' : 'mt-4 p-3'} bg-yellow-900/20 border border-yellow-800 text-yellow-300 rounded-lg flex items-center ${isMobile ? 'max-w-sm' : 'max-w-md'}`}>
-                <Clock className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
-                <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Hang tight! Your images are being created...</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {!isGenerating && generatedImages.length === 0 && !error && (
-          <div key="empty-state" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
-            <div className={`bg-card ${isMobile ? 'p-6' : 'p-8'} rounded-xl mb-4`}>
-              <Wand2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-muted-foreground`} />
-            </div>
-            <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold mb-2`}>
-              No Images Generated Yet
-            </h3>
-            <p className={`text-muted-foreground ${isMobile ? 'max-w-sm text-sm' : 'max-w-md'}`}>
-              Enter a prompt and click the Generate button to create AI-generated images based on your description.
-            </p>
-          </div>
-        )}
-
-
-
-
-
-        {!isGenerating && generatedImages.length > 0 && (
-          <div key="result-state" className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-4'}`}>
-            {generatedImages.map((image, index) => (
-              <div
-                key={`${image}-${index}`}
-                className="relative group cursor-pointer transform transition-transform hover:scale-[1.02]"
-                onClick={() => handleImageClick(index)}
-              >
-                <div className="aspect-square rounded-xl overflow-hidden bg-card">
-                  <Image
-                    src={getValidImageSrc(image, "/placeholder.svg?height=512&width=512") || "/placeholder.svg"}
-                    alt={`Generated image ${index + 1}`}
-                    width={512}
-                    height={512}
-                    className="w-full h-full object-cover object-top"
-                    unoptimized // Important for external URLs
+              {/* Progress Bar */}
+              <div className={`w-full ${isMobile ? 'max-w-sm' : 'max-w-md'} mb-4`}>
+                <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mb-2`}>
+                  <span>Progress</span>
+                  <span>{Math.round(generationProgress)}%</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${generationProgress}%` }}
                   />
                 </div>
-                <div className={`absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl ${isMobile ? 'opacity-100' : ''}`}>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={(e) => {
-                      e.stopPropagation() // Prevent opening modal
-                      handleDownload(image, index)
-                    }}
-                    className={isMobile ? 'text-xs px-2 py-1' : ''}
-                  >
-                    <Download className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
-                    Download
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={(e) => {
-                      e.stopPropagation() // Prevent opening modal
-                      handleShare(image)
-                    }}
-                    className={isMobile ? 'text-xs px-2 py-1' : ''}
-                  >
-                    <Share2 className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
-                    Share
-                  </Button>
-                </div>
-                <div className={`absolute bottom-2 right-2 bg-background/80 text-foreground ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded`}>
-                  Image {index + 1}
-                </div>
-                {/* Show saved indicator only if image is in savedImageUrls */}
-                {savedImageUrls.has(image) && (
-                  <div className={`absolute top-2 right-2 bg-green-500/80 text-white ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded-full`}>
-                    Saved
-                  </div>
-                )}
               </div>
-            ))}
-          </div>
-        )}
+
+              {/* Timeout Warning */}
+              {timeoutWarning && (
+                <div className={`${isMobile ? 'mt-3 p-2' : 'mt-4 p-3'} bg-yellow-900/20 border border-yellow-800 text-yellow-300 rounded-lg flex items-center ${isMobile ? 'max-w-sm' : 'max-w-md'}`}>
+                  <Clock className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+                  <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Hang tight! Your images are being created...</span>
+                </div>
+              )}
+            </div>
+          ) : generatedImages.length === 0 && !error ? (
+            <div key="empty-state" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
+              <div className={`bg-card ${isMobile ? 'p-6' : 'p-8'} rounded-xl mb-4`}>
+                <Wand2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-muted-foreground`} />
+              </div>
+              <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold mb-2`}>
+                No Images Generated Yet
+              </h3>
+              <p className={`text-muted-foreground ${isMobile ? 'max-w-sm text-sm' : 'max-w-md'}`}>
+                Enter a prompt and click the Generate button to create AI-generated images based on your description.
+              </p>
+            </div>
+          ) : generatedImages.length > 0 ? (
+            <div key="result-state" className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-4'}`}>
+              {generatedImages.map((image, index) => (
+                <div
+                  key={`${image}-${index}`}
+                  className="relative group cursor-pointer transform transition-transform hover:scale-[1.02]"
+                  onClick={() => handleImageClick(index)}
+                >
+                  <div className="aspect-square rounded-xl overflow-hidden bg-card">
+                    <Image
+                      src={getValidImageSrc(image, "/placeholder.svg?height=512&width=512") || "/placeholder.svg"}
+                      alt={`Generated image ${index + 1}`}
+                      width={512}
+                      height={512}
+                      className="w-full h-full object-cover object-top"
+                      unoptimized // Important for external URLs
+                    />
+                  </div>
+                  <div className={`absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl ${isMobile ? 'opacity-100' : ''}`}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={(e) => {
+                        e.stopPropagation() // Prevent opening modal
+                        handleDownload(image, index)
+                      }}
+                      className={isMobile ? 'text-xs px-2 py-1' : ''}
+                    >
+                      <Download className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+                      Download
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={(e) => {
+                        e.stopPropagation() // Prevent opening modal
+                        handleShare(image)
+                      }}
+                      className={isMobile ? 'text-xs px-2 py-1' : ''}
+                    >
+                      <Share2 className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+                      Share
+                    </Button>
+                  </div>
+                  <div className={`absolute bottom-2 right-2 bg-background/80 text-foreground ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded`}>
+                    Image {index + 1}
+                  </div>
+                  {/* Show saved indicator only if image is in savedImageUrls */}
+                  {savedImageUrls.has(image) && (
+                    <div className={`absolute top-2 right-2 bg-green-500/80 text-white ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded-full`}>
+                      Saved
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {/* Image Modal */}
