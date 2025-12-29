@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Download, Share2, X, Save, Loader2 } from "lucide-react"
 import Image from "next/image"
@@ -70,6 +70,7 @@ export function ImageModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl p-0 bg-[#0A0A0A] border-[#252525] rounded-lg [&>button]:hidden">
         <DialogTitle className="sr-only">Image View</DialogTitle>
+        <DialogDescription className="sr-only">View and manage your generated images</DialogDescription>
         <div className="relative">
           <div className="relative aspect-square max-h-[80vh] overflow-hidden rounded-lg">
             {/* Close button */}

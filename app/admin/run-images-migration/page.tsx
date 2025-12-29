@@ -39,13 +39,14 @@ export default function RunImagesMigrationPage() {
             <Database className="h-6 w-6 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">Fix Character Images</CardTitle>
-          <CardDescription>Add missing columns to the characters table</CardDescription>
+          <CardDescription>Fix character image columns and generated images metadata</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-6 text-center">
             This will add the <code className="bg-muted px-1.5 py-0.5 rounded text-primary">images</code> (array) and 
-            <code className="bg-muted px-1.5 py-0.5 rounded text-primary">video_url</code> columns to your characters table. 
-            This fixes the "406 Not Acceptable" error when generating new profile photos.
+            <code className="bg-muted px-1.5 py-0.5 rounded text-primary">video_url</code> columns to your characters table, 
+            and the <code className="bg-muted px-1.5 py-0.5 rounded text-primary">metadata</code> column to your generated_images table.
+            This fixes saving errors and "406 Not Acceptable" errors.
           </p>
 
           {result && (
@@ -88,7 +89,10 @@ export default function RunImagesMigrationPage() {
 {`ALTER TABLE characters 
 ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}',
 ADD COLUMN IF NOT EXISTS video_url TEXT,
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();`}
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+ALTER TABLE generated_images 
+ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`}
                     </div>
                   </div>
 

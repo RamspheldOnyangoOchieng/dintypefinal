@@ -12,18 +12,31 @@ export async function GET() {
         // SQL to add the images column if it doesn't exist
         // We use TEXT[] for the array of image URLs
         const sql = `
+      -- Characters table updates
       ALTER TABLE characters 
       ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
       
-      COMMENT ON COLUMN characters.images IS 'Array of additional profile image URLs';
-      
-      -- Also add video_url just in case the previous migration didn't run
       ALTER TABLE characters 
       ADD COLUMN IF NOT EXISTS video_url TEXT;
       
-      -- Add updated_at if it doesn't exist
       ALTER TABLE characters 
       ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+      -- Generated images table updates
+      CREATE TABLE IF NOT EXISTS generated_images (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+        prompt TEXT NOT NULL,
+        image_url TEXT NOT NULL,
+        model_used TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+
+      ALTER TABLE generated_images 
+      ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+      
+      COMMENT ON COLUMN generated_images.metadata IS 'Additional image metadata like subscription status at creation time';
     `
 
         // Execute the SQL via the pgclient RPC if it exists
