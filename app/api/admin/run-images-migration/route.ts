@@ -12,31 +12,46 @@ export async function GET() {
         // SQL to add the images column if it doesn't exist
         // We use TEXT[] for the array of image URLs
         const sql = `
-      -- Characters table updates
-      ALTER TABLE characters 
-      ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
-      
-      ALTER TABLE characters 
-      ADD COLUMN IF NOT EXISTS video_url TEXT;
-      
-      ALTER TABLE characters 
-      ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
-
-      -- Generated images table updates
-      CREATE TABLE IF NOT EXISTS generated_images (
+      -- Collections table
+      CREATE TABLE IF NOT EXISTS collections (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-        prompt TEXT NOT NULL,
-        image_url TEXT NOT NULL,
-        model_used TEXT,
+        user_id UUID NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       );
 
-      ALTER TABLE generated_images 
-      ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+      -- Generated images table (Note: user_id without hard FK to allow anonymous dummy IDs)
+      CREATE TABLE IF NOT EXISTS generated_images (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID,
+        prompt TEXT NOT NULL,
+        image_url TEXT NOT NULL,
+        model_used TEXT,
+        character_id UUID,
+        collection_id UUID REFERENCES collections(id) ON DELETE SET NULL,
+        favorite BOOLEAN DEFAULT FALSE,
+        tags TEXT[] DEFAULT '{}',
+        metadata JSONB DEFAULT '{}'::jsonb,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+
+      -- Add missing columns to generated_images if table already exists
+      ALTER TABLE generated_images ADD COLUMN IF NOT EXISTS character_id UUID;
+      ALTER TABLE generated_images ADD COLUMN IF NOT EXISTS collection_id UUID REFERENCES collections(id) ON DELETE SET NULL;
+      ALTER TABLE generated_images ADD COLUMN IF NOT EXISTS favorite BOOLEAN DEFAULT FALSE;
+      ALTER TABLE generated_images ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}';
+      ALTER TABLE generated_images ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
       
-      COMMENT ON COLUMN generated_images.metadata IS 'Additional image metadata like subscription status at creation time';
+      -- Remove FK constraint if it exists (allows transition from hard FK to soft/no FK for anonymous support)
+      ALTER TABLE generated_images DROP CONSTRAINT IF EXISTS generated_images_user_id_fkey;
+      
+      -- Characters table updates
+      ALTER TABLE characters ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
+      ALTER TABLE characters ADD COLUMN IF NOT EXISTS video_url TEXT;
+      ALTER TABLE characters ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
     `
 
         // Execute the SQL via the pgclient RPC if it exists

@@ -43,8 +43,8 @@ export default function RunImagesMigrationPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-6 text-center">
-            This will add the <code className="bg-muted px-1.5 py-0.5 rounded text-primary">images</code> (array) and 
-            <code className="bg-muted px-1.5 py-0.5 rounded text-primary">video_url</code> columns to your characters table, 
+            This will add the <code className="bg-muted px-1.5 py-0.5 rounded text-primary">images</code> (array) and
+            <code className="bg-muted px-1.5 py-0.5 rounded text-primary">video_url</code> columns to your characters table,
             and the <code className="bg-muted px-1.5 py-0.5 rounded text-primary">metadata</code> column to your generated_images table.
             This fixes saving errors and "406 Not Acceptable" errors.
           </p>
@@ -82,24 +82,38 @@ export default function RunImagesMigrationPage() {
                   <p className="text-xs text-muted-foreground">
                     Your Supabase project is missing the utility function to run SQL scripts through the API.
                   </p>
-                  
+
                   <div className="space-y-2">
                     <p className="text-[10px] font-bold uppercase text-muted-foreground">Option 1: Execute Migration Directly</p>
                     <div className="bg-black/40 p-3 rounded border border-white/5 font-mono text-[10px] text-zinc-300 overflow-x-auto whitespace-pre">
-{`ALTER TABLE characters 
+                      {`ALTER TABLE characters 
 ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}',
 ADD COLUMN IF NOT EXISTS video_url TEXT,
 ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
+CREATE TABLE IF NOT EXISTS collections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 ALTER TABLE generated_images 
-ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`}
+ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb,
+ADD COLUMN IF NOT EXISTS character_id UUID,
+ADD COLUMN IF NOT EXISTS collection_id UUID,
+ADD COLUMN IF NOT EXISTS favorite BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}';
+
+ALTER TABLE generated_images DROP CONSTRAINT IF EXISTS generated_images_user_id_fkey;`}
                     </div>
                   </div>
 
                   <div className="space-y-2 pt-2">
                     <p className="text-[10px] font-bold uppercase text-muted-foreground">Option 2: Install SQL Helper (Enables Automatic Fix)</p>
                     <div className="bg-black/40 p-3 rounded border border-white/5 font-mono text-[10px] text-zinc-300 overflow-x-auto whitespace-pre">
-{`CREATE OR REPLACE FUNCTION exec_sql(sql text)
+                      {`CREATE OR REPLACE FUNCTION exec_sql(sql text)
 RETURNS void AS $$
 BEGIN
   EXECUTE sql;
@@ -107,7 +121,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;`}
                     </div>
                   </div>
-                  
+
                   <p className="text-[10px] text-muted-foreground italic">
                     Paste either script into your Supabase SQL Editor and click "Run".
                   </p>
@@ -129,9 +143,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`}
           )}
         </CardContent>
         <CardFooter>
-          <Button 
-            onClick={runMigration} 
-            disabled={isLoading} 
+          <Button
+            onClick={runMigration}
+            disabled={isLoading}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12"
           >
             {isLoading ? "Running Migration..." : "Run Fix Migration"}

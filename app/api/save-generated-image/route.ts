@@ -97,11 +97,12 @@ export async function POST(request: NextRequest) {
         prompt,
         image_url: permanentImageUrl, // Permanent Cloudinary URL
         model_used: modelUsed,
+        character_id: characterId && !characterId.startsWith("custom-") ? characterId : null,
         created_at: new Date().toISOString(),
         metadata: {
           created_during_subscription: isPremium || isAdmin,
-          plan_type: planInfo.planType
-        }
+          plan_type: planInfo.planType,
+        },
       } as any)
       .select()
       .single()
