@@ -29,8 +29,9 @@ import { checkNovitaApiKey } from "@/lib/api-key-utils"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-context"
 import { useAuthModal } from "@/components/auth-modal-context"
+import { sendChatMessageDB, loadChatHistory as loadChatHistoryDB, type Message as DBMessage } from "@/lib/chat-actions-db"
 import { ClearChatDialog } from "@/components/clear-chat-dialog"
-import { checkMessageLimit, incrementMessageUsage } from "@/lib/subscription-limits"
+import { checkMessageLimit, incrementMessageUsage, getUserPlanInfo } from "@/lib/subscription-limits"
 import { DebugPanel } from "@/components/debug-panel"
 import {
   saveMessageToLocalStorage,
@@ -114,6 +115,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [premiumModalFeature, setPremiumModalFeature] = useState("Meddelandegräns")
   const [premiumModalDescription, setPremiumModalDescription] = useState("Daily message limit reached. Upgrade to premium to continue.")
   const [premiumModalMode, setPremiumModalMode] = useState<'upgrade' | 'message-limit'>('upgrade')
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   // Use a ref for the interval to ensure we always have the latest reference
   const imageCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -416,10 +418,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     }
   }, [])
 
-  // Load chat history from localStorage
-  const loadChatHistory = useCallback(() => {
-    if (!character || !isMounted) {
-      console.log("Missing character or component not mounted, skipping chat history load")
+  // Load chat history from database (fallback to localStorage if empty/failed)
+  const loadChatHistory = useCallback(async () => {
+    if (!character || !isMounted || !user?.id) { // Added user?.id check
+      console.log("Missing character, user, or component not mounted, skipping chat history load")
       setIsLoadingHistory(false)
       return
     }
@@ -432,37 +434,46 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     }))
 
     try {
-      console.log("Loading chat history for character:", characterId)
+      console.log("Loading chat history from DB for character:", characterId)
 
-      // Get history from localStorage
-      const history = getChatHistoryFromLocalStorage(character.id)
+      // 1. Try to get history from Database
+      const dbHistory = await loadChatHistoryDB(character.id, user.id) // Pass userId
 
-      console.log(`Loaded ${history.length} messages from localStorage`)
+      if (dbHistory && dbHistory.length > 0) {
+        console.log(`Loaded ${dbHistory.length} messages from database`)
+        setMessages(dbHistory as any) // Cast to any to match existing Message type
+        setIsLoadingHistory(false)
+        return
+      }
+
+      // 2. Fallback: Get history from localStorage
+      console.log("No DB history found, checking localStorage")
+      const localHistory = getChatHistoryFromLocalStorage(character.id)
+
+      console.log(`Loaded ${localHistory.length} messages from localStorage`)
       setDebugInfo((prev) => ({
         ...prev,
-        messagesCount: history.length,
+        messagesCount: localHistory.length,
         lastAction: "historyLoaded",
       }))
 
-      if (history.length > 0) {
-        setMessages(history)
+      if (localHistory.length > 0) {
+        setMessages(localHistory)
+
+        // OPTIONAL: One-time migration to DB could be triggered here
+        console.log("Migration candidate: local messages exist but DB is empty")
       } else {
-        console.log("No history found, setting default welcome message")
-        // Set default welcome message if no history
-        const welcomeMessage: Message = {
-          id: `welcome-${characterId}`,
+        console.log("No history found anywhere, setting default welcome message")
+        const defaultMessage: Message = {
+          id: Date.now().toString(),
           role: "assistant",
-          content: `Hej där! Jag är ${character.name}. Så kul att träffa dig! Vad heter du?`,
+          content: character.description || `Hi! I'm ${character.name}. Let's chat!`,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         }
-
-        setMessages([welcomeMessage])
-
-        // Save welcome message to localStorage
-        saveMessageToLocalStorage(characterId!, welcomeMessage)
+        setMessages([defaultMessage])
       }
     } catch (error) {
-      console.error("Error loading chat history:", error)
+      console.error("Error loading history:", error)
       setDebugInfo((prev) => ({ ...prev, lastError: error, lastAction: "historyError" }))
 
       // Set default message on error
@@ -931,11 +942,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       setIsSendingMessage(true)
 
       try {
-        // Save user message
+        // 1. Save user message locally (for instant UI feedback)
         saveMessageToLocalStorage(character.id, newMessage)
-        saveMessageToDatabase(character.id, newMessage)
 
-        // Check if the user is asking for an image
+        // 2. Check for image requests
         if (isAskingForImage(newMessage.content)) {
           const imagePrompt = extractImagePrompt(newMessage.content)
           setIsSendingMessage(false)
@@ -943,63 +953,48 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           return
         }
 
-        // Get system prompt from character
-        const systemPrompt = character?.systemPrompt ||
-          `You are ${character?.name}, a ${character?.age}-year-old ${character?.occupation}. ${character?.description}`
+        // 3. Send to AI (which also saves to DB)
+        setDebugInfo((prev) => ({ ...prev, lastAction: "sendingToAI" }))
 
-        // Send message to API (pass userId for server-side enforcement)
-        const aiResponse = await sendChatMessage([...messages, newMessage], systemPrompt, user?.id)
+        const aiResponse = await sendChatMessageDB(
+          character.id,
+          newMessage.content,
+          character.systemPrompt,
+          user.id
+        )
 
-        if (!isMounted) return
-
-        // Check if the response indicates a limit reached or NSFW restriction
-        if (aiResponse.content.includes("UPGRADE_FOR_NSFW:")) {
-          setPremiumModalFeature("Exklusiva Konversationer")
-          setPremiumModalDescription("Lås upp ocensurerat och intimt innehåll med Premium! 🔥")
-          setPremiumModalMode('upgrade')
-          setIsPremiumModalOpen(true)
+        if (!aiResponse.success) {
+          if (aiResponse.limitReached) {
+            setPremiumModalFeature("Meddelandegräns")
+            setPremiumModalDescription(aiResponse.error || "Dagligen meddelandegräns uppnådd. Uppgradera till premium för att fortsätta chatta obegränsat.")
+            setPremiumModalMode('message-limit')
+            setIsPremiumModalOpen(true)
+          } else {
+            toast.error(aiResponse.error || "Failed to get AI response")
+          }
           setIsSendingMessage(false)
           return
         }
 
-        if (aiResponse.content.includes("nått din dagliga meddelandegräns") || aiResponse.content.includes("Vänligen logga in")) {
-          setPremiumModalFeature("Meddelandegräns")
-          setPremiumModalDescription(aiResponse.content)
-          setPremiumModalMode('message-limit')
-          setIsPremiumModalOpen(true)
-          setIsSendingMessage(false)
-          return
+        if (aiResponse.message) {
+          // AI response received and saved to DB
+          const assistantMessage: Message = {
+            id: aiResponse.message.id,
+            role: "assistant",
+            content: aiResponse.message.content,
+            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            isImage: aiResponse.message.isImage,
+            imageUrl: aiResponse.message.imageUrl,
+          }
+
+          setMessages(prev => [...prev, assistantMessage])
+          saveMessageToLocalStorage(character.id, assistantMessage)
         }
-
-        // Create assistant message
-        const assistantMessage = {
-          id: aiResponse.id,
-          role: "assistant" as const,
-          content: aiResponse.content,
-          timestamp: aiResponse.timestamp,
-          isImage: aiResponse.isImage,
-          imageUrl: aiResponse.imageUrl,
-        }
-
-        // Add AI response to chat
-        setMessages((prev) => [...prev, assistantMessage])
-
-        // Save assistant message
-        saveMessageToLocalStorage(characterId!, assistantMessage)
-        saveMessageToDatabase(characterId!, assistantMessage)
-        setDebugInfo((prev) => ({ ...prev, lastAction: "aiMessageSaved" }))
       } catch (error) {
         console.error("Error sending message:", error)
         if (!isMounted) return
         setDebugInfo((prev) => ({ ...prev, lastError: error, lastAction: "sendMessageError" }))
-
-        const errorMessage: Message = {
-          id: Math.random().toString(36).substring(2, 15),
-          role: "assistant",
-          content: "Ledsen, jag kan inte svara just nu. Försök igen om en liten stund.",
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        }
-        setMessages((prev) => [...prev, errorMessage])
+        toast.error("An error occurred while sending your message.")
       } finally {
         if (isMounted) {
           setIsSendingMessage(false)

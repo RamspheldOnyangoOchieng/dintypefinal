@@ -30,7 +30,19 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
     .eq('status', 'active')
     .maybeSingle();
 
-  const planType = subscription?.plan_type || 'free';
+  // Determine plan type from subscription
+  let planType = 'free';
+  if (subscription) {
+    if (subscription.plan_type) {
+      planType = subscription.plan_type;
+    } else if (subscription.product_name) {
+      // If there is an active recurring subscription, it's premium
+      planType = 'premium';
+    } else {
+      // Fallback if we have an active row but no explicit name
+      planType = 'premium';
+    }
+  }
 
   // Get all restrictions for this plan
   const { data: restrictions } = await supabase
