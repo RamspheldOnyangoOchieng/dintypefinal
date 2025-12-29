@@ -683,7 +683,11 @@ export default function GenerateImagePage() {
 
 
   return (
-    <div className={`flex flex-col ${isMobile ? 'min-h-screen' : 'lg:flex-row min-h-screen'} bg-background text-foreground`}>
+    <div 
+      key={`generate-page-${characterId || 'global'}`}
+      className={`flex flex-col ${isMobile ? 'min-h-screen' : 'lg:flex-row min-h-screen'} bg-background text-foreground`}
+      suppressHydrationWarning
+    >
       {/* Left Column - Generation Controls */}
       <div className={`w-full ${isMobile ? 'p-4' : 'lg:w-1/2 p-6'} border-b lg:border-b-0 lg:border-r border-border overflow-y-auto`}>
         <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-6'}`}>
@@ -978,11 +982,11 @@ export default function GenerateImagePage() {
       {/* Right Column - Generated Media */}
       <div className={`w-full ${isMobile ? 'p-4' : 'lg:w-1/2 p-6'} overflow-y-auto`}>
         <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
+          <h2 key="generated-images-title" className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
             Generated Images
           </h2>
           {generatedImages.length > 0 && (
-            <div className={`flex ${isMobile ? 'flex-col gap-1' : 'gap-2'}`}>
+            <div key="action-buttons" className={`flex ${isMobile ? 'flex-col gap-1' : 'gap-2'}`}>
               <Button variant="outline" size="sm" onClick={handleDownloadAll} className={isMobile ? 'text-xs px-2 py-1' : ''}>
                 <Download className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
                 {isMobile ? 'Download All' : 'Download All'}
@@ -1024,7 +1028,11 @@ export default function GenerateImagePage() {
 
               {/* Timeout Warning */}
               {timeoutWarning && (
-                <div className={`${isMobile ? 'mt-3 p-2' : 'mt-4 p-3'} bg-yellow-900/20 border border-yellow-800 text-yellow-300 rounded-lg flex items-center ${isMobile ? 'max-w-sm' : 'max-w-md'}`}>
+                <div
+                  key={`timeout-warning-${characterId || 'global'}`} // Added key for stability
+                  className={`${isMobile ? 'mt-3 p-2' : 'mt-4 p-3'} bg-yellow-900/20 border border-yellow-800 text-yellow-300 rounded-lg flex items-center ${isMobile ? 'max-w-sm' : 'max-w-md'}`}
+                  suppressHydrationWarning // Added suppressHydrationWarning
+                >
                   <Clock className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
                   <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Hang tight! Your images are being created...</span>
                 </div>

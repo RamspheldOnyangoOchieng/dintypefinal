@@ -371,7 +371,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         console.log("No history found, setting default welcome message")
         // Set default welcome message if no history
         const welcomeMessage: Message = {
-          id: "1",
+          id: `welcome-${characterId}`,
           role: "assistant",
           content: `Hej där! Jag är ${character.name}. Så kul att träffa dig! Vad heter du?`,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -389,7 +389,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       // Set default message on error
       setMessages([
         {
-          id: "1",
+          id: `error-welcome-${characterId}`,
           role: "assistant",
           content: `Hej där! Jag är ${character.name}. Så kul att träffa dig! Vad heter du?`,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -915,7 +915,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       if (success) {
         // Set default welcome message after clearing
         const welcomeMessage: Message = {
-          id: "1",
+          id: `welcome-${characterId}-${Date.now()}`,
           role: "assistant",
           content: `Hej där! Jag är ${character.name}. Så kul att träffa dig! Vad heter du?`,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -1000,7 +1000,12 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row bg-background h-[100dvh] md:h-screen w-full overflow-hidden" style={{ position: 'relative', top: 0 }}>
+    <div
+      key={`chat-page-${characterId || 'loading'}`}
+      className="flex flex-col md:flex-row bg-background h-[100dvh] md:h-screen w-full overflow-hidden"
+      style={{ position: 'relative', top: 0 }}
+      suppressHydrationWarning
+    >
       {/* Left Sidebar - Chat List */}
       <div className="hidden md:block md:w-72 border-b md:border-b-0 md:border-r border-border flex flex-col rounded-tr-2xl rounded-br-2xl">
         <div className="p-4 border-b border-border flex items-center justify-between">
