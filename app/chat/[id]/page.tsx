@@ -102,7 +102,6 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [isProfileOpen, setIsProfileOpen] = useState(true)
   const [premiumModalFeature, setPremiumModalFeature] = useState("Meddelandegräns")
   const [premiumModalDescription, setPremiumModalDescription] = useState("Daily message limit reached. Upgrade to premium to continue.")
-  const [isGeneratingProfilePhoto, setIsGeneratingProfilePhoto] = useState(false)
 
   // Use a ref for the interval to ensure we always have the latest reference
   const imageCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -242,107 +241,6 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     })
     setLastMessages(newLastMessages)
   }, [characters, isMounted, messages])
-
-  // Handle generating a new profile photo for the character
-  const handleGenerateProfilePhoto = async () => {
-    if (!character || isGeneratingProfilePhoto) return
-
-    if (!user) {
-      openLoginModal()
-      return
-    }
-
-    try {
-      setIsGeneratingProfilePhoto(true)
-      console.log("🎨 Generating new profile photo for:", character.name)
-
-      // Reconstruct character details for the generation API
-      // Try to get from metadata if it exists, otherwise use what we have
-      const details = character.metadata?.characterDetails || {
-        style: character.category === 'anime' ? 'anime' : 'realistic',
-        ethnicity: character.ethnicity || 'White',
-        age: character.age ? `${Math.floor(character.age / 10) * 10}s` : '20s',
-        eyeColor: 'brown',
-        hairStyle: 'long',
-        hairColor: 'brown',
-        bodyType: character.body || 'average',
-        breastSize: 'medium',
-        buttSize: 'medium',
-        personality: character.personality || 'friendly',
-        relationship: character.relationship || 'companion',
-      }
-
-      const response = await fetch("/api/generate-character-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          characterDetails: details,
-          gender: character.gender === 'male' ? 'gent' : 'lady'
-        })
-      })
-
-      const data = await response.json()
-
-      if (response.status === 402) {
-        setShowTokensDepletedModal(true)
-        return
-      }
-
-      if (response.status === 403) {
-        setPremiumModalFeature("Premium-bilder")
-        setPremiumModalDescription("Du behöver Premium för att generera nya profilbilder. Uppgradera nu för att låsa upp obegränsad bildgenerering.")
-        setIsPremiumModalOpen(true)
-        return
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to generate image")
-      }
-
-      console.log("✅ New image generated:", data.imageUrl)
-
-      // Update character images array
-      const currentImages = character.images || []
-      const updatedImages = [...currentImages, data.imageUrl]
-
-      // Save to database
-      const success = await updateCharacter(character.id, {
-        images: updatedImages
-      })
-
-      if (success) {
-        console.log("✅ Character profile updated with new image")
-        toast.success(t("general.success"))
-        // Navigate to the new image in the gallery
-        // The characters context update will trigger the current images count to increase
-        setCurrentImageIndex(updatedImages.length - 1)
-      } else {
-        console.warn("⚠️ Failed to update character in database")
-        throw new Error("Failed to save the new image to the character profile. Please try again.")
-      }
-
-    } catch (error) {
-      console.error("Error generating profile photo:", error)
-      if (error instanceof Error && (error.message.includes("Upgrade to Premium") || error.message.includes("403") || error.message.includes("premium"))) {
-        setPremiumModalFeature("Premium-bilder")
-        setPremiumModalDescription("Du behöver Premium för att generera nya profilbilder. Uppgradera nu för att låsa upp obegränsad bildgenerering.")
-        setIsPremiumModalOpen(true)
-      } else if (error instanceof Error && (error.message.includes("coerce") || error.message.includes("column \"images\" does not exist"))) {
-        // Specific handling for the missing images column error
-        toast.error("Kunde inte spara bilden till profilen. Din administratör kan behöva uppdatera databasschemat (saknad 'images' kolumn).", {
-          duration: 10000,
-          action: {
-            label: "Visa Fix",
-            onClick: () => router.push("/admin/run-images-migration")
-          }
-        })
-      } else {
-        toast.error(error instanceof Error ? error.message : "Failed to generate profile photo")
-      }
-    } finally {
-      setIsGeneratingProfilePhoto(false)
-    }
-  }
 
   // Handle redirect to advanced generation page
   const handleAdvancedGenerate = useCallback(() => {
@@ -1455,26 +1353,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
             <div className="flex flex-col gap-2 mb-6">
               <Button
-                variant="outline"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-none"
-                onClick={handleGenerateProfilePhoto}
-                disabled={isGeneratingProfilePhoto}
-              >
-                {isGeneratingProfilePhoto ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t("generate.generating")}
-                  </>
-                ) : (
-                  t("chat.generateQuick")
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full bg-[#252525] text-white border-white/10 hover:bg-[#353535] hover:border-primary/50"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-none font-bold h-12"
                 onClick={handleAdvancedGenerate}
               >
-                {t("chat.generateAdvanced")}
+                <Wand2 className="mr-2 h-5 w-5" />
+                {t("generate.generate")}
               </Button>
             </div>
             <h3 className="text-lg font-medium mb-4">{t("chat.aboutMe")}</h3>

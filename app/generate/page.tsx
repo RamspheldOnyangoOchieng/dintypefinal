@@ -38,6 +38,7 @@ export default function GenerateImagePage() {
   const router = useRouter()
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
   const initialPrompt = searchParams?.get('prompt') || ""
+  const characterId = searchParams?.get('characterId') || null
   const { setIsOpen } = useSidebar()
   const isMobile = useIsMobile()
   const [prompt, setPrompt] = useState(initialPrompt)
@@ -620,6 +621,7 @@ export default function GenerateImagePage() {
           prompt: prompt,
           modelUsed: "stability",
           userId: user?.id,
+          characterId: characterId, // Include character ID if present
         }),
       })
 

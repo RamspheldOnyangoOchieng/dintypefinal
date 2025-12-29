@@ -6,13 +6,14 @@ import { uploadImageToCloudinary } from "@/lib/cloudinary-upload"
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, imageUrl, modelUsed = "novita" } = await request.json()
+    const { prompt, imageUrl, modelUsed = "novita", characterId } = await request.json()
 
     if (!prompt || !imageUrl) {
       return NextResponse.json({ error: "Missing required fields: prompt and imageUrl" }, { status: 400 })
     }
 
     console.log("📥 Saving generated image to collection...");
+    if (characterId) console.log("   Associating with character:", characterId);
     console.log("   Novita URL:", imageUrl);
 
     // Get user ID (authenticated or anonymous)
@@ -108,6 +109,42 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error("❌ Database error:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    if (data && characterId) {
+      try {
+        console.log("👤 Updating character profile images...");
+        // Get existing images
+        const { data: characterData, error: fetchError } = await supabaseAdmin
+          .from("characters")
+          .select("images")
+          .eq("id", characterId)
+          .single();
+
+        if (fetchError) {
+          console.error("❌ Failed to fetch character:", fetchError);
+        } else {
+          const currentImages = characterData.images || [];
+          // Avoid duplicates
+          if (!currentImages.includes(permanentImageUrl)) {
+            const updatedImages = [...currentImages, permanentImageUrl];
+            const { error: updateError } = await supabaseAdmin
+              .from("characters")
+              .update({ images: updatedImages } as any)
+              .eq("id", characterId);
+
+            if (updateError) {
+              console.error("❌ Failed to update character images:", updateError);
+            } else {
+              console.log("✅ Character profile images updated!");
+            }
+          } else {
+            console.log("ℹ️  Image already in character profile");
+          }
+        }
+      } catch (charError) {
+        console.error("❌ Error in character update logic:", charError);
+      }
     }
 
     console.log("✅ Image saved to collection successfully!");
