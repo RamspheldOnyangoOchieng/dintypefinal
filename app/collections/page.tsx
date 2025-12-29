@@ -85,7 +85,7 @@ export default function CollectionsPage() {
     if (userId === null) return;
     setIsLoading(true);
     try {
-      const result = await getAllImages();
+      const result = await getAllImages({ userId });
       if (result && result.success && Array.isArray(result.images)) {
         setImages(result.images);
       } else {
@@ -100,7 +100,7 @@ export default function CollectionsPage() {
     if (!userId) return
     setIsLoadingCollections(true)
     try {
-      const result = await getAllCollections()
+      const result = await getAllCollections(userId)
       if (result.success) {
         setCollections(result.collections || [])
       }
@@ -180,7 +180,7 @@ export default function CollectionsPage() {
     if (!confirm("Are you sure you want to delete this image?")) return
     setIsDeleting(id)
     try {
-      await deleteExistingImage(id)
+      await deleteExistingImage(id, userId || undefined)
       setImages(images.filter((img) => img.id !== id))
       toast({ title: "Image deleted successfully" })
     } catch (error) {
@@ -193,7 +193,7 @@ export default function CollectionsPage() {
   const handleToggleFavorite = async (id: string, favorite: boolean) => {
     setIsFavoriting(id)
     try {
-      await toggleImageFavorite(id, !favorite)
+      await toggleImageFavorite(id, !favorite, userId || undefined)
       setImages(
         images.map((img) => (img.id === id ? { ...img, favorite: !favorite } : img))
       )

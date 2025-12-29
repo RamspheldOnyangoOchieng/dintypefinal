@@ -660,19 +660,23 @@ function GenerateContent() {
         setSavingImageIndex(index)
       }
 
+      // Build the request body
+      const { getAnonymousUserId } = await import("@/lib/anonymous-user")
+      const saveBody = {
+        imageUrl: imageUrl,
+        prompt: prompt,
+        modelUsed: "stability",
+        userId: user?.id || getAnonymousUserId(),
+        characterId: characterId, // Include character ID if present
+      }
+
       // Call the save-generated-image API to upload to Cloudinary and save to database
       const response = await fetch("/api/save-generated-image", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          imageUrl: imageUrl,
-          prompt: prompt,
-          modelUsed: "stability",
-          userId: user?.id,
-          characterId: characterId, // Include character ID if present
-        }),
+        body: JSON.stringify(saveBody),
       })
 
       const data = await response.json()

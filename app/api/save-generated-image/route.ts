@@ -6,7 +6,8 @@ import { uploadImageToCloudinary } from "@/lib/cloudinary-upload"
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, imageUrl, modelUsed = "novita", characterId } = await request.json()
+    const body = await request.json()
+    const { prompt, imageUrl, modelUsed = "novita", characterId, userId: passedUserId } = body
 
     if (!prompt || !imageUrl) {
       return NextResponse.json({ error: "Missing required fields: prompt and imageUrl" }, { status: 400 })
@@ -27,9 +28,13 @@ export async function POST(request: NextRequest) {
     if (user?.id) {
       console.log("✅ User is authenticated:", user.id.substring(0, 8))
       userId = user.id
+    } else if (passedUserId) {
+      // Use the ID passed from the client (useful for anonymous localStorage based sessions)
+      console.log("👤 Using userId passed from client:", passedUserId.substring(0, 8))
+      userId = passedUserId
     } else {
       userId = getAnonymousUserId()
-      console.log("👤 Using anonymous ID:", userId.substring(0, 8))
+      console.log("👤 Falling back to server-side anonymous ID:", userId.substring(0, 8))
     }
 
     // Use admin client to bypass RLS

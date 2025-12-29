@@ -9,7 +9,8 @@ import { revalidatePath } from "next/cache"
 /**
  * Helper to get the current user ID (auth or anonymous fallback)
  */
-async function getUserId() {
+// Helper to get the current user ID (auth or anonymous fallback)
+async function getUserId(passedUserId?: string) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -18,12 +19,14 @@ async function getUserId() {
       return user.id
     }
 
+    // Use passed ID if available
+    if (passedUserId) return passedUserId
+
     // Fallback to anonymous ID for server-side
-    // Note: This will be 00000000-0000-0000-0000-000000000000 if not in browser
     return getAnonymousUserId()
   } catch (error) {
     console.error("Error getting user ID in server action:", error)
-    return getAnonymousUserId()
+    return passedUserId || getAnonymousUserId()
   }
 }
 
@@ -65,9 +68,9 @@ export async function createNewCollection(formData: FormData) {
   return createCollection(name, description)
 }
 
-export async function getAllCollections() {
+export async function getAllCollections(userId?: string) {
   try {
-    const userId = await getUserId()
+    const verifiedUserId = await getUserId(userId)
     const supabaseAdmin = await createAdminClient()
     if (!supabaseAdmin) throw new Error("Could not initialize admin client")
 
@@ -78,7 +81,7 @@ export async function getAllCollections() {
         *,
         image_count:generated_images(count)
       `)
-      .eq("user_id", userId)
+      .eq("user_id", verifiedUserId)
       .order("created_at", { ascending: false })
 
     if (error) {

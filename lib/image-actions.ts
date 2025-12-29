@@ -12,10 +12,12 @@ export async function getAllImages(options?: {
   collection_id?: string
   favorite?: boolean
   search?: string
+  userId?: string // New: allow passing userId from client
 }) {
   try {
     // Get user ID (authenticated or anonymous)
-    const userId = await getUserId()
+    const userId = await getUserId(options?.userId)
+    console.log(`[getAllImages] Fetching images for user: ${userId}`);
 
     // Use admin client to bypass RLS
     const supabaseAdmin = await createAdminClient()
@@ -126,16 +128,16 @@ export async function getImage(id: string) {
     const planInfo = await getUserPlanInfo(userId)
     const isAdmin = (await checkIsAdmin(userId)).isAdmin
     const isCurrentlyPremium = planInfo.planType === 'premium'
-    
+
     const wasPremiumWhenCreated = (data.metadata as any)?.plan_type === 'premium'
     const isLocked = wasPremiumWhenCreated && !isCurrentlyPremium && !isAdmin
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       image: {
         ...data,
         is_locked: isLocked
-      } 
+      }
     }
   } catch (error) {
     console.error("Error fetching image:", error)
@@ -184,15 +186,15 @@ export async function updateImageDetails(id: string, formData: FormData) {
   }
 }
 
-export async function deleteExistingImage(id: string) {
+export async function deleteExistingImage(id: string, userId?: string) {
   try {
-    const userId = await getUserId()
+    const verifiedUserId = await getUserId(userId)
     const supabaseAdmin = await createAdminClient()
     if (!supabaseAdmin) {
       return { success: false, error: "Failed to create admin client" }
     }
 
-    const { error } = await supabaseAdmin.from("generated_images").delete().eq("id", id).eq("user_id", userId)
+    const { error } = await supabaseAdmin.from("generated_images").delete().eq("id", id).eq("user_id", verifiedUserId)
 
     if (error) {
       console.error("Error deleting image:", error)
@@ -209,9 +211,9 @@ export async function deleteExistingImage(id: string) {
   }
 }
 
-export async function toggleImageFavorite(id: string, isFavorite: boolean) {
+export async function toggleImageFavorite(id: string, isFavorite: boolean, userId?: string) {
   try {
-    const userId = await getUserId()
+    const verifiedUserId = await getUserId(userId)
     const supabaseAdmin = await createAdminClient()
     if (!supabaseAdmin) {
       return { success: false, error: "Failed to create admin client" }
@@ -221,7 +223,7 @@ export async function toggleImageFavorite(id: string, isFavorite: boolean) {
       .from("generated_images")
       .update({ favorite: isFavorite })
       .eq("id", id)
-      .eq("user_id", userId)
+      .eq("user_id", verifiedUserId)
       .select()
       .single()
 
@@ -399,7 +401,7 @@ export async function removeImageFromExistingCollection(imageId: string) {
 }
 
 // Helper function to get user ID
-async function getUserId() {
+async function getUserId(passedUserId?: string) {
   try {
     const supabase = await createClient()
     const {
@@ -410,11 +412,15 @@ async function getUserId() {
       return user.id
     }
 
-    // Use the anonymous ID
+    // If a userId was passed from the client, use it (especially important for anonymous localStorage IDs)
+    if (passedUserId) {
+      return passedUserId
+    }
+
+    // Fallback to absolute anonymous ID
     return getAnonymousUserId()
   } catch (error) {
     console.error("Error getting user ID:", error)
-    // Fallback to anonymous ID
-    return getAnonymousUserId()
+    return passedUserId || getAnonymousUserId()
   }
 }
