@@ -14,6 +14,7 @@ export type Message = {
   timestamp?: string
   isImage?: boolean
   imageUrl?: string
+  imagePrompt?: string
 }
 
 export async function sendChatMessage(

@@ -45,7 +45,7 @@ import { toast } from "sonner"
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const [characterId, setCharacterId] = useState<string | null>(null);
-  const { characters, isLoading: charactersLoading, updateCharacter } = useCharacters();
+  const { characters, isLoading: charactersLoading, updateCharacter, refreshCharacters } = useCharacters();
   const [character, setCharacter] = useState<any>(null);
 
   // Handle params unwrapping for Next.js 15
@@ -93,6 +93,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string[] | null>(null)
+  const [selectedImagePrompt, setSelectedImagePrompt] = useState<string>("")
   const [isMounted, setIsMounted] = useState(false)
   const [showTokensDepletedModal, setShowTokensDepletedModal] = useState(false)
   const [showExpiredModal, setShowExpiredModal] = useState(false)
@@ -132,20 +133,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     // Start with the main image
     let imgs = [character.image || "/placeholder.svg"]
 
-    // Add additional images from the array if they exist (requires DB update for persistent storage)
+    // Add additional images from the array if they exist
     if (character.images && Array.isArray(character.images) && character.images.length > 0) {
-      // Filter out matches to main image to avoid immediate duplicates if data is messy
-      const additional = character.images.filter((img: string) => img !== character.image)
+      // Filter out matches to main image and ensure uniqueness
+      const additional = character.images.filter((img: string) => img && img !== character.image)
       imgs = [...imgs, ...additional]
     }
 
-    // Ensure we have at least 3 images for the carousel experience
-    // We duplicate the main image if needed to meet the "3 profile photos" requirement
-    while (imgs.length < 3) {
-      imgs.push(character.image || "/placeholder.svg")
-    }
-
-    return imgs
+    // Ensure uniqueness
+    return Array.from(new Set(imgs))
   }, [character])
 
   const handleNextImage = () => {
@@ -646,6 +642,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
               timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
               isImage: true,
               imageUrl: data.images,
+              imagePrompt: prompt,
             }
 
             setMessages((prev) => [...prev, imageMessage])
@@ -736,9 +733,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     }
   }
 
-  const handleSaveImage = async (imageUrl: string) => {
-    if (!user) {
-      // Handle case where user is not logged in
+  const handleSaveImage = async (imageUrl: string, prompt?: string) => {
+    if (!user || !characterId) {
+      toast.error("You must be logged in to save images")
       return
     }
 
@@ -750,9 +747,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: user.id,
           imageUrl,
-          characterId,
+          prompt: prompt || `Generated image for ${character?.name || 'character'}`,
+          characterId: characterId.startsWith('custom-') ? null : characterId,
+          modelUsed: "novita",
         }),
       })
 
@@ -760,10 +758,16 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         throw new Error("Failed to save image")
       }
 
-      // Optionally, show a success message
+      const result = await response.json()
+      toast.success("Image saved to your collection and profile!")
+
+      // Refresh character data so the carousel updates
+      if (typeof refreshCharacters === 'function') {
+        await refreshCharacters()
+      }
     } catch (error) {
       console.error("Error saving image:", error)
-      // Optionally, show an error message
+      toast.error("Failed to save image")
     } finally {
       setIsSaving(false)
     }
@@ -1153,11 +1157,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                       className="relative w-full aspect-square max-w-xs rounded-2xl overflow-hidden cursor-pointer"
                       onClick={() => {
                         if (message.imageUrl) {
-                          if (Array.isArray(message.imageUrl)) {
-                            setSelectedImage(message.imageUrl)
-                          } else {
-                            setSelectedImage([message.imageUrl])
-                          }
+                          const urls = Array.isArray(message.imageUrl) ? message.imageUrl : [message.imageUrl]
+                          setSelectedImage(urls)
+                          setSelectedImagePrompt(message.imagePrompt || "")
                           setIsModalOpen(true)
                         }
                       }}
@@ -1418,11 +1420,26 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       {selectedImage && (
         <ImageModal
           open={!!selectedImage}
-          onOpenChange={(open) => !open && setSelectedImage(null)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedImage(null)
+              setSelectedImagePrompt("")
+            }
+          }}
           images={selectedImage}
           initialIndex={0}
-          onDownload={(url) => window.open(url, '_blank')}
-          onShare={(url) => navigator.share?.({ url })}
+          onDownload={(url, index) => {
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `generated-${index}.jpg`
+            a.click()
+          }}
+          onShare={(url) => {
+            navigator.clipboard.writeText(url)
+            toast.success("Link copied to clipboard!")
+          }}
+          onSave={(index) => handleSaveImage(selectedImage[index], selectedImagePrompt)}
+          savingIndex={isSaving ? 0 : null} // Simple visual feedback
         />
       )}
     </div>
