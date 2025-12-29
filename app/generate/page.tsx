@@ -36,9 +36,11 @@ export default function GenerateImagePage() {
   const { user, isLoading, refreshUser } = useAuth()
   const { openLoginModal } = useAuthModal()
   const router = useRouter()
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+  const initialPrompt = searchParams?.get('prompt') || ""
   const { setIsOpen } = useSidebar()
   const isMobile = useIsMobile()
-  const [prompt, setPrompt] = useState("")
+  const [prompt, setPrompt] = useState(initialPrompt)
   const [negativePrompt, setNegativePrompt] = useState("")
   const [showNegativePrompt, setShowNegativePrompt] = useState(false)
   const [selectedCount, setSelectedCount] = useState("1")

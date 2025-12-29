@@ -4,7 +4,7 @@ import { getApiKey } from "./db-init"
 import { isAskingForImage } from "./image-utils"
 import { checkMonthlyBudget, logApiCost } from "./budget-monitor"
 
-import { incrementMessageUsage, getUserPlanInfo } from "./subscription-limits"
+import { incrementMessageUsage, getUserPlanInfo, checkMessageLimit } from "./subscription-limits"
 import { SFW_SYSTEM_PROMPT_SV } from "./nsfw-filter"
 
 export type Message = {
@@ -22,6 +22,24 @@ export async function sendChatMessage(
   userId?: string,
 ): Promise<{ id: string; content: string; timestamp: string; isImage?: boolean; imageUrl?: string }> {
   try {
+    // 1. Check message limit BEFORE processing (for non-admins)
+    if (!userId) {
+      return {
+        id: Math.random().toString(36).substring(2, 15),
+        content: "Vänligen logga in för att fortsätta chatta med AI-karaktärer.",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      }
+    }
+
+    const limitCheck = await checkMessageLimit(userId)
+    if (!limitCheck.allowed) {
+      return {
+        id: Math.random().toString(36).substring(2, 15),
+        content: "Du har nått din dagliga meddelandegräns. Uppgradera till Premium för att fortsätta chatta obegränsat!",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      }
+    }
+
     // Check monthly budget before processing
     const budgetStatus = await checkMonthlyBudget()
     if (!budgetStatus.allowed) {
@@ -176,7 +194,7 @@ Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren k
 
       // Increment message usage count
       if (userId) {
-        await incrementMessageUsage(userId).catch(err => 
+        await incrementMessageUsage(userId).catch(err =>
           console.error('Failed to increment message usage:', err)
         )
       }

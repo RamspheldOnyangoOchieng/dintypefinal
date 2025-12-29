@@ -21,13 +21,14 @@ export interface UsageCheck {
 // Get user's current plan info
 export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
   const supabase = await createAdminClient();
+  if (!supabase) throw new Error("Could not initialize admin client");
 
   const { data: subscription } = await supabase
     .from('user_subscriptions')
     .select('*')
     .eq('user_id', userId)
     .eq('status', 'active')
-    .single();
+    .maybeSingle();
 
   const planType = subscription?.plan_type || 'free';
 
@@ -65,6 +66,7 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
     }
 
     const supabase = await createAdminClient();
+    if (!supabase) return { allowed: true, currentUsage: 0, limit: null };
 
     const planInfo = await getUserPlanInfo(userId);
     console.log('📋 User plan info:', planInfo);
@@ -99,7 +101,9 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
       .eq('user_id', userId)
       .eq('usage_type', 'messages')
       .gt('reset_date', todayAtMidnight.toISOString())
-      .single();
+      .order('reset_date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (usageError && usageError.code !== 'PGRST116') {
       console.error('Error fetching usage:', usageError);
@@ -123,37 +127,58 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
   }
 }
 
-// Increment message usage
 export async function incrementMessageUsage(userId: string): Promise<void> {
   const supabase = await createAdminClient();
+  if (!supabase) return;
 
   const todayAtMidnight = new Date();
   todayAtMidnight.setHours(0, 0, 0, 0);
-  
+
   const tomorrowAtMidnight = new Date(todayAtMidnight);
   tomorrowAtMidnight.setDate(tomorrowAtMidnight.getDate() + 1);
 
+  // Find current record regardless of date to handle the UNIQUE constraint
   const { data: existing } = await supabase
     .from('user_usage_tracking')
     .select('*')
     .eq('user_id', userId)
     .eq('usage_type', 'messages')
-    .gt('reset_date', todayAtMidnight.toISOString()) // Still valid
-    .single();
+    .maybeSingle();
 
   if (existing) {
-    await supabase
-      .from('user_usage_tracking')
-      .update({ usage_count: (existing.usage_count || 0) + 1 })
-      .eq('id', existing.id);
+    const isOldRecord = new Date(existing.reset_date) <= todayAtMidnight;
+
+    if (isOldRecord) {
+      // Reset for new day
+      await supabase
+        .from('user_usage_tracking')
+        .update({
+          usage_count: 1,
+          reset_date: tomorrowAtMidnight.toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+    } else {
+      // Increment for today
+      await supabase
+        .from('user_usage_tracking')
+        .update({
+          usage_count: (existing.usage_count || 0) + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+    }
   } else {
+    // Brand new record
     await supabase
       .from('user_usage_tracking')
       .insert({
         user_id: userId,
         usage_type: 'messages',
         usage_count: 1,
-        reset_date: tomorrowAtMidnight.toISOString()
+        reset_date: tomorrowAtMidnight.toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
   }
 }
@@ -168,6 +193,7 @@ export async function checkImageGenerationLimit(userId: string): Promise<UsageCh
   }
 
   const supabase = await createAdminClient();
+  if (!supabase) return { allowed: true, currentUsage: 0, limit: null };
 
   const planInfo = await getUserPlanInfo(userId);
 
@@ -177,7 +203,7 @@ export async function checkImageGenerationLimit(userId: string): Promise<UsageCh
       .from('user_tokens')
       .select('balance')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     const balance = tokenBalance?.balance || 0;
     const tokensPerImage = parseInt(planInfo.restrictions.tokens_per_image || 5);
@@ -214,18 +240,54 @@ export async function checkImageGenerationLimit(userId: string): Promise<UsageCh
   };
 }
 
-// Increment image usage (for free users)
 export async function incrementImageUsage(userId: string): Promise<void> {
   const supabase = await createAdminClient();
+  if (!supabase) return;
 
-  await supabase
+  // Find current record regardless of date to handle the UNIQUE constraint
+  const { data: existing } = await supabase
     .from('user_usage_tracking')
-    .insert({
-      user_id: userId,
-      usage_type: 'images',
-      usage_count: 1,
-      reset_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-    });
+    .select('*')
+    .eq('user_id', userId)
+    .eq('usage_type', 'images')
+    .maybeSingle();
+
+  if (existing) {
+    const isOldRecord = new Date(existing.reset_date) <= new Date();
+
+    if (isOldRecord) {
+      // Reset for new week
+      await supabase
+        .from('user_usage_tracking')
+        .update({
+          usage_count: 1,
+          reset_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+    } else {
+      // Increment for current week
+      await supabase
+        .from('user_usage_tracking')
+        .update({
+          usage_count: (existing.usage_count || 0) + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+    }
+  } else {
+    // Brand new record
+    await supabase
+      .from('user_usage_tracking')
+      .insert({
+        user_id: userId,
+        usage_type: 'images',
+        usage_count: 1,
+        reset_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+  }
 }
 
 // Deduct tokens (for all users)
@@ -238,12 +300,13 @@ export async function deductTokens(userId: string, amount: number, description?:
   }
 
   const supabase = await createAdminClient();
+  if (!supabase) return false;
 
   const { data: balance } = await supabase
     .from('user_tokens')
     .select('balance')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   if (!balance || balance.balance < amount) {
     return false;
@@ -285,6 +348,7 @@ export async function checkActiveGirlfriendsLimit(userId: string): Promise<Usage
   }
 
   const supabase = await createAdminClient();
+  if (!supabase) return { allowed: true, currentUsage: 0, limit: null };
 
   const planInfo = await getUserPlanInfo(userId);
   const limit = parseInt(planInfo.restrictions.active_girlfriends_limit || planInfo.restrictions.active_girlfriends || '1');
@@ -341,9 +405,9 @@ export async function checkArchivedGirlfriendsLimit(userId: string): Promise<Usa
   };
 }
 
-// Get all plan features for display
 export async function getPlanFeatures() {
   const supabase = await createAdminClient();
+  if (!supabase) return [];
 
   const { data: features } = await supabase
     .from('plan_features')
@@ -354,9 +418,9 @@ export async function getPlanFeatures() {
   return features || [];
 }
 
-// Get plan restrictions
 export async function getPlanRestrictions(planType: 'free' | 'premium') {
   const supabase = await createAdminClient();
+  if (!supabase) return {};
 
   const { data: restrictions } = await supabase
     .from('plan_restrictions')
@@ -380,12 +444,13 @@ export async function updateUserSubscription(
   periodEnd?: Date
 ) {
   const supabase = await createAdminClient();
+  if (!supabase) return;
 
   const { data: existing } = await supabase
     .from('user_subscriptions')
     .select('id')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   const subscriptionData = {
     user_id: userId,
@@ -417,7 +482,7 @@ export async function updateUserSubscription(
       .from('user_tokens')
       .select('balance')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (tokenBalance) {
       await supabase
@@ -470,7 +535,7 @@ export async function creditMonthlyTokens(userId: string): Promise<boolean> {
       .from('user_tokens')
       .select('balance')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (tokenBalance) {
       await supabase

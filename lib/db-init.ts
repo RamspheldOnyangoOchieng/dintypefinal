@@ -8,6 +8,8 @@ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 name TEXT NOT NULL,
 age INTEGER NOT NULL CHECK (age >= 18),
 image TEXT NOT NULL,
+images TEXT[] DEFAULT '{}',
+video_url TEXT,
 description TEXT NOT NULL,
 personality TEXT,
 occupation TEXT,
@@ -18,6 +20,7 @@ language TEXT,
 relationship TEXT,
 is_new BOOLEAN DEFAULT TRUE,
 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 system_prompt TEXT NOT NULL
 );
 

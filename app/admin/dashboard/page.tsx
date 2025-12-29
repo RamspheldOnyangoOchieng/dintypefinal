@@ -445,10 +445,23 @@ export default function AdminDashboardPage() {
                     onClick={() => router.push("/admin/dashboard/database")}
                   >
                     <div className="flex items-center space-x-3">
-                      <Database className="h-5 w-5 text-orange-500" />
+                      <Database className="h-5 w-5 text-blue-500" />
                       <div className="text-left">
                         <div className="font-medium">Database</div>
                         <div className="text-xs text-slate-500">Database tools</div>
+                      </div>
+                    </div>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start h-auto p-4 bg-transparent border-orange-500/20 hover:bg-orange-500/10"
+                    onClick={() => router.push("/admin/run-images-migration")}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Database className="h-5 w-5 text-orange-500" />
+                      <div className="text-left">
+                        <div className="font-medium text-orange-500">Fix Image Schema</div>
+                        <div className="text-xs text-slate-500">Add missing DB columns</div>
                       </div>
                     </div>
                   </Button>

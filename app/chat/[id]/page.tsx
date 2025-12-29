@@ -315,14 +315,18 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         setCurrentImageIndex(galleryImages.length) // Navigate to the new image
       } else {
         console.warn("⚠️ Failed to update character in database")
+        throw new Error("Failed to save the new image to the character profile. Please try again.")
       }
 
     } catch (error) {
       console.error("Error generating profile photo:", error)
-      if (error instanceof Error && (error.message.includes("Upgrade to Premium") || error.message.includes("403"))) {
+      if (error instanceof Error && (error.message.includes("Upgrade to Premium") || error.message.includes("403") || error.message.includes("premium"))) {
         setPremiumModalFeature("Premium-bilder")
         setPremiumModalDescription("Du behöver Premium för att generera nya profilbilder. Uppgradera nu för att låsa upp obegränsad bildgenerering.")
         setIsPremiumModalOpen(true)
+      } else if (error instanceof Error && error.message.includes("coerce")) {
+        // Specific handling for the 406 error
+        alert("Kunde inte spara bilden till profilen. Din administratör kan behöva uppdatera databasschemat (saknad 'images' kolumn).")
       } else {
         alert(error instanceof Error ? error.message : "Failed to generate profile photo")
       }
@@ -330,6 +334,25 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       setIsGeneratingProfilePhoto(false)
     }
   }
+
+  // Handle redirect to advanced generation page
+  const handleAdvancedGenerate = useCallback(() => {
+    if (!character) return
+
+    // Build a nice prompt based on character details
+    const details = character.metadata?.characterDetails || {
+      style: character.category === 'anime' ? 'anime' : 'realistic',
+      ethnicity: character.ethnicity,
+      age: character.age,
+      personality: character.personality,
+    }
+
+    const promptBase = `${character.name}, ${details.age || ''} ${details.ethnicity || ''} ${character.category === 'anime' ? 'anime style' : 'realistic photo'}. ${character.description?.substring(0, 100) || ''}`
+
+    // Redirect to generate page with prompt
+    const encodedPrompt = encodeURIComponent(promptBase)
+    router.push(`/generate?prompt=${encodedPrompt}&characterId=${character.id}`)
+  }, [character, router])
 
   // Handle image error
   const handleImageError = useCallback(
@@ -849,6 +872,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         return
       }
 
+      // Pre-check limit (client-side for better UX)
       if (user?.id) {
         try {
           const messageCheck = await checkMessageLimit(user.id)
@@ -861,7 +885,6 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           }
         } catch (error) {
           console.error("Error checking message limit:", error)
-          // Continue anyway if limit check fails
         }
       }
 
@@ -886,15 +909,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         }
       }
 
-      // Reset any previous API key errors
-      setApiKeyError(null)
-      setDebugInfo((prev) => ({ ...prev, lastAction: "sendingMessage" }))
-
       // Create new user message
       const newMessage: Message = {
         id: Math.random().toString(36).substring(2, 15),
         role: "user",
-        content: inputValue,
+        content: inputValue.trim(),
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       }
 
@@ -904,37 +923,34 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       setIsSendingMessage(true)
 
       try {
-        // Save user message to localStorage
-        // Use saveMessageToLocalStorage with the checked character ID
+        // Save user message
         saveMessageToLocalStorage(character.id, newMessage)
         saveMessageToDatabase(character.id, newMessage)
-        setDebugInfo((prev) => ({ ...prev, lastAction: "userMessageSaved" }))
-
 
         // Check if the user is asking for an image
         if (isAskingForImage(newMessage.content)) {
-          // Extract the image prompt
           const imagePrompt = extractImagePrompt(newMessage.content)
-
-          // Generate the image
           setIsSendingMessage(false)
           await generateImage(imagePrompt)
           return
         }
 
         // Get system prompt from character
-        const systemPrompt =
-          character?.systemPrompt ||
+        const systemPrompt = character?.systemPrompt ||
           `You are ${character?.name}, a ${character?.age}-year-old ${character?.occupation}. ${character?.description}`
 
-        // Send message to API (pass userId for cost tracking)
+        // Send message to API (pass userId for server-side enforcement)
         const aiResponse = await sendChatMessage([...messages, newMessage], systemPrompt, user?.id)
 
         if (!isMounted) return
 
-        // Check if the response indicates an API key error
-        if (aiResponse.content.includes("trouble connecting") || aiResponse.content.includes("try again")) {
-          setApiKeyError("There might be an issue with the API key. Please check your Novita API key configuration.")
+        // Check if the response indicates a limit reached (server-side enforcement)
+        if (aiResponse.content.includes("nått din dagliga meddelandegräns") || aiResponse.content.includes("Vänligen logga in")) {
+          setPremiumModalFeature("Meddelandegräns")
+          setPremiumModalDescription(aiResponse.content)
+          setIsPremiumModalOpen(true)
+          setIsSendingMessage(false)
+          return
         }
 
         // Create assistant message
@@ -950,62 +966,22 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         // Add AI response to chat
         setMessages((prev) => [...prev, assistantMessage])
 
-        // Save assistant message to localStorage and database
+        // Save assistant message
         saveMessageToLocalStorage(characterId!, assistantMessage)
         saveMessageToDatabase(characterId!, assistantMessage)
         setDebugInfo((prev) => ({ ...prev, lastAction: "aiMessageSaved" }))
-
-        // Increment message usage for limit tracking AND deduct tokens
-        if (user?.id) {
-          try {
-            // Note: incrementMessageUsage(user.id) is now called within sendChatMessage on the server
-            // to ensure consistency and prevent duplicate counts.
-
-            // Ensure user has tokens (creates if first time)
-            const { ensureUserTokens } = await import('@/lib/ensure-user-tokens')
-            await ensureUserTokens(user.id)
-
-            // Deduct tokens for the message (5 tokens per message)
-            const MESSAGE_TOKEN_COST = 5
-            const { deductTokens } = await import('@/lib/subscription-limits')
-            const tokenDeducted = await deductTokens(user.id, MESSAGE_TOKEN_COST, 'Chat message')
-
-            if (!tokenDeducted) {
-              console.warn('Failed to deduct tokens for message - user may be out of tokens')
-              // Show low balance warning to user
-              const warningMessage: Message = {
-                id: Math.random().toString(36).substring(2, 15),
-                role: "assistant",
-                content: "⚠️ You're low on tokens! Buy more to keep chatting.",
-                timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-              }
-              setMessages((prev) => [...prev, warningMessage])
-            }
-          } catch (error) {
-            console.error("Error handling token deduction:", error)
-          }
-        }
       } catch (error) {
         console.error("Error sending message:", error)
-
         if (!isMounted) return
-
         setDebugInfo((prev) => ({ ...prev, lastError: error, lastAction: "sendMessageError" }))
-
-        // Add error message
+        
         const errorMessage: Message = {
           id: Math.random().toString(36).substring(2, 15),
           role: "assistant",
-          content: "Sorry, I'm having trouble connecting right now. Please try again later.",
+          content: "Ledsen, jag kan inte svara just nu. Försök igen om en liten stund.",
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         }
-
         setMessages((prev) => [...prev, errorMessage])
-
-        // Save error message to localStorage
-        saveMessageToLocalStorage(characterId!, errorMessage)
-
-        setApiKeyError("Failed to connect to the AI service. Please check your API key configuration.")
       } finally {
         if (isMounted) {
           setIsSendingMessage(false)
@@ -1014,538 +990,545 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     }
   }
 
-  // Clear chat history
-  const handleClearChat = async () => {
-    if (!isMounted || !character) return
+// Clear chat history
+const handleClearChat = async () => {
+  if (!isMounted || !character) return
 
-    setIsClearingChat(true)
-    setDebugInfo((prev) => ({ ...prev, lastAction: "clearingChat" }))
+  setIsClearingChat(true)
+  setDebugInfo((prev) => ({ ...prev, lastAction: "clearingChat" }))
 
-    try {
-      const success = clearChatHistoryFromLocalStorage(character.id)
-      setDebugInfo((prev) => ({
-        ...prev,
-        lastAction: success ? "chatCleared" : "chatClearFailed",
-      }))
+  try {
+    const success = clearChatHistoryFromLocalStorage(character.id)
+    setDebugInfo((prev) => ({
+      ...prev,
+      lastAction: success ? "chatCleared" : "chatClearFailed",
+    }))
 
-      if (success) {
-        // Set default welcome message after clearing
-        const welcomeMessage: Message = {
-          id: "1",
-          role: "assistant",
-          content: `Hej där! Jag är ${character.name}. Så kul att träffa dig! Vad heter du?`,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        }
-
-        setMessages([welcomeMessage])
-
-        // Save welcome message to localStorage
-        saveMessageToLocalStorage(characterId!, welcomeMessage)
+    if (success) {
+      // Set default welcome message after clearing
+      const welcomeMessage: Message = {
+        id: "1",
+        role: "assistant",
+        content: `Hej där! Jag är ${character.name}. Så kul att träffa dig! Vad heter du?`,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       }
-    } catch (error) {
-      console.error("Error clearing chat:", error)
-      setDebugInfo((prev) => ({ ...prev, lastError: error, lastAction: "clearChatError" }))
-    } finally {
-      if (isMounted) {
-        setIsClearingChat(false)
-      }
+
+      setMessages([welcomeMessage])
+
+      // Save welcome message to localStorage
+      saveMessageToLocalStorage(characterId!, welcomeMessage)
+    }
+  } catch (error) {
+    console.error("Error clearing chat:", error)
+    setDebugInfo((prev) => ({ ...prev, lastError: error, lastAction: "clearChatError" }))
+  } finally {
+    if (isMounted) {
+      setIsClearingChat(false)
     }
   }
+}
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
+const handleKeyPress = (e: React.KeyboardEvent) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault()
+    handleSendMessage()
   }
+}
 
-  // Show loading while checking authentication
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-
-  // Show login modal if not authenticated
-  if (!user) {
-    // The useEffect will trigger the login modal
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-muted-foreground">Please log in to continue...</div>
-      </div>
-    );
-  }
-
-  // Show loading while unwrapping params or loading characters
-  // We also check if the character exists in the current list but hasn't been set to state yet
-  const foundInContext = characterId ? characters.find(c => c.id === characterId) : null;
-  if (!characterId || (charactersLoading && !character) || (foundInContext && !character)) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <div className="text-muted-foreground">{t("general.loading")}</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show "not found" if loading finished and no character exists
-  if (!character && !charactersLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-background p-4 text-center">
-        <div className="bg-card p-8 rounded-2xl shadow-xl max-w-md w-full border border-border">
-          <div className="p-3 bg-destructive/10 rounded-full w-fit mx-auto mb-6">
-            <X className="h-10 w-10 text-destructive" />
-          </div>
-          <h1 className="text-2xl font-bold mb-2">{t("chat.profileNotFound")}</h1>
-          <p className="text-muted-foreground mb-8">Character ID: {characterId}</p>
-          <div className="flex flex-col gap-3">
-            <Button onClick={() => router.push('/chat')} className="w-full">
-              {t("chat.backToConversations")}
-            </Button>
-            <Button variant="outline" onClick={() => router.push('/')} className="w-full">
-              {t("general.home")}
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
+// Show loading while checking authentication
+if (isLoading) {
   return (
-    <div className="flex flex-col md:flex-row bg-background h-[100dvh] md:h-screen w-full overflow-hidden" style={{ position: 'relative', top: 0 }}>
-      {/* Left Sidebar - Chat List */}
-      <div className="hidden md:block md:w-72 border-b md:border-b-0 md:border-r border-border flex flex-col rounded-tr-2xl rounded-br-2xl">
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <div className="flex items-center">
-            <Button variant="ghost" size="icon" className="mr-2 md:hidden" onClick={toggle}>
-              <Menu className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl font-bold">{t("general.chat")}</h1>
-          </div>
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>
+  );
+}
+
+// Show login modal if not authenticated
+if (!user) {
+  // The useEffect will trigger the login modal
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-muted-foreground">Please log in to continue...</div>
+    </div>
+  );
+}
+
+// Show loading while unwrapping params or loading characters
+// We also check if the character exists in the current list but hasn't been set to state yet
+const foundInContext = characterId ? characters.find(c => c.id === characterId) : null;
+if (!characterId || (charactersLoading && !character) || (foundInContext && !character)) {
+  return (
+    <div className="flex items-center justify-center h-screen bg-background">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-muted-foreground">{t("general.loading")}</div>
+      </div>
+    </div>
+  );
+}
+
+// Show "not found" if loading finished and no character exists
+if (!character && !charactersLoading) {
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-background p-4 text-center">
+      <div className="bg-card p-8 rounded-2xl shadow-xl max-w-md w-full border border-border">
+        <div className="p-3 bg-destructive/10 rounded-full w-fit mx-auto mb-6">
+          <X className="h-10 w-10 text-destructive" />
         </div>
-        <div className="p-4 border-b border-border">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder={t("chat.searchForProfile")} className="pl-9 bg-card border-none" />
-          </div>
-        </div>
-        <div className="flex-1 overflow-auto">
-          <div className="p-2 space-y-2">
-            {/* Chat List Items - Only show characters with chat history */}
-            {characters
-              .filter((char) => chatsWithHistory.includes(char.id))
-              .map((char) => (
-                <Link href={`/chat/${char.id}`} key={char.id} className="block">
-                  <div
-                    className={`flex items-center p-3 rounded-xl cursor-pointer ${characterId === char.id ? "bg-[#252525] text-white" : "hover:bg-[#252525] hover:text-white"
-                      }`}
-                  >
-                    <div className="relative w-12 h-12 mr-3">
-                      {/* Use regular img tag for Cloudinary images */}
-                      <img
-                        src={
-                          imageErrors[char.id]
-                            ? "/placeholder.svg?height=48&width=48"
-                            : (char.image_url || char.image || "/placeholder.svg?height=48&width=48")
-                        }
-                        alt={char.name}
-                        className="w-full h-full rounded-full object-cover"
-                        onError={() => handleImageError(char.id)}
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium text-foreground truncate">{char.name}</h4>
-                        <span className="text-xs text-muted-foreground">
-                          {lastMessages[char.id]?.timestamp ?? t("chat.noMessagesYet")}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {lastMessages[char.id]?.content ?? t("chat.noMessagesYet")}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            {chatsWithHistory.length === 0 && (
-              <div className="text-center text-muted-foreground py-4">{t("chat.noConversationsYet")}</div>
-            )}
-          </div>
+        <h1 className="text-2xl font-bold mb-2">{t("chat.profileNotFound")}</h1>
+        <p className="text-muted-foreground mb-8">Character ID: {characterId}</p>
+        <div className="flex flex-col gap-3">
+          <Button onClick={() => router.push('/chat')} className="w-full">
+            {t("chat.backToConversations")}
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/')} className="w-full">
+            {t("general.home")}
+          </Button>
         </div>
       </div>
-
-      {/* Middle - Chat Area */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ height: '100vh' }}>
-        {/* Chat Header */}
-        <div className="border-b border-border flex items-center px-3 md:px-4 py-3 md:py-4 justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-          <div className="flex items-center min-w-0 flex-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden mr-2 text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation"
-              onClick={() => toggle()}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="mr-2 text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation"
-              onClick={() => router.push('/chat')}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <div className="relative w-10 h-10 mr-3 flex-shrink-0">
-              {/* Use regular img tag for Cloudinary images */}
-              <img
-                src={
-                  imageErrors[character?.id || '']
-                    ? "/placeholder.svg?height=40&width=40"
-                    : (character?.image_url || character?.image || "/placeholder.svg?height=40&width=40")
-                }
-                alt={character?.name || "Character"}
-                className="w-full h-full rounded-full object-cover"
-                onError={() => character?.id && handleImageError(character.id)}
-                loading="lazy"
-              />
-            </div>
-            <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
-              <h4 className="font-bold truncate text-foreground leading-tight">
-                {character?.name || t("general.loading")}
-              </h4>
-              <span className="text-[10px] md:text-xs text-muted-foreground truncate">
-                {messages.length > 0 ? messages[messages.length - 1].timestamp : t("chat.noMessagesYet")}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-            <ClearChatDialog onConfirm={handleClearChat} isClearing={isClearingChat} />
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "hidden lg:flex text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation transition-colors",
-                isProfileOpen && "text-primary"
-              )}
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              title={isProfileOpen ? "Hide Profile" : "Show Profile"}
-            >
-              <User className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 scroll-smooth overscroll-behavior-contain min-h-0" data-messages-container>
-          {messages.map((message) => (
-            <div key={message.id} className={`flex w-full ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div
-                className={cn(
-                  "max-w-[85%] md:max-w-[80%] lg:max-w-[70%] rounded-2xl p-3 md:p-4 shadow-sm transition-all duration-300",
-                  message.role === "user"
-                    ? "bg-[#252525] text-white rounded-tr-none"
-                    : "bg-[#252525] text-white rounded-tl-none border border-white/5"
-                )}
-              >
-                <div className="flex justify-between items-start">
-                  <p className="text-current leading-relaxed break-words">{message.content}</p>
-                </div>
-                {message.isImage && message.imageUrl && (
-                  <div className="mt-2">
-                    <div
-                      className="relative w-full aspect-square max-w-xs rounded-2xl overflow-hidden cursor-pointer"
-                      onClick={() => {
-                        if (message.imageUrl) {
-                          if (Array.isArray(message.imageUrl)) {
-                            setSelectedImage(message.imageUrl)
-                          } else {
-                            setSelectedImage([message.imageUrl])
-                          }
-                          setIsModalOpen(true)
-                        }
-                      }}
-                    >
-                      <img
-                        src={imageErrors[message.id] ? "/placeholder.svg" : message.imageUrl}
-                        alt="Generated image"
-                        className="w-full h-full object-cover"
-                        style={{ borderRadius: '1rem' }}
-                        onError={() => handleImageError(message.id)}
-                        loading="lazy"
-                      />
-                    </div>
-
-                  </div>
-                )}
-                <span className="text-xs text-muted-foreground mt-1 block">{message.timestamp}</span>
-              </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="max-w-[70%] bg-[#252525] text-white rounded-2xl p-3">
-                <div className="flex space-x-2">
-                  <div
-                    className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                    style={{ animationDelay: "0ms" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                    style={{ animationDelay: "150ms" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                    style={{ animationDelay: "300ms" }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          )}
-          {isGeneratingImage && (
-            <div className="flex justify-start">
-              <div className="max-w-[70%] bg-[#252525] text-white rounded-2xl p-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-full aspect-square max-w-xs rounded-2xl bg-gray-700 animate-pulse"></div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {apiKeyError && (
-          <div className="mx-4 p-3 bg-destructive/20 border border-destructive text-destructive-foreground rounded-lg text-sm">
-            <p className="font-medium">API Key Error</p>
-            <p>{apiKeyError}</p>
-            <p className="mt-1">Admin users can set the API key in the Admin Dashboard → API Keys section.</p>
-          </div>
-        )}
-
-        {/* Chat Input */}
-        <div className="p-3 md:p-4 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0">
-          <div className="flex items-end gap-2">
-            <Input
-              placeholder={t("chat.inputPlaceholder")}
-              className="flex-1 bg-card border-border min-h-[44px] text-base md:text-sm resize-none"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyPress}
-              disabled={isSendingMessage || isGeneratingImage}
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="sentences"
-              spellCheck="true"
-            />
-            <Button
-              size="icon"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] min-w-[44px] touch-manipulation"
-              onClick={handleSendMessage}
-              disabled={isSendingMessage || isGeneratingImage || !inputValue.trim() || !character}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Sidebar - Profile */}
-      <div className={cn(
-        "hidden border-l border-border transition-all duration-300 ease-in-out bg-background/50 backdrop-blur-sm",
-        isProfileOpen ? "lg:block lg:w-80" : "lg:hidden w-0 overflow-hidden"
-      )}>
-        <div className="h-full overflow-auto">
-          {/* Profile Images Carousel */}
-          <div className="relative aspect-square">
-            {showVideo ? (
-              <div className="w-full h-full">
-                {character?.videoUrl ? (
-                  <>
-                    <video
-                      key={character.videoUrl}
-                      src={character.videoUrl}
-                      className="w-full h-full object-cover"
-                      controls
-                      autoPlay
-                      onError={(e) => {
-                        console.error("Video error:", e)
-                        alert("Error loading video. See console for details.")
-                      }}
-                    />
-                    <div className="absolute top-0 left-0 w-full bg-black/50 p-2 text-white text-xs">
-                      {character.videoUrl}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-full bg-black/20">
-                    <p className="text-white bg-black/50 p-2 rounded">No video available</p>
-                  </div>
-                )}
-                <button
-                  className="absolute top-2 right-2 bg-background/50 p-1 rounded-full z-10"
-                  onClick={() => {
-                    console.log("Closing video")
-                    setShowVideo(false)
-                  }}
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* Carousel Image */}
-                <img
-                  src={
-                    (galleryImages.length > 0
-                      ? galleryImages[currentImageIndex]
-                      : (character?.image || "/placeholder.svg"))
-                  }
-                  alt={character?.name || "Character"}
-                  className="w-full h-full object-cover transition-opacity duration-300"
-                  onError={() => handleImageError("profile")}
-                  loading="lazy"
-                />
-
-                {/* Navigation Arrows */}
-                <button
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 p-1.5 rounded-full transition-colors text-white backdrop-blur-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePrevImage();
-                  }}
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-                <button
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 p-1.5 rounded-full transition-colors text-white backdrop-blur-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleNextImage();
-                  }}
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </button>
-
-                {/* Dots Indicator */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                  {galleryImages.map((_, idx) => (
-                    <button
-                      key={idx}
-                      className={`w-2 h-2 rounded-full transition-all focus:outline-none ${idx === currentImageIndex ? "bg-white w-4" : "bg-white/50 hover:bg-white/70"
-                        }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentImageIndex(idx);
-                      }}
-                      aria-label={`Go to image ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-
-                {/* Floating "Watch Video" button if video exists */}
-                {character?.videoUrl && (
-                  <button
-                    className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors backdrop-blur-sm z-10 font-medium"
-                    onClick={() => setShowVideo(true)}
-                  >
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    Video
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Profile Info */}
-          <div className="p-4">
-            <h4 className="text-2xl font-bold mb-1">{character?.name}</h4>
-            <p className="text-muted-foreground mb-4">{character?.description}</p>
-
-            <div className="mb-6">
-              <Button
-                variant="outline"
-                className="w-full bg-[#252525] text-white border-primary hover:bg-[#353535] hover:border-primary/80"
-                onClick={handleGenerateProfilePhoto}
-                disabled={isGeneratingProfilePhoto}
-              >
-                {isGeneratingProfilePhoto ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Genererar...
-                  </>
-                ) : (
-                  t("generate.generateImage")
-                )}
-              </Button>
-            </div>
-            <h3 className="text-lg font-medium mb-4">{t("chat.aboutMe")}</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <ProfileDetail icon="🎂" label={t("profile.age").toUpperCase()} value={character?.age?.toString() || "25"} />
-              <ProfileDetail icon="💪" label={t("profile.body").toUpperCase()} value={character?.body || "Average"} />
-              <ProfileDetail icon="🌎" label={t("profile.ethnicity").toUpperCase()} value={character?.ethnicity || "Mixed"} />
-              <ProfileDetail icon="🗣️" label={t("profile.language").toUpperCase()} value={character?.language || "English"} />
-              <ProfileDetail icon="💑" label={t("profile.relationship").toUpperCase()} value={character?.relationship || "Single"} />
-              <ProfileDetail icon="💼" label={t("profile.occupation").toUpperCase()} value={character?.occupation || "Student"} />
-              <ProfileDetail icon="🎯" label={t("profile.hobbies").toUpperCase()} value={character?.hobbies || "Reading, Music"} />
-              <ProfileDetail icon="😊" label={t("profile.personality").toUpperCase()} value={character?.personality || "Friendly"} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Debug Panel */}
-      <DebugPanel
-        characterId={characterId}
-        chatId={characterId}
-        handleClearChat={handleClearChat}
-        handleResetCharacter={() => { }}
-        isOpen={false}
-      />
-      <SupabaseDebug />
-      <PremiumUpgradeModal
-        isOpen={isPremiumModalOpen}
-        onClose={() => setIsPremiumModalOpen(false)}
-        feature={premiumModalFeature}
-        description={premiumModalDescription}
-        imageSrc={character?.image || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"}
-      />
-
-      <PremiumUpgradeModal
-        isOpen={showTokensDepletedModal}
-        onClose={() => setShowTokensDepletedModal(false)}
-        mode="tokens-depleted"
-        feature="Tokens Slut"
-        description="Du har inga tokens kvar. Köp mer för att generera fler bilder eller använda premiumfunktioner."
-        imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963046/premium-modals/tokens_depleted.jpg"
-      />
-
-      <PremiumUpgradeModal
-        isOpen={showExpiredModal}
-        onClose={() => setShowExpiredModal(false)}
-        mode="expired"
-        feature="Premium Utgått"
-        description="Ditt Premium-medlemskap har utgått. Förnya för att fortsätta chatta och skapa obegränsat."
-      />
-
-      {selectedImage && (
-        <ImageModal
-          open={!!selectedImage}
-          onOpenChange={(open) => !open && setSelectedImage(null)}
-          images={selectedImage}
-          initialIndex={0}
-          onDownload={(url) => window.open(url, '_blank')}
-          onShare={(url) => navigator.share?.({ url })}
-        />
-      )}
     </div>
   )
+}
+
+return (
+  <div className="flex flex-col md:flex-row bg-background h-[100dvh] md:h-screen w-full overflow-hidden" style={{ position: 'relative', top: 0 }}>
+    {/* Left Sidebar - Chat List */}
+    <div className="hidden md:block md:w-72 border-b md:border-b-0 md:border-r border-border flex flex-col rounded-tr-2xl rounded-br-2xl">
+      <div className="p-4 border-b border-border flex items-center justify-between">
+        <div className="flex items-center">
+          <Button variant="ghost" size="icon" className="mr-2 md:hidden" onClick={toggle}>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <h1 className="text-xl font-bold">{t("general.chat")}</h1>
+        </div>
+      </div>
+      <div className="p-4 border-b border-border">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder={t("chat.searchForProfile")} className="pl-9 bg-card border-none" />
+        </div>
+      </div>
+      <div className="flex-1 overflow-auto">
+        <div className="p-2 space-y-2">
+          {/* Chat List Items - Only show characters with chat history */}
+          {characters
+            .filter((char) => chatsWithHistory.includes(char.id))
+            .map((char) => (
+              <Link href={`/chat/${char.id}`} key={char.id} className="block">
+                <div
+                  className={`flex items-center p-3 rounded-xl cursor-pointer ${characterId === char.id ? "bg-[#252525] text-white" : "hover:bg-[#252525] hover:text-white"
+                    }`}
+                >
+                  <div className="relative w-12 h-12 mr-3">
+                    {/* Use regular img tag for Cloudinary images */}
+                    <img
+                      src={
+                        imageErrors[char.id]
+                          ? "/placeholder.svg?height=48&width=48"
+                          : (char.image_url || char.image || "/placeholder.svg?height=48&width=48")
+                      }
+                      alt={char.name}
+                      className="w-full h-full rounded-full object-cover"
+                      onError={() => handleImageError(char.id)}
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-foreground truncate">{char.name}</h4>
+                      <span className="text-xs text-muted-foreground">
+                        {lastMessages[char.id]?.timestamp ?? t("chat.noMessagesYet")}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {lastMessages[char.id]?.content ?? t("chat.noMessagesYet")}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          {chatsWithHistory.length === 0 && (
+            <div className="text-center text-muted-foreground py-4">{t("chat.noConversationsYet")}</div>
+          )}
+        </div>
+      </div>
+    </div>
+
+    {/* Middle - Chat Area */}
+    <div className="flex-1 flex flex-col overflow-hidden" style={{ height: '100vh' }}>
+      {/* Chat Header */}
+      <div className="border-b border-border flex items-center px-3 md:px-4 py-3 md:py-4 justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+        <div className="flex items-center min-w-0 flex-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden mr-2 text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation"
+            onClick={() => toggle()}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="mr-2 text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation"
+            onClick={() => router.push('/chat')}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div className="relative w-10 h-10 mr-3 flex-shrink-0">
+            {/* Use regular img tag for Cloudinary images */}
+            <img
+              src={
+                imageErrors[character?.id || '']
+                  ? "/placeholder.svg?height=40&width=40"
+                  : (character?.image_url || character?.image || "/placeholder.svg?height=40&width=40")
+              }
+              alt={character?.name || "Character"}
+              className="w-full h-full rounded-full object-cover"
+              onError={() => character?.id && handleImageError(character.id)}
+              loading="lazy"
+            />
+          </div>
+          <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+            <h4 className="font-bold truncate text-foreground leading-tight">
+              {character?.name || t("general.loading")}
+            </h4>
+            <span className="text-[10px] md:text-xs text-muted-foreground truncate">
+              {messages.length > 0 ? messages[messages.length - 1].timestamp : t("chat.noMessagesYet")}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+          <ClearChatDialog onConfirm={handleClearChat} isClearing={isClearingChat} />
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "hidden lg:flex text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation transition-colors",
+              isProfileOpen && "text-primary"
+            )}
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            title={isProfileOpen ? "Hide Profile" : "Show Profile"}
+          >
+            <User className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] touch-manipulation">
+            <MoreVertical className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 scroll-smooth overscroll-behavior-contain min-h-0" data-messages-container>
+        {messages.map((message) => (
+          <div key={message.id} className={`flex w-full ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div
+              className={cn(
+                "max-w-[85%] md:max-w-[80%] lg:max-w-[70%] rounded-2xl p-3 md:p-4 shadow-sm transition-all duration-300",
+                message.role === "user"
+                  ? "bg-[#252525] text-white rounded-tr-none"
+                  : "bg-[#252525] text-white rounded-tl-none border border-white/5"
+              )}
+            >
+              <div className="flex justify-between items-start">
+                <p className="text-current leading-relaxed break-words">{message.content}</p>
+              </div>
+              {message.isImage && message.imageUrl && (
+                <div className="mt-2">
+                  <div
+                    className="relative w-full aspect-square max-w-xs rounded-2xl overflow-hidden cursor-pointer"
+                    onClick={() => {
+                      if (message.imageUrl) {
+                        if (Array.isArray(message.imageUrl)) {
+                          setSelectedImage(message.imageUrl)
+                        } else {
+                          setSelectedImage([message.imageUrl])
+                        }
+                        setIsModalOpen(true)
+                      }
+                    }}
+                  >
+                    <img
+                      src={imageErrors[message.id] ? "/placeholder.svg" : message.imageUrl}
+                      alt="Generated image"
+                      className="w-full h-full object-cover"
+                      style={{ borderRadius: '1rem' }}
+                      onError={() => handleImageError(message.id)}
+                      loading="lazy"
+                    />
+                  </div>
+
+                </div>
+              )}
+              <span className="text-xs text-muted-foreground mt-1 block">{message.timestamp}</span>
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="max-w-[70%] bg-[#252525] text-white rounded-2xl p-3">
+              <div className="flex space-x-2">
+                <div
+                  className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+                  style={{ animationDelay: "0ms" }}
+                ></div>
+                <div
+                  className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+                  style={{ animationDelay: "150ms" }}
+                ></div>
+                <div
+                  className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+                  style={{ animationDelay: "300ms" }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        )}
+        {isGeneratingImage && (
+          <div className="flex justify-start">
+            <div className="max-w-[70%] bg-[#252525] text-white rounded-2xl p-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-full aspect-square max-w-xs rounded-2xl bg-gray-700 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {apiKeyError && (
+        <div className="mx-4 p-3 bg-destructive/20 border border-destructive text-destructive-foreground rounded-lg text-sm">
+          <p className="font-medium">API Key Error</p>
+          <p>{apiKeyError}</p>
+          <p className="mt-1">Admin users can set the API key in the Admin Dashboard → API Keys section.</p>
+        </div>
+      )}
+
+      {/* Chat Input */}
+      <div className="p-3 md:p-4 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0">
+        <div className="flex items-end gap-2">
+          <Input
+            placeholder={t("chat.inputPlaceholder")}
+            className="flex-1 bg-card border-border min-h-[44px] text-base md:text-sm resize-none"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyPress}
+            disabled={isSendingMessage || isGeneratingImage}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="sentences"
+            spellCheck="true"
+          />
+          <Button
+            size="icon"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] min-w-[44px] touch-manipulation"
+            onClick={handleSendMessage}
+            disabled={isSendingMessage || isGeneratingImage || !inputValue.trim() || !character}
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    {/* Right Sidebar - Profile */}
+    <div className={cn(
+      "hidden border-l border-border transition-all duration-300 ease-in-out bg-background/50 backdrop-blur-sm",
+      isProfileOpen ? "lg:block lg:w-80" : "lg:hidden w-0 overflow-hidden"
+    )}>
+      <div className="h-full overflow-auto">
+        {/* Profile Images Carousel */}
+        <div className="relative aspect-square">
+          {showVideo ? (
+            <div className="w-full h-full">
+              {character?.videoUrl ? (
+                <>
+                  <video
+                    key={character.videoUrl}
+                    src={character.videoUrl}
+                    className="w-full h-full object-cover"
+                    controls
+                    autoPlay
+                    onError={(e) => {
+                      console.error("Video error:", e)
+                      alert("Error loading video. See console for details.")
+                    }}
+                  />
+                  <div className="absolute top-0 left-0 w-full bg-black/50 p-2 text-white text-xs">
+                    {character.videoUrl}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full bg-black/20">
+                  <p className="text-white bg-black/50 p-2 rounded">No video available</p>
+                </div>
+              )}
+              <button
+                className="absolute top-2 right-2 bg-background/50 p-1 rounded-full z-10"
+                onClick={() => {
+                  console.log("Closing video")
+                  setShowVideo(false)
+                }}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Carousel Image */}
+              <img
+                src={
+                  (galleryImages.length > 0
+                    ? galleryImages[currentImageIndex]
+                    : (character?.image || "/placeholder.svg"))
+                }
+                alt={character?.name || "Character"}
+                className="w-full h-full object-cover transition-opacity duration-300"
+                onError={() => handleImageError("profile")}
+                loading="lazy"
+              />
+
+              {/* Navigation Arrows */}
+              <button
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 p-1.5 rounded-full transition-colors text-white backdrop-blur-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrevImage();
+                }}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 p-1.5 rounded-full transition-colors text-white backdrop-blur-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNextImage();
+                }}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+
+              {/* Dots Indicator */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                {galleryImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    className={`w-2 h-2 rounded-full transition-all focus:outline-none ${idx === currentImageIndex ? "bg-white w-4" : "bg-white/50 hover:bg-white/70"
+                      }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(idx);
+                    }}
+                    aria-label={`Go to image ${idx + 1}`}
+                  />
+                ))}
+              </div>
+
+              {/* Floating "Watch Video" button if video exists */}
+              {character?.videoUrl && (
+                <button
+                  className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors backdrop-blur-sm z-10 font-medium"
+                  onClick={() => setShowVideo(true)}
+                >
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  Video
+                </button>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Profile Info */}
+        <div className="p-4">
+          <h4 className="text-2xl font-bold mb-1">{character?.name}</h4>
+          <p className="text-muted-foreground mb-4">{character?.description}</p>
+
+          <div className="flex flex-col gap-2 mb-6">
+            <Button
+              variant="outline"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-none"
+              onClick={handleGenerateProfilePhoto}
+              disabled={isGeneratingProfilePhoto}
+            >
+              {isGeneratingProfilePhoto ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Genererar...
+                </>
+              ) : (
+                t("generate.generateImage")
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full bg-[#252525] text-white border-white/10 hover:bg-[#353535] hover:border-primary/50"
+              onClick={handleAdvancedGenerate}
+            >
+              {t("generate.generate")} fler karaktärsbilder
+            </Button>
+          </div>
+          <h3 className="text-lg font-medium mb-4">{t("chat.aboutMe")}</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <ProfileDetail icon="🎂" label={t("profile.age").toUpperCase()} value={character?.age?.toString() || "25"} />
+            <ProfileDetail icon="💪" label={t("profile.body").toUpperCase()} value={character?.body || "Average"} />
+            <ProfileDetail icon="🌎" label={t("profile.ethnicity").toUpperCase()} value={character?.ethnicity || "Mixed"} />
+            <ProfileDetail icon="🗣️" label={t("profile.language").toUpperCase()} value={character?.language || "English"} />
+            <ProfileDetail icon="💑" label={t("profile.relationship").toUpperCase()} value={character?.relationship || "Single"} />
+            <ProfileDetail icon="💼" label={t("profile.occupation").toUpperCase()} value={character?.occupation || "Student"} />
+            <ProfileDetail icon="🎯" label={t("profile.hobbies").toUpperCase()} value={character?.hobbies || "Reading, Music"} />
+            <ProfileDetail icon="😊" label={t("profile.personality").toUpperCase()} value={character?.personality || "Friendly"} />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Debug Panel */}
+    <DebugPanel
+      characterId={characterId}
+      chatId={characterId}
+      handleClearChat={handleClearChat}
+      handleResetCharacter={() => { }}
+      isOpen={false}
+    />
+    <SupabaseDebug />
+    <PremiumUpgradeModal
+      isOpen={isPremiumModalOpen}
+      onClose={() => setIsPremiumModalOpen(false)}
+      feature={premiumModalFeature}
+      description={premiumModalDescription}
+      imageSrc={character?.image || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"}
+    />
+
+    <PremiumUpgradeModal
+      isOpen={showTokensDepletedModal}
+      onClose={() => setShowTokensDepletedModal(false)}
+      mode="tokens-depleted"
+      feature="Tokens Slut"
+      description="Du har inga tokens kvar. Köp mer för att generera fler bilder eller använda premiumfunktioner."
+      imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963046/premium-modals/tokens_depleted.jpg"
+    />
+
+    <PremiumUpgradeModal
+      isOpen={showExpiredModal}
+      onClose={() => setShowExpiredModal(false)}
+      mode="expired"
+      feature="Premium Utgått"
+      description="Ditt Premium-medlemskap har utgått. Förnya för att fortsätta chatta och skapa obegränsat."
+    />
+
+    {selectedImage && (
+      <ImageModal
+        open={!!selectedImage}
+        onOpenChange={(open) => !open && setSelectedImage(null)}
+        images={selectedImage}
+        initialIndex={0}
+        onDownload={(url) => window.open(url, '_blank')}
+        onShare={(url) => navigator.share?.({ url })}
+      />
+    )}
+  </div>
+)
 }
 
 function ProfileDetail({ icon, label, value }: { icon: string; label: string; value: string }) {

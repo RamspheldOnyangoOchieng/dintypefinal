@@ -38,32 +38,22 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // 1. Check if user is premium or admin (Free users cannot generate/save AI girls)
+        // 1. Check if user is premium or admin (Free users can create 1 active character)
         const planInfo = await getUserPlanInfo(userId);
         const { data: adminUser } = await supabase.from('admin_users').select('id').eq('user_id', userId).maybeSingle();
         const isAdmin = !!adminUser;
         const isPremium = planInfo.planType === 'premium';
 
-        if (!isPremium && !isAdmin) {
-            console.log(`❌ Non-premium user ${userId.substring(0, 8)} tried to save a character`);
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Gratisanvändare kan inte skapa AI-flickvänner. Uppgradera till Premium.',
-                    upgrade_required: true
-                },
-                { status: 403 }
-            );
-        }
-
-        console.log('🎨 Creating character:', characterName, 'for user:', userId);
+        console.log('🎨 Creating character:', characterName, 'for user:', userId, '(Plan:', planInfo.planType, ')');
 
         // 2. Check and deduct tokens
-        const CHARACTER_CREATION_TOKEN_COST = 7; // 2 for profile + 5 for image
-        console.log(`💰 Checking token balance for 7 tokens...`);
+        // 2. Check and deduct tokens
+        const CHARACTER_CREATION_TOKEN_COST = planInfo.planType === 'premium' ? 7 : 0;
+        console.log(`💰 Token cost for this creation: ${CHARACTER_CREATION_TOKEN_COST} tokens`);
+
         const balance = await getUserTokenBalance(userId);
 
-        if (balance < CHARACTER_CREATION_TOKEN_COST && !isAdmin) {
+        if (CHARACTER_CREATION_TOKEN_COST > 0 && balance < CHARACTER_CREATION_TOKEN_COST && !isAdmin) {
             console.log(`❌ Insufficient tokens: ${balance} < ${CHARACTER_CREATION_TOKEN_COST}`);
             return NextResponse.json(
                 {
@@ -77,8 +67,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Deduct tokens
-        if (!isAdmin) {
+        // Deduct tokens if applicable
+        if (CHARACTER_CREATION_TOKEN_COST > 0 && !isAdmin) {
             const deductionSuccess = await deductTokens(
                 userId,
                 CHARACTER_CREATION_TOKEN_COST,
@@ -98,6 +88,8 @@ export async function POST(request: NextRequest) {
                 );
             }
             console.log(`✅ Deducted ${CHARACTER_CREATION_TOKEN_COST} tokens`);
+        } else if (CHARACTER_CREATION_TOKEN_COST === 0) {
+            console.log(`🆓 Free character creation for plan: ${planInfo.planType}`);
         }
 
         // 3. Check active girlfriends limit before proceeding
@@ -106,8 +98,8 @@ export async function POST(request: NextRequest) {
 
         if (!activeCheck.allowed) {
             console.log(`❌ Active girlfriend limit reached: ${activeCheck.currentUsage}/${activeCheck.limit}`);
-            // Refund tokens if limit reached
-            if (!isAdmin) {
+            // Refund tokens if limit reached and they were deducted
+            if (CHARACTER_CREATION_TOKEN_COST > 0 && !isAdmin) {
                 await refundTokens(userId, CHARACTER_CREATION_TOKEN_COST, `Refund: Active girlfriend limit reached for ${characterName}`);
             }
 

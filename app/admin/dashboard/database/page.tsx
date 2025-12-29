@@ -326,7 +326,10 @@ CREATE TABLE IF NOT EXISTS characters (
   relationship TEXT,
   is_new BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  system_prompt TEXT NOT NULL
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  system_prompt TEXT NOT NULL,
+  images TEXT[] DEFAULT '{}',
+  video_url TEXT
 );
 
 -- Create index for faster queries

@@ -276,6 +276,13 @@ export async function POST(req: NextRequest) {
     }
 
     // --- ENFORCE FREE TIER LIMITS ---
+    const planInfo = await (async () => {
+      const { getUserPlanInfo } = await import("@/lib/subscription-limits")
+      return await getUserPlanInfo(userId as string)
+    })()
+
+    isPremium = planInfo.planType === 'premium'
+
     if (!isAdmin && !isPremium) {
       // 1. Enforce NSFW check in prompt
       if (containsNSFW(prompt)) {
@@ -295,15 +302,13 @@ export async function POST(req: NextRequest) {
         }, { status: 403 });
       }
 
-      // 3. Check if user already used their 1 free generation
-      const { count: imagesGenerated } = await supabase
-        .from("generated_images")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId);
+      // 3. Check weekly limit for free users
+      const { checkImageGenerationLimit } = await import("@/lib/subscription-limits")
+      const imageCheck = await checkImageGenerationLimit(userId as string)
 
-      if ((imagesGenerated || 0) >= 1) {
+      if (!imageCheck.allowed) {
         return NextResponse.json({
-          error: "You have used your 1 free SFW image generation. Upgrade to Premium for unlimited generations!",
+          error: imageCheck.message,
           upgrade_required: true,
           upgradeUrl: "/premium"
         }, { status: 403 });
@@ -538,6 +543,14 @@ export async function POST(req: NextRequest) {
     await logApiCost(`Image generation (${actualModel})`, 0, totalApiCost, userId).catch(err =>
       console.error('Failed to log API cost:', err)
     )
+
+    // Increment image usage for free users
+    if (!isAdmin && !isPremium) {
+      const { incrementImageUsage } = await import("@/lib/subscription-limits")
+      await incrementImageUsage(userId as string).catch(err => 
+        console.error('Failed to increment image usage:', err)
+      )
+    }
 
     // Update database task record with the task_id from Novita
     if (createdTask && supabaseAdminForTask) {
