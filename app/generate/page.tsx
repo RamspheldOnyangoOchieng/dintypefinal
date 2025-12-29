@@ -1,5 +1,7 @@
 "use client"
 
+import { Suspense } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Copy, Wand2, Loader2, Download, Share2, AlertCircle, ChevronLeft, FolderOpen, Clock, Image as ImageIcon, X, Coins, Sparkles, Lock } from "lucide-react"
@@ -32,6 +34,18 @@ const imageOptions = [
 ]
 
 export default function GenerateImagePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <GenerateContent />
+    </Suspense>
+  )
+}
+
+function GenerateContent() {
   const { toast } = useToast()
   const { user, isLoading, refreshUser } = useAuth()
   const { openLoginModal } = useAuthModal()
@@ -694,302 +708,299 @@ export default function GenerateImagePage() {
 
 
 
-  if (!isMounted) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-background" key="generate-loading">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
-  }
-
   return (
-    <div 
+    <div
       key="generate-page-root"
-      className={`flex flex-col ${isMobile ? 'min-h-screen' : 'lg:flex-row min-h-screen'} bg-background text-foreground`}
+      className={`flex flex-col bg-background text-foreground ${!isMobile ? 'lg:flex-row' : ''} min-h-screen`}
       suppressHydrationWarning
     >
-      {/* Left Column - Generation Controls */}
-      <div className={`w-full ${isMobile ? 'p-4' : 'lg:w-1/2 p-6'} border-b lg:border-b-0 lg:border-r border-border overflow-y-auto`}>
-        <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="mr-1 p-0" onClick={() => router.back()} aria-label="Go back">
-              <ChevronLeft className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
-            </Button>
-            <Wand2 className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
-            <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
-              Generate Image
-            </h1>
+      {!isMounted ? (
+        <div className="flex-1 flex items-center justify-center h-screen w-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <>
+          {/* Left Column - Generation Controls */}
+          <div className={`w-full ${isMobile ? 'p-4' : 'lg:w-1/2 p-6'} border-b lg:border-b-0 lg:border-r border-border overflow-y-auto`}>
+            <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-6'}`}>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" className="mr-1 p-0" onClick={() => router.back()} aria-label="Go back">
+                  <ChevronLeft className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
+                </Button>
+                <Wand2 className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
+                <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
+                  Generate Image
+                </h1>
 
-            {user && (
-              <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20">
-                <Coins className="w-4 h-4 text-yellow-500" />
-                <span className="text-sm font-black italic tabular-nums text-yellow-500">
-                  {user.isAdmin ? "∞" : user.tokenBalance}
-                </span>
+                {user && (
+                  <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20">
+                    <Coins className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm font-black italic tabular-nums text-yellow-500">
+                      {user.isAdmin ? "∞" : user.tokenBalance}
+                    </span>
+                  </div>
+                )}
+
+                {/* Debug: Show premium status */}
+                {!isCheckingPremium && isPremium && (
+                  <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+                    👑 Premium
+                  </span>
+                )}
               </div>
-            )}
-
-            {/* Debug: Show premium status */}
-            {!isCheckingPremium && isPremium && (
-              <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
-                👑 Premium
-              </span>
-            )}
-          </div>
-        </div>
+            </div>
 
 
-        {/* Suggestions */}
-        <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold ${isMobile ? 'mb-3' : 'mb-4'}`}>Create your love from suggestions</h3>
-          {categories.length > 0 ? (
-            <Tabs defaultValue={categories[0]} value={activeCategory} onValueChange={handleCategoryChange}>
-              <TabsList className={`${isMobile ? 'mb-3 p-0.5' : 'mb-4 p-1'} bg-card border border-border rounded-lg`}>
-                {categories.map((category) => (
-                  <TabsTrigger
-                    key={category}
-                    value={category}
-                    className={`capitalize text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md ${isMobile ? 'text-xs px-2 py-1' : ''}`}
-                  >
-                    {category}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <div className={`grid ${isMobile ? 'grid-cols-4 gap-1 p-1' : 'grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-1 sm:gap-1.5 md:gap-2 lg:gap-3 p-1 sm:p-2'}`}>
-                {isLoadingSuggestions
-                  ? // Show loading placeholders
-                  Array.from({ length: 8 }).map((_, index) => (
-                    <div key={index} className="aspect-square rounded-lg bg-muted animate-pulse" />
-                  ))
-                  : // Show filtered suggestions
-                  suggestions
-                    .filter((suggestion) => suggestion.category === activeCategory && suggestion.is_active)
-                    .map((suggestion) => (
-                      <div
-                        key={suggestion.id}
-                        className="relative aspect-square rounded-lg overflow-hidden group hover:ring-2 hover:ring-primary transition-all cursor-pointer min-w-0"
-                        onClick={() => handleSuggestionClick(suggestion.name)}
-                      >
-                        <Image
-                          src={getValidImageSrc(
-                            suggestion.image,
-                            `/placeholder.svg?height=88&width=88&query=${encodeURIComponent(suggestion.name || "suggestion")}`,
-                          )}
-                          alt={suggestion.name}
-                          width={88}
-                          height={88}
-                          className="w-full h-full object-cover rounded-lg"
-                          unoptimized={true}
-                          onError={(e) => {
-                            // Fall back to a local placeholder with the suggestion name
-                            e.currentTarget.src = `/placeholder.svg?height=88&width=88&query=${encodeURIComponent(suggestion.name || "suggestion")}`
-                          }}
-                        />
-                        <div className={`absolute inset-0 bg-black/40 flex items-end ${isMobile ? 'p-1' : 'p-1.5 sm:p-2'} rounded-lg`}>
-                          <span className={`${isMobile ? 'text-xs' : 'text-xs sm:text-sm'} font-medium text-white leading-tight line-clamp-2`}>
-                            {suggestion.name}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+            {/* Suggestions */}
+            <div className={`${isMobile ? 'mb-4' : 'mb-6'}`} key="suggestions-container">
+              <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold ${isMobile ? 'mb-3' : 'mb-4'}`}>Create your love from suggestions</h3>
+              <div className="min-h-[100px]" key="suggestions-stable-wrapper">
+                {categories.length > 0 ? (
+                  <Tabs defaultValue={categories[0]} value={activeCategory} onValueChange={handleCategoryChange} key="suggestions-tabs">
+                    <TabsList className={`${isMobile ? 'mb-3 p-0.5' : 'mb-4 p-1'} bg-card border border-border rounded-lg`}>
+                      {categories.map((category) => (
+                        <TabsTrigger
+                          key={`cat-${category}`}
+                          value={category}
+                          className={`capitalize text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md ${isMobile ? 'text-xs px-2 py-1' : ''}`}
+                        >
+                          {category}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                    <div key="suggestions-grid" className={`grid ${isMobile ? 'grid-cols-4 gap-1 p-1' : 'grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-1 sm:gap-1.5 md:gap-2 lg:gap-3 p-1 sm:p-2'}`}>
+                      {isLoadingSuggestions
+                        ? Array.from({ length: 8 }).map((_, index) => (
+                          <div key={`sug-loading-${index}`} className="aspect-square rounded-lg bg-muted animate-pulse" />
+                        ))
+                        : suggestions
+                          .filter((suggestion) => suggestion.category === activeCategory && suggestion.is_active)
+                          .map((suggestion) => (
+                            <div
+                              key={`sug-${suggestion.id}`}
+                              className="relative aspect-square rounded-lg overflow-hidden group hover:ring-2 hover:ring-primary transition-all cursor-pointer min-w-0"
+                              onClick={() => handleSuggestionClick(suggestion.name)}
+                            >
+                              <Image
+                                src={getValidImageSrc(
+                                  suggestion.image,
+                                  `/placeholder.svg?height=88&width=88&query=${encodeURIComponent(suggestion.name || "suggestion")}`,
+                                )}
+                                alt={suggestion.name}
+                                width={88}
+                                height={88}
+                                className="w-full h-full object-cover rounded-lg"
+                                unoptimized={true}
+                                onError={(e) => {
+                                  e.currentTarget.src = `/placeholder.svg?height=88&width=88&query=${encodeURIComponent(suggestion.name || "suggestion")}`
+                                }}
+                              />
+                              <div className={`absolute inset-0 bg-black/40 flex items-end ${isMobile ? 'p-1' : 'p-1.5 sm:p-2'} rounded-lg`}>
+                                <span className={`${isMobile ? 'text-xs' : 'text-xs sm:text-sm'} font-medium text-white leading-tight line-clamp-2`}>
+                                  {suggestion.name}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                    </div>
+                  </Tabs>
+                ) : (
+                  <div key="suggestions-empty" className="text-center py-8 text-muted-foreground">No suggestion categories available.</div>
+                )}
               </div>
-            </Tabs>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">No suggestion categories available.</div>
-          )}
-        </div>
+            </div>
 
 
 
-        {/* Prompt Input */}
-        <div className={`relative ${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <div className={`absolute ${isMobile ? 'right-2 top-2' : 'right-3 top-3'} flex flex-col gap-1`}>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(prompt)
-                toast({ title: "Copied to clipboard" })
-              }}
-              className="p-2 hover:bg-gray-600 rounded transition-colors"
-              title="Copy"
-            >
-              <Copy className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 hover:text-white`} />
-            </button>
-            <button
-              onClick={() => {
-                navigator.clipboard.readText().then((text) => {
-                  setPrompt(text)
-                  toast({ title: "Pasted from clipboard" })
-                })
-              }}
-              className="p-2 hover:bg-gray-600 rounded transition-colors"
-              title="Paste"
-            >
-              <ImageIcon className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 hover:text-white`} />
-            </button>
-            <button
-              onClick={() => {
-                setPrompt("")
-                toast({ title: "Prompt cleared" })
-              }}
-              className="p-2 hover:bg-gray-600 rounded transition-colors"
-              title="Clear"
-            >
-              <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 hover:text-white`} />
-            </button>
-          </div>
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            className={`w-full ${isMobile ? 'h-40 text-sm' : 'h-48'} bg-card rounded-xl ${isMobile ? 'p-3' : 'p-4'} pr-14 resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
-            placeholder="Describe the image you want to generate..."
-          />
-        </div>
-
-        {/* Show Negative Prompt - Only in image mode */}
-        {/* Show Negative Prompt */}
-        <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowNegativePrompt(!showNegativePrompt)}
-            className={`text-muted-foreground hover:text-foreground ${isMobile ? 'text-xs' : ''}`}
-          >
-            {showNegativePrompt ? "Hide Negative Prompt" : "Show Negative Prompt"}
-          </Button>
-
-          {/* Negative Prompt Input - Only shown when toggled */}
-          {showNegativePrompt && (
-            <div className={`${isMobile ? 'mt-2' : 'mt-3'}`}>
-              <label htmlFor="negative-prompt" className={`block ${isMobile ? 'text-xs' : 'text-sm'} font-medium text-muted-foreground ${isMobile ? 'mb-1' : 'mb-2'}`}>
-                Negative Prompt (what to avoid in the image)
-              </label>
+            {/* Prompt Input */}
+            <div className={`relative ${isMobile ? 'mb-4' : 'mb-6'}`}>
+              <div className={`absolute ${isMobile ? 'right-2 top-2' : 'right-3 top-3'} flex flex-col gap-1`}>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(prompt)
+                    toast({ title: "Copied to clipboard" })
+                  }}
+                  className="p-2 hover:bg-gray-600 rounded transition-colors"
+                  title="Copy"
+                >
+                  <Copy className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 hover:text-white`} />
+                </button>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.readText().then((text) => {
+                      setPrompt(text)
+                      toast({ title: "Pasted from clipboard" })
+                    })
+                  }}
+                  className="p-2 hover:bg-gray-600 rounded transition-colors"
+                  title="Paste"
+                >
+                  <ImageIcon className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 hover:text-white`} />
+                </button>
+                <button
+                  onClick={() => {
+                    setPrompt("")
+                    toast({ title: "Prompt cleared" })
+                  }}
+                  className="p-2 hover:bg-gray-600 rounded transition-colors"
+                  title="Clear"
+                >
+                  <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 hover:text-white`} />
+                </button>
+              </div>
               <textarea
-                id="negative-prompt"
-                value={negativePrompt}
-                onChange={(e) => setNegativePrompt(e.target.value)}
-                className={`w-full ${isMobile ? 'h-16 text-xs p-3' : 'h-20 p-4 text-sm'} bg-card rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
-                placeholder="Elements to exclude from the image..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                className={`w-full ${isMobile ? 'h-40 text-sm' : 'h-48'} bg-card rounded-xl ${isMobile ? 'p-3' : 'p-4'} pr-14 resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
+                placeholder="Describe the image you want to generate..."
               />
             </div>
-          )}
-        </div>
 
-
-
-        {/* Number of Images */}
-        <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>Number of Images</h3>
-            {!isPremium && !isCheckingPremium && !user?.isAdmin && (
-              <span className="text-xs text-muted-foreground">
-                🆓 Free: 1 image only
-              </span>
-            )}
-          </div>
-          <div className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2 md:gap-4'}`}>
-            {imageOptions.map((option) => {
-              // Don't disable options while checking premium status or for admins
-              const isDisabled = !isCheckingPremium && !isPremium && !user?.isAdmin && option.value !== "1"
-              const isSelected = selectedCount === option.value
-              return (
-                <button
-                  key={option.value}
-                  onClick={() => {
-                    if (!isPremium && !user?.isAdmin && option.value !== "1") {
-                      setShowPremiumModal(true)
-                      return
-                    }
-                    // If free user already used their 1 free image, show premium modal on click
-                    if (!isPremium && !user?.isAdmin && freeGenerationsCount >= 1) {
-                      setShowPremiumModal(true)
-                      return
-                    }
-                    setSelectedCount(option.value)
-                  }}
-                  className={`flex flex-col items-center gap-1 ${isMobile ? 'px-3 py-2' : 'px-8 py-4'} rounded-xl transition-all relative border-2 ${isSelected
-                    ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
-                    : isDisabled
-                      ? "bg-card/50 text-muted-foreground border-muted/50 cursor-pointer"
-                      : "bg-card border-border text-foreground hover:border-primary/50"
-                    }`}
-                >
-                  <span className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold`}>{option.label}</span>
-                  {option.value !== "1" ? (
-                    <div className="flex flex-col items-center">
-                      <div className={`flex items-center gap-1 ${isSelected ? 'text-primary-foreground/90' : 'text-amber-500'} font-black text-[9px] uppercase tracking-tighter`}>
-                        <Sparkles className="h-2.5 w-2.5" />
-                        <span>Premium Required</span>
-                      </div>
-                      <span className={`${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'} text-[9px] font-medium`}>{option.tokens} tokens</span>
-                    </div>
-                  ) : (
-                    <span className={`${isSelected ? 'text-primary-foreground/90' : 'text-emerald-500'} font-black text-[9px] uppercase tracking-wider`}>GRATIS SFW</span>
-                  )}
-                  {isDisabled && (
-                    <div className="absolute -top-2 -right-2 bg-amber-500 text-black p-0.5 rounded-full shadow-md">
-                      <Lock className="h-3 w-3" />
-                    </div>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-          {!isPremium && !isCheckingPremium && !user?.isAdmin && (
-            <div className={`${isMobile ? 'mt-2 p-2' : 'mt-3 p-3'} bg-primary/10 border border-primary/20 rounded-lg`}>
-              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-foreground mb-2`}>
-                <span className="font-semibold">Want to generate multiple images?</span>
-              </p>
-              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mb-2`}>
-                Upgrade to Premium to generate 4, 6, or 8 images at once!
-              </p>
+            {/* Show Negative Prompt - Only in image mode */}
+            {/* Show Negative Prompt */}
+            <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
               <Button
-                size={isMobile ? "sm" : "default"}
-                variant="default"
-                className="w-full"
-                onClick={() => setShowPremiumModal(true)}
+                variant="outline"
+                size="sm"
+                onClick={() => setShowNegativePrompt(!showNegativePrompt)}
+                className={`text-muted-foreground hover:text-foreground ${isMobile ? 'text-xs' : ''}`}
               >
-                Upgrade to Premium
+                {showNegativePrompt ? "Hide Negative Prompt" : "Show Negative Prompt"}
+              </Button>
+
+              {/* Negative Prompt Input - Only shown when toggled */}
+              {showNegativePrompt && (
+                <div className={`${isMobile ? 'mt-2' : 'mt-3'}`}>
+                  <label htmlFor="negative-prompt" className={`block ${isMobile ? 'text-xs' : 'text-sm'} font-medium text-muted-foreground ${isMobile ? 'mb-1' : 'mb-2'}`}>
+                    Negative Prompt (what to avoid in the image)
+                  </label>
+                  <textarea
+                    id="negative-prompt"
+                    value={negativePrompt}
+                    onChange={(e) => setNegativePrompt(e.target.value)}
+                    className={`w-full ${isMobile ? 'h-16 text-xs p-3' : 'h-20 p-4 text-sm'} bg-card rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary border border-border`}
+                    placeholder="Elements to exclude from the image..."
+                  />
+                </div>
+              )}
+            </div>
+
+
+
+            {/* Number of Images */}
+            <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>Number of Images</h3>
+                {!isPremium && !isCheckingPremium && !user?.isAdmin && (
+                  <span className="text-xs text-muted-foreground">
+                    🆓 Free: 1 image only
+                  </span>
+                )}
+              </div>
+              <div className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2 md:gap-4'}`}>
+                {imageOptions.map((option) => {
+                  // Don't disable options while checking premium status or for admins
+                  const isDisabled = !isCheckingPremium && !isPremium && !user?.isAdmin && option.value !== "1"
+                  const isSelected = selectedCount === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        if (!isPremium && !user?.isAdmin && option.value !== "1") {
+                          setShowPremiumModal(true)
+                          return
+                        }
+                        // If free user already used their 1 free image, show premium modal on click
+                        if (!isPremium && !user?.isAdmin && freeGenerationsCount >= 1) {
+                          setShowPremiumModal(true)
+                          return
+                        }
+                        setSelectedCount(option.value)
+                      }}
+                      className={`flex flex-col items-center gap-1 ${isMobile ? 'px-3 py-2' : 'px-8 py-4'} rounded-xl transition-all relative border-2 ${isSelected
+                        ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
+                        : isDisabled
+                          ? "bg-card/50 text-muted-foreground border-muted/50 cursor-pointer"
+                          : "bg-card border-border text-foreground hover:border-primary/50"
+                        }`}
+                    >
+                      <span className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold`}>{option.label}</span>
+                      {option.value !== "1" ? (
+                        <div className="flex flex-col items-center">
+                          <div className={`flex items-center gap-1 ${isSelected ? 'text-primary-foreground/90' : 'text-amber-500'} font-black text-[9px] uppercase tracking-tighter`}>
+                            <Sparkles className="h-2.5 w-2.5" />
+                            <span>Premium Required</span>
+                          </div>
+                          <span className={`${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'} text-[9px] font-medium`}>{option.tokens} tokens</span>
+                        </div>
+                      ) : (
+                        <span className={`${isSelected ? 'text-primary-foreground/90' : 'text-emerald-500'} font-black text-[9px] uppercase tracking-wider`}>GRATIS SFW</span>
+                      )}
+                      {isDisabled && (
+                        <div className="absolute -top-2 -right-2 bg-amber-500 text-black p-0.5 rounded-full shadow-md">
+                          <Lock className="h-3 w-3" />
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              {!isPremium && !isCheckingPremium && !user?.isAdmin && (
+                <div className={`${isMobile ? 'mt-2 p-2' : 'mt-3 p-3'} bg-primary/10 border border-primary/20 rounded-lg`}>
+                  <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-foreground mb-2`}>
+                    <span className="font-semibold">Want to generate multiple images?</span>
+                  </p>
+                  <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mb-2`}>
+                    Upgrade to Premium to generate 4, 6, or 8 images at once!
+                  </p>
+                  <Button
+                    size={isMobile ? "sm" : "default"}
+                    variant="default"
+                    className="w-full"
+                    onClick={() => setShowPremiumModal(true)}
+                  >
+                    Upgrade to Premium
+                  </Button>
+                </div>
+              )}
+              {selectedCount !== "1" && (
+                <div className={`${isMobile ? 'mt-1 text-xs' : 'mt-2 text-sm'} text-muted-foreground`}>
+                  5 tokens per image
+                </div>
+              )}
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className={`${isMobile ? 'mb-4 p-3' : 'mb-6 p-4'} bg-destructive/20 border border-destructive text-destructive-foreground rounded-lg flex items-center`}>
+                <AlertCircle className={`${isMobile ? 'h-4 w-4 mr-2' : 'h-5 w-5 mr-2'}`} />
+                <span className={`${isMobile ? 'text-sm' : ''}`}>{error}</span>
+              </div>
+            )}
+
+            {/* Generate Button */}
+            <div className="relative">
+              <Button
+                className={`w-full ${isMobile ? 'py-4 text-base' : 'py-6 text-lg'} bg-primary hover:bg-primary/90 text-primary-foreground`}
+                disabled={!prompt.trim() || isGenerating}
+                onClick={handleGenerate}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'} animate-spin`} />
+                    Generating... {Math.round(generationProgress)}%
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+                    Generate Image ({user?.isAdmin ? 'Free' : (displayTokens === 0 ? 'Free' : `${displayTokens} tokens`)})
+                  </>
+                )}
               </Button>
             </div>
-          )}
-          {selectedCount !== "1" && (
-            <div className={`${isMobile ? 'mt-1 text-xs' : 'mt-2 text-sm'} text-muted-foreground`}>
-              5 tokens per image
-            </div>
-          )}
-        </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className={`${isMobile ? 'mb-4 p-3' : 'mb-6 p-4'} bg-destructive/20 border border-destructive text-destructive-foreground rounded-lg flex items-center`}>
-            <AlertCircle className={`${isMobile ? 'h-4 w-4 mr-2' : 'h-5 w-5 mr-2'}`} />
-            <span className={`${isMobile ? 'text-sm' : ''}`}>{error}</span>
-          </div>
-        )}
-
-        {/* Generate Button */}
-        <div className="relative">
-          <Button
-            className={`w-full ${isMobile ? 'py-4 text-base' : 'py-6 text-lg'} bg-primary hover:bg-primary/90 text-primary-foreground`}
-            disabled={!prompt.trim() || isGenerating}
-            onClick={handleGenerate}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'} animate-spin`} />
-                Generating... {Math.round(generationProgress)}%
-              </>
-            ) : (
-              <>
-                <Wand2 className={`mr-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
-                Generate Image ({user?.isAdmin ? 'Free' : (displayTokens === 0 ? 'Free' : `${displayTokens} tokens`)})
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* View Collection Button - Hidden as requested */}
-        {/* {generatedImages.length > 0 && (
+            {/* View Collection Button - Hidden as requested */}
+            {/* {generatedImages.length > 0 && (
           <div className={`${isMobile ? 'mt-4' : 'mt-6'}`}>
             <Button variant="outline" className={`w-full bg-transparent ${isMobile ? 'py-3 text-sm' : ''}`} onClick={viewCollection}>
               <FolderOpen className={`${isMobile ? 'h-4 w-4 mr-2' : 'h-5 w-5 mr-2'}`} />
@@ -997,179 +1008,170 @@ export default function GenerateImagePage() {
             </Button>
           </div>
         )} */}
-      </div>
+          </div>
 
-      {/* Right Column - Generated Media */}
-      <div className={`w-full ${isMobile ? 'p-4' : 'lg:w-1/2 p-6'} overflow-y-auto`}>
-        <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-6'}`}>
-          <h2 key="generated-images-title" className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
-            Generated Images
-          </h2>
-          {generatedImages.length > 0 && (
-            <div key="action-buttons" className={`flex ${isMobile ? 'flex-col gap-1' : 'gap-2'}`}>
-              <Button variant="outline" size="sm" onClick={handleDownloadAll} className={isMobile ? 'text-xs px-2 py-1' : ''}>
-                <Download className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
-                {isMobile ? 'Download All' : 'Download All'}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => router.push("/collections")} className={isMobile ? 'text-xs px-2 py-1' : ''}>
-                <FolderOpen className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
-                Collection
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <div className="min-h-[400px]">
-          {isGenerating ? (
-            <div key="generating-state" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
-              <div className={`bg-card ${isMobile ? 'p-6' : 'p-8'} rounded-xl mb-4`}>
-                <Loader2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-primary animate-spin`} />
-              </div>
-              <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold mb-2`}>
-                Generating Images...
-              </h3>
-              <p className={`text-muted-foreground ${isMobile ? 'max-w-sm text-sm' : 'max-w-md'} mb-4`}>
-                This may take a few moments. We're creating your images based on the prompt.
-              </p>
-
-              {/* Progress Bar */}
-              <div className={`w-full ${isMobile ? 'max-w-sm' : 'max-w-md'} mb-4`}>
-                <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mb-2`}>
-                  <span>Progress</span>
-                  <span>{Math.round(generationProgress)}%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${generationProgress}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Timeout Warning */}
-              {timeoutWarning && (
-                <div
-                  key={`timeout-warning-${characterId || 'global'}`} // Added key for stability
-                  className={`${isMobile ? 'mt-3 p-2' : 'mt-4 p-3'} bg-yellow-900/20 border border-yellow-800 text-yellow-300 rounded-lg flex items-center ${isMobile ? 'max-w-sm' : 'max-w-md'}`}
-                  suppressHydrationWarning // Added suppressHydrationWarning
-                >
-                  <Clock className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
-                  <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Hang tight! Your images are being created...</span>
-                </div>
-              )}
-            </div>
-          ) : generatedImages.length === 0 && !error ? (
-            <div key="empty-state" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
-              <div className={`bg-card ${isMobile ? 'p-6' : 'p-8'} rounded-xl mb-4`}>
-                <Wand2 className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} mx-auto mb-4 text-muted-foreground`} />
-              </div>
-              <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold mb-2`}>
-                No Images Generated Yet
-              </h3>
-              <p className={`text-muted-foreground ${isMobile ? 'max-w-sm text-sm' : 'max-w-md'}`}>
-                Enter a prompt and click the Generate button to create AI-generated images based on your description.
-              </p>
-            </div>
-          ) : generatedImages.length > 0 ? (
-            <div key="result-state" className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-4'}`}>
-              {generatedImages.map((image, index) => (
-                <div
-                  key={`${image}-${index}`}
-                  className="relative group cursor-pointer transform transition-transform hover:scale-[1.02]"
-                  onClick={() => handleImageClick(index)}
-                >
-                  <div className="aspect-square rounded-xl overflow-hidden bg-card">
-                    <Image
-                      src={getValidImageSrc(image, "/placeholder.svg?height=512&width=512") || "/placeholder.svg"}
-                      alt={`Generated image ${index + 1}`}
-                      width={512}
-                      height={512}
-                      className="w-full h-full object-cover object-top"
-                      unoptimized // Important for external URLs
-                    />
-                  </div>
-                  <div className={`absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl ${isMobile ? 'opacity-100' : ''}`}>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={(e) => {
-                        e.stopPropagation() // Prevent opening modal
-                        handleDownload(image, index)
-                      }}
-                      className={isMobile ? 'text-xs px-2 py-1' : ''}
-                    >
+          {/* Right Column - Generated Media */}
+          <div className={`w-full ${isMobile ? 'p-4' : 'lg:w-1/2 p-6'} overflow-y-auto`} key="right-column">
+            <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-6'}`} key="results-header">
+              <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`} key="results-title">
+                Generated Images
+              </h2>
+              <div key="action-buttons-container">
+                {generatedImages.length > 0 && (
+                  <div className={`flex ${isMobile ? 'flex-col gap-1' : 'gap-2'}`} key="action-buttons">
+                    <Button variant="outline" size="sm" onClick={handleDownloadAll} className={isMobile ? 'text-xs px-2 py-1' : ''}>
                       <Download className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
-                      Download
+                      {isMobile ? 'Download All' : 'Download All'}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={(e) => {
-                        e.stopPropagation() // Prevent opening modal
-                        handleShare(image)
-                      }}
-                      className={isMobile ? 'text-xs px-2 py-1' : ''}
-                    >
-                      <Share2 className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
-                      Share
+                    <Button variant="outline" size="sm" onClick={() => router.push("/collections")} className={isMobile ? 'text-xs px-2 py-1' : ''}>
+                      <FolderOpen className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+                      Collection
                     </Button>
                   </div>
-                  <div className={`absolute bottom-2 right-2 bg-background/80 text-foreground ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded`}>
-                    Image {index + 1}
+                )}
+              </div>
+            </div>
+
+            <div className="min-h-[400px]" key="results-container">
+              {isGenerating ? (
+                <div key="generating-state-media" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
+                  <div className="relative mb-8">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Wand2 className="h-8 w-8 sm:h-12 sm:w-12 text-primary animate-pulse" />
+                    </div>
                   </div>
-                  {/* Show saved indicator only if image is in savedImageUrls */}
-                  {savedImageUrls.has(image) && (
-                    <div className={`absolute top-2 right-2 bg-green-500/80 text-white ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded-full`}>
-                      Saved
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2">Creating Your Masterpiece</h3>
+                  <p className="text-muted-foreground max-w-md px-4 mb-4">
+                    Our AI is painting your vision. This usually takes 10-30 seconds.
+                  </p>
+                  <div className="w-full max-w-xs bg-card border border-border h-2.5 rounded-full overflow-hidden mb-2">
+                    <div
+                      className="bg-primary h-full transition-all duration-500 ease-out"
+                      style={{ width: `${generationProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs font-medium text-primary uppercase tracking-tighter tabular-nums">
+                    Generation in progress: {Math.round(generationProgress)}%
+                  </p>
+
+                  {timeoutWarning && (
+                    <div key="timeout-warning-media" className="mt-6 flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20 animate-in fade-in duration-500" suppressHydrationWarning>
+                      <Clock className="h-4 w-4 animate-pulse" />
+                      <span className="text-xs font-semibold uppercase tracking-tight">Taking longer than expected...</span>
                     </div>
                   )}
                 </div>
-              ))}
+              ) : (generatedImages.length === 0 && !error) ? (
+                <div key="empty-state-media" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 bg-card border border-border rounded-full flex items-center justify-center mb-6">
+                    <ImageIcon className="h-10 w-10 sm:h-16 sm:w-16 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2">Ready to Create?</h3>
+                  <p className="text-muted-foreground max-w-sm px-4">
+                    Enter a description on the left and click "Generate" to see your imagination come to life.
+                  </p>
+                </div>
+              ) : generatedImages.length > 0 ? (
+                <div key="result-state-media" className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-4'}`}>
+                  {generatedImages.map((image, index) => (
+                    <div
+                      key={`gen-img-${index}-${image.substring(0, 10)}`}
+                      className="relative aspect-[512/1024] rounded-xl overflow-hidden group cursor-pointer border border-border shadow-xl hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500"
+                      onClick={() => handleImageClick(index)}
+                    >
+                      <Image
+                        src={image}
+                        alt={`Generated ${index + 1}`}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        unoptimized={true}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                      <div className="absolute bottom-4 left-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0 transform transition-transform duration-500">
+                        <Button
+                          size="sm"
+                          className="flex-1 bg-white hover:bg-white/90 text-black font-bold h-10 rounded-lg"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDownload(image, index)
+                          }}
+                        >
+                          <Download className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+                          Download
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleShare(image)
+                          }}
+                          className={`${isMobile ? 'text-xs px-2 py-1' : ''} h-10 font-bold backdrop-blur-md`}
+                        >
+                          <Share2 className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+                          Share
+                        </Button>
+                      </div>
+                      <div className={`absolute bottom-2 right-2 bg-background/80 text-foreground ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded font-bold`}>
+                        #{index + 1}
+                      </div>
+                      {savedImageUrls.has(image) && (
+                        <div className={`absolute top-2 right-2 bg-green-500/80 text-white ${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs px-2 py-1'} rounded-full font-bold shadow-lg`}>
+                          Saved
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div key="no-results-final" />
+              )}
             </div>
-          ) : null}
-        </div>
-      </div>
+          </div>
 
-      {/* Image Modal */}
-      <ImageModal
-        images={generatedImages}
-        initialIndex={selectedImageIndex}
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        onDownload={handleDownload}
-        onShare={handleShare}
-        onSave={(index) => saveImageToCollection(generatedImages[index], index)}
-        savingIndex={savingImageIndex}
-      />
+          {/* Image Modal */}
+          <ImageModal
+            images={generatedImages}
+            initialIndex={selectedImageIndex}
+            open={isModalOpen}
+            onOpenChange={setIsModalOpen}
+            onDownload={handleDownload}
+            onShare={handleShare}
+            onSave={(index) => saveImageToCollection(generatedImages[index], index)}
+            savingIndex={savingImageIndex}
+          />
 
-      {/* Insufficient Tokens Dialog */}
-      <InsufficientTokensDialog
-        open={showInsufficientTokens}
-        onOpenChange={setShowInsufficientTokens}
-        currentBalance={tokenBalanceInfo.currentBalance}
-        requiredTokens={tokenBalanceInfo.requiredTokens}
-      />
+          {/* Insufficient Tokens Dialog */}
+          <InsufficientTokensDialog
+            open={showInsufficientTokens}
+            onOpenChange={setShowInsufficientTokens}
+            currentBalance={tokenBalanceInfo.currentBalance}
+            requiredTokens={tokenBalanceInfo.requiredTokens}
+          />
 
-      {/* Premium Upgrade Modal */}
-      <PremiumUpgradeModal
-        isOpen={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-        feature="Uppgradera till Premium"
-        description="Upgrade to Premium to generate unlimited images."
-        imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"
-      />
+          {/* Premium Upgrade Modal */}
+          <PremiumUpgradeModal
+            isOpen={showPremiumModal}
+            onClose={() => setShowPremiumModal(false)}
+            feature="Uppgradera till Premium"
+            description="Upgrade to Premium to generate unlimited images."
+            imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"
+          />
 
-      {/* Tokens Depleted Modal (for Premium Users) */}
-      <PremiumUpgradeModal
-        isOpen={showTokensDepletedModal}
-        onClose={() => setShowTokensDepletedModal(false)}
-        mode="tokens-depleted"
-        feature="Tokens Slut"
-        description="You used your 100 free premium tokens. Buy more tokens to use premium features"
-        imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963046/premium-modals/tokens_depleted.jpg"
-      />
+          {/* Tokens Depleted Modal (for Premium Users) */}
+          <PremiumUpgradeModal
+            isOpen={showTokensDepletedModal}
+            onClose={() => setShowTokensDepletedModal(false)}
+            mode="tokens-depleted"
+            feature="Tokens Slut"
+            description="You used your 100 free premium tokens. Buy more tokens to use premium features"
+            imageSrc="https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963046/premium-modals/tokens_depleted.jpg"
+          />
 
 
+        </>
+      )}
     </div>
   )
 }

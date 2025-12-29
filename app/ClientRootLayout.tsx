@@ -45,12 +45,18 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden ${isOpen ? "md:ml-64" : "md:ml-16"}`}>
         <div key="layout-main-content" className="flex-1 flex flex-col overflow-x-hidden">
-          {showHeader && <SiteHeader />}
+          <div className="flex-none">
+            {showHeader ? <SiteHeader /> : null}
+          </div>
           <main className="flex-1 overflow-x-hidden relative">
-            <ErrorBoundary>{children}</ErrorBoundary>
+            <div key={`route-wrapper-${pathname.split('/')[1] || 'home'}`} suppressHydrationWarning>
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </div>
           </main>
         </div>
-        {showFooter && <SiteFooter />}
+        <div className="flex-none">
+          {showFooter ? <SiteFooter /> : null}
+        </div>
       </div>
 
       <PremiumUpgradeModal
