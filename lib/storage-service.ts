@@ -9,6 +9,8 @@ export type CharacterProfile = {
   description: string
   image?: string
   image_url?: string
+  images?: string[]
+  video_url?: string
   prompt_template?: string
   created_at?: string
   user_id: string
@@ -142,6 +144,8 @@ export class StorageService {
         ...character,
         prompt_template: character.prompt_template || character.system_prompt || '',
         image_url: character.image_url || character.image || '',
+        images: character.images || [],
+        video_url: character.video_url || '',
         user_id: character.user_id || character.userId || ''
       }
     }
@@ -159,6 +163,8 @@ export class StorageService {
       ...data,
       prompt_template: data.prompt_template || data.system_prompt || '',
       image_url: data.image_url || data.image || '',
+      images: data.images || [],
+      video_url: data.video_url || '',
       user_id: data.user_id || data.userId || ''
     }
   }

@@ -49,27 +49,67 @@ export default function RunImagesMigrationPage() {
           </p>
 
           {result && (
-            <Alert
-              className={
-                result.success
-                  ? "bg-green-500/10 border-green-500/50 text-green-700 dark:text-green-300 mb-6"
-                  : "bg-red-500/10 border-red-500/50 text-red-700 dark:text-red-300 mb-6"
-              }
-            >
-              <div className="flex items-start gap-3">
-                {result.success ? (
-                  <CheckCircle className="h-5 w-5 shrink-0" />
-                ) : (
-                  <AlertCircle className="h-5 w-5 shrink-0" />
-                )}
-                <div>
-                  <AlertTitle className="font-bold">{result.success ? "Migration Successful" : "Migration Failed"}</AlertTitle>
-                  <AlertDescription className="text-sm opacity-90">
-                    {result.success ? result.message : result.error}
-                  </AlertDescription>
+            <div className="space-y-4 mb-6">
+              <Alert
+                className={
+                  result.success
+                    ? "bg-green-500/10 border-green-500/50 text-green-700 dark:text-green-300"
+                    : "bg-red-500/10 border-red-500/50 text-red-700 dark:text-red-300"
+                }
+              >
+                <div className="flex items-start gap-3">
+                  {result.success ? (
+                    <CheckCircle className="h-5 w-5 shrink-0" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 shrink-0" />
+                  )}
+                  <div>
+                    <AlertTitle className="font-bold">{result.success ? "Migration Successful" : "Migration Failed"}</AlertTitle>
+                    <AlertDescription className="text-sm opacity-90">
+                      {result.success ? result.message : result.error}
+                    </AlertDescription>
+                  </div>
                 </div>
-              </div>
-            </Alert>
+              </Alert>
+
+              {!result.success && result.error?.includes("function") && (
+                <div className="bg-amber-500/5 border border-amber-500/20 p-4 rounded-xl space-y-4">
+                  <h4 className="text-sm font-bold text-amber-500 flex items-center gap-2">
+                    <Database className="h-4 w-4" />
+                    Manual Installation Required
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Your Supabase project is missing the utility function to run SQL scripts through the API.
+                  </p>
+                  
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground">Option 1: Execute Migration Directly</p>
+                    <div className="bg-black/40 p-3 rounded border border-white/5 font-mono text-[10px] text-zinc-300 overflow-x-auto whitespace-pre">
+{`ALTER TABLE characters 
+ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}',
+ADD COLUMN IF NOT EXISTS video_url TEXT,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();`}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-2">
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground">Option 2: Install SQL Helper (Enables Automatic Fix)</p>
+                    <div className="bg-black/40 p-3 rounded border border-white/5 font-mono text-[10px] text-zinc-300 overflow-x-auto whitespace-pre">
+{`CREATE OR REPLACE FUNCTION exec_sql(sql text)
+RETURNS void AS $$
+BEGIN
+  EXECUTE sql;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;`}
+                    </div>
+                  </div>
+                  
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Paste either script into your Supabase SQL Editor and click "Run".
+                  </p>
+                </div>
+              )}
+            </div>
           )}
 
           {!result && (

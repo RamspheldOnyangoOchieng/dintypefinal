@@ -182,6 +182,8 @@ export async function POST(request: NextRequest) {
                 share_revenue: true,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
+                images: [], // Initialize with empty array
+                video_url: (characterDetails as any).videoUrl || null,
                 ethnicity: characterDetails.ethnicity || null,
                 relationship: characterDetails.relationship || null,
                 body: characterDetails.bodyType || null,
