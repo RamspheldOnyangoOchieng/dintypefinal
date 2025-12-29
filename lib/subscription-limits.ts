@@ -24,7 +24,7 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
   if (!supabase) throw new Error("Could not initialize admin client");
 
   const { data: subscription } = await supabase
-    .from('user_subscriptions')
+    .from('subscriptions')
     .select('*')
     .eq('user_id', userId)
     .eq('status', 'active')
@@ -83,21 +83,17 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
       return { allowed: true, currentUsage: 0, limit: null };
     }
 
-    // Get today's usage
-    const todayAtMidnight = new Date();
-    todayAtMidnight.setHours(0, 0, 0, 0);
+    // Get today's usage (using simple date string for message_usage_tracking)
+    const today = new Date().toISOString().split('T')[0];
 
     const { data: usage, error: usageError } = await supabase
-      .from('user_usage_tracking')
-      .select('usage_count')
+      .from('message_usage_tracking')
+      .select('message_count')
       .eq('user_id', userId)
-      .eq('usage_type', 'messages')
-      .gt('reset_date', todayAtMidnight.toISOString())
-      .order('reset_date', { ascending: false })
-      .limit(1)
+      .eq('date', today)
       .maybeSingle();
 
-    const currentUsage = usage?.usage_count || 0;
+    const currentUsage = usage?.message_count || 0;
     const allowed = currentUsage < limitNum;
 
     return {
@@ -116,55 +112,40 @@ export async function incrementMessageUsage(userId: string): Promise<void> {
   const supabase = await createAdminClient();
   if (!supabase) return;
 
-  const todayAtMidnight = new Date();
-  todayAtMidnight.setHours(0, 0, 0, 0);
+  const today = new Date().toISOString().split('T')[0];
 
-  const tomorrowAtMidnight = new Date(todayAtMidnight);
-  tomorrowAtMidnight.setDate(tomorrowAtMidnight.getDate() + 1);
+  // Use RPC or a simple upsert logic for message_usage_tracking
+  const { error } = await supabase.rpc('increment_message_usage_simple', { p_user_id: userId });
 
-  // Find current record regardless of date to handle the UNIQUE constraint
-  const { data: existing } = await supabase
-    .from('user_usage_tracking')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('usage_type', 'messages')
-    .maybeSingle();
+  if (error) {
+    // Fallback if RPC doesn't exist
+    const { data: existing } = await supabase
+      .from('message_usage_tracking')
+      .select('message_count')
+      .eq('user_id', userId)
+      .eq('date', today)
+      .maybeSingle();
 
-  if (existing) {
-    const isOldRecord = new Date(existing.reset_date) <= todayAtMidnight;
-
-    if (isOldRecord) {
-      // Reset for new day
+    if (existing) {
       await supabase
-        .from('user_usage_tracking')
+        .from('message_usage_tracking')
         .update({
-          usage_count: 1,
-          reset_date: tomorrowAtMidnight.toISOString(),
+          message_count: (existing.message_count || 0) + 1,
           updated_at: new Date().toISOString()
         })
-        .eq('id', existing.id);
+        .eq('user_id', userId)
+        .eq('date', today);
     } else {
-      // Increment for today
       await supabase
-        .from('user_usage_tracking')
-        .update({
-          usage_count: (existing.usage_count || 0) + 1,
+        .from('message_usage_tracking')
+        .insert({
+          user_id: userId,
+          date: today,
+          message_count: 1,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        })
-        .eq('id', existing.id);
+        });
     }
-  } else {
-    // Brand new record
-    await supabase
-      .from('user_usage_tracking')
-      .insert({
-        user_id: userId,
-        usage_type: 'messages',
-        usage_count: 1,
-        reset_date: tomorrowAtMidnight.toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
   }
 }
 

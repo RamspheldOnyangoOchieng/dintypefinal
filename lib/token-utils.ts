@@ -52,7 +52,7 @@ export async function deductTokens(userId: string, amount: number, description: 
 
     // Check premium status
     const { data: subscription } = await supabaseAdmin
-      .from('user_subscriptions')
+      .from('subscriptions')
       .select('plan_type, status, current_period_end')
       .eq('user_id', userId)
       .eq('status', 'active')
