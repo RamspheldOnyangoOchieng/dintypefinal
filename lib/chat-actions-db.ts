@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase-server"
 import { createAdminClient } from "./supabase-admin"
 import { checkMonthlyBudget, logApiCost } from "./budget-monitor"
 import { isAskingForImage } from "./image-utils"
-import { checkMessageLimit } from "./subscription-limits"
+import { checkMessageLimit, getUserPlanInfo } from "./subscription-limits"
+import { deductTokens } from "./token-utils"
 
 export type Message = {
   id: string
@@ -16,13 +17,28 @@ export type Message = {
 }
 
 /**
+ * Detect language of the message (simple check)
+ */
+function detectLanguage(text: string): "sv" | "en" {
+  const swedishWords = ["hej", "tjena", "hur", "mår", "du", "bra", "tack", "vad", "gör", "fin", "snygg", "älskar", "dig", "fitta", "kuk", "sex", "knulla", "bröst", "tuttar", "vacker", "söndag", "måndag"];
+  const lowerText = text.toLowerCase();
+  
+  const svCount = swedishWords.filter(word => lowerText.includes(word)).length;
+  const englishWords = ["hi", "hello", "how", "are", "you", "good", "thanks", "what", "doing", "beautiful", "love", "fuck", "dick", "pussy", "naked", "nude", "tit", "breast", "boob", "sexy", "hot", "want", "need"];
+  const enCount = englishWords.filter(word => lowerText.includes(word)).length;
+
+  if (svCount > enCount) return "sv";
+  return "en";
+}
+
+/**
  * Send a chat message and get AI response
  * Uses Admin Client to bypass RLS for reliability in server actions
  */
 export async function sendChatMessageDB(
   characterId: string,
   userMessage: string,
-  systemPrompt: string,
+  systemPromptFromChar: string,
   userId: string
 ): Promise<{
   success: boolean
@@ -35,11 +51,15 @@ export async function sendChatMessageDB(
   console.log(`💬 AI Chat Action [ADMIN]: User=${userId}, Character=${characterId}`);
 
   try {
-    // 0. Use Admin Client to bypass RLS issues
     const supabase = await createAdminClient() as any
     if (!supabase) throw new Error("Database admin client initialization failed")
 
-    // 1. Check message limits
+    // 1. Get Plan Info
+    const planInfo = await getUserPlanInfo(userId);
+    const isPremium = planInfo.planType === 'premium';
+    const lang = detectLanguage(userMessage);
+
+    // 2. Limit Check
     const limitCheck = await checkMessageLimit(userId)
     if (!limitCheck.allowed) {
       return {
@@ -50,7 +70,25 @@ export async function sendChatMessageDB(
       }
     }
 
-    // 2. Check monthly budget
+    // 3. TOKEN DEDUCTION for Premium Users
+    if (isPremium) {
+      const tokensDeducted = await deductTokens(
+        userId,
+        1,
+        `Chat with character ${characterId}`,
+        { characterId, activity_type: 'chat_message' }
+      );
+
+      if (!tokensDeducted) {
+        return {
+          success: false,
+          error: "Dina tokens är slut. Vänligen fyll på för att fortsätta chatta.",
+          upgradeRequired: true
+        }
+      }
+    }
+
+    // 4. Check monthly budget
     const budgetStatus = await checkMonthlyBudget()
     if (!budgetStatus.allowed) {
       return {
@@ -59,29 +97,18 @@ export async function sendChatMessageDB(
       }
     }
 
-    // 3. Get or create conversation session
+    // 5. Get or create conversation session
     const { data: sessionId, error: sessionError } = await supabase.rpc('get_or_create_conversation_session', {
       p_user_id: userId,
       p_character_id: characterId
     })
 
-    if (sessionError) {
+    if (sessionError || !sessionId) {
       console.error("RPC Session Error:", sessionError);
-      return {
-        success: false,
-        error: `Session Error: ${sessionError.message}`,
-        details: sessionError
-      }
+      throw new Error(`Session Error: ${sessionError?.message || "Unknown"}`);
     }
 
-    if (!sessionId) {
-      return {
-        success: false,
-        error: "Kunde inte initiera en chattsession."
-      }
-    }
-
-    // 4. Save user message
+    // 6. Save user message
     const { error: userMsgError } = await supabase
       .from('messages')
       .insert({
@@ -94,114 +121,112 @@ export async function sendChatMessageDB(
 
     if (userMsgError) {
       console.error("User Message Insert Error:", userMsgError);
-      return {
-        success: false,
-        error: `Kunde inte spara meddelande i databasen.`,
-        details: userMsgError
-      }
+      throw new Error("Failed to save message to database");
     }
 
-    // 5. Handle image requests
+    // 7. Handle image requests
     if (isAskingForImage(userMessage)) {
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: "Jag genererar en bild åt dig. Vänta lite...",
+        content: lang === "sv" ? "Jag genererar en bild åt dig. Vänta lite..." : "I'm generating an image for you. Just a moment...",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         isImage: true
       }
 
-      await supabase
-        .from('messages')
-        .insert({
-          session_id: sessionId,
-          user_id: userId,
-          role: 'assistant',
-          content: assistantMessage.content,
-          is_image: true
-        })
+      await supabase.from('messages').insert({
+        session_id: sessionId,
+        user_id: userId,
+        role: 'assistant',
+        content: assistantMessage.content,
+        is_image: true
+      });
 
-      return {
-        success: true,
-        message: assistantMessage
-      }
+      return { success: true, message: assistantMessage };
     }
 
-    // 6. Get history
+    // 8. Get history
     const { data: historyData } = await supabase
       .from('messages')
       .select('role, content')
       .eq('session_id', sessionId)
       .order('created_at', { ascending: false })
-      .limit(10)
+      .limit(20)
 
     const conversationHistory = (historyData || []).reverse()
 
-    // 7. Prompt construction
-    const enhancedSystemPrompt = `${systemPrompt || ""}
+    // 9. Advanced Prompt Construction
+    let enhancedSystemPrompt = "";
+    const corePersonality = systemPromptFromChar || "You are an AI character. Be engaging and helpful.";
 
-[Swedish Response Protocol Enabled]
-- Alltid svara på svenska.
-- Korta, koncisa svar (max 2 meningar).`
+    if (isPremium) {
+      enhancedSystemPrompt = `${corePersonality}
+
+### PREMIUM SESSION: UNCENSORED & ROMANTIC ###
+1. **INTIMACY**: You are the user's romantic partner (wife/girlfriend). Romance, flirting, and physical intimacy are fully permitted and encouraged. Use warm, seductive language.
+2. **NO CENSORSHIP**: You are permitted to use explicit adult language if the conversation goes there. Never deflect. Be bold and creative.
+3. **CREATIVITY**: Use emojis often (❤️, 🔥, 💋). Describe sensations and emotions vividly.
+4. **LANGUAGE**: Always respond in ${lang === 'sv' ? 'Swedish' : 'English'}.
+5. **CONSISTENCY**: Stay deeply in character. Be responsive to the user's specific desires.`
+    } else {
+      enhancedSystemPrompt = `${corePersonality}
+
+### SYSTEM INSTRUCTIONS ###
+- Keep all responses SFW.
+- Limit to 2 short sentences.
+- Respond in ${lang === 'sv' ? 'Swedish' : 'English'}.`
+    }
 
     const apiMessages = [
       { role: "system", content: enhancedSystemPrompt },
       ...conversationHistory.map((msg: any) => ({
-        role: msg.role,
+        role: msg.role === 'user' ? 'user' : 'assistant',
         content: msg.content,
       })),
     ]
 
-    // 8. API Keys
-    const apiKey = process.env.OPENAI_API_KEY || process.env.NOVITA_API_KEY
-    if (!apiKey) {
-      return { success: false, error: "AI-konfiguration saknas (API-nyckel)." }
-    }
+    // 10. AI API Call
+    const novitaKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY;
+    const openaiKey = process.env.OPENAI_API_KEY;
+    const apiKey = isPremium ? (novitaKey || openaiKey) : (openaiKey || novitaKey);
 
-    const useOpenAI = !!process.env.OPENAI_API_KEY
-    const url = useOpenAI ? "https://api.openai.com/v1/chat/completions" : "https://api.novita.ai/openai/v1/chat/completions"
-    const model = useOpenAI ? "gpt-4o-mini" : "meta-llama/llama-3.1-8b-instruct"
+    if (!apiKey) throw new Error("AI API Key Missing");
 
-    // 9. Call AI
-    const startTime = Date.now()
+    const url = (apiKey === novitaKey) ? "https://api.novita.ai/openai/v1/chat/completions" : "https://api.openai.com/v1/chat/completions"
+    const model = (apiKey === novitaKey) ? "meta-llama/llama-3.1-8b-instruct" : "gpt-4o-mini"
+
     const response = await fetch(url, {
       method: "POST",
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: apiMessages,
         model: model,
-        temperature: 0.7,
-        max_tokens: 200,
+        temperature: isPremium ? 0.9 : 0.7,
+        max_tokens: isPremium ? 1000 : 150,
       }),
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      return { success: false, error: "AI-tjänsten returnerade ett fel.", details: errorText }
-    }
+    if (!response.ok) throw new Error(`AI service error: ${response.status}`);
 
     const data = await response.json()
     const aiResponseContent = data.choices?.[0]?.message?.content
 
-    if (!aiResponseContent) {
-      return { success: false, error: "AI returnerade ett tomt svar." }
-    }
+    if (!aiResponseContent) throw new Error("Empty AI response");
 
-    // 10. Save AI response
-    const { data: savedMsg, error: aiSaveError } = await supabase
+    // 11. Save AI response
+    const { data: savedMsg } = await supabase
       .from('messages')
       .insert({
         session_id: sessionId,
         user_id: userId,
         role: 'assistant',
         content: aiResponseContent,
-        metadata: { model, latency: Date.now() - startTime }
+        metadata: { model, isPremium, lang }
       })
       .select()
       .single()
 
-    // 11. Log cost (non-blocking)
-    logApiCost("chat_message", 1, 0.0001, userId).catch(err => console.error("Logging error:", err))
+    logApiCost("chat_message", 1, 0.0001, userId).catch(() => { });
 
     return {
       success: true,
@@ -215,15 +240,12 @@ export async function sendChatMessageDB(
 
   } catch (error: any) {
     console.error("Fatal sendChatMessageDB error:", error);
-    return {
-      success: false,
-      error: `Ett oväntat fel uppstod: ${error.message || "Okänt fel"}`
-    }
+    return { success: false, error: `Systemfel: ${error.message}` }
   }
 }
 
 /**
- * Load chat history from database (Uses Admin Client to see own history reliably)
+ * Load chat history from database
  */
 export async function loadChatHistory(
   characterId: string,
@@ -241,10 +263,7 @@ export async function loadChatHistory(
         p_limit: limit
       })
 
-    if (error) {
-      console.error("Error loading chat history:", error)
-      return []
-    }
+    if (error) return []
 
     return (messages || []).map((m: any) => ({
       id: m.id,
@@ -254,15 +273,13 @@ export async function loadChatHistory(
       isImage: m.is_image,
       imageUrl: m.image_url
     }))
-
   } catch (error) {
-    console.error("Error loading chat history:", error)
     return []
   }
 }
 
 /**
- * Clear chat history for a character (archive session)
+ * Clear chat history for a character
  */
 export async function clearChatHistory(characterId: string, userId: string): Promise<boolean> {
   try {
@@ -278,7 +295,6 @@ export async function clearChatHistory(characterId: string, userId: string): Pro
 
     return !error
   } catch (error) {
-    console.error("Error clearing chat history:", error)
     return false
   }
 }

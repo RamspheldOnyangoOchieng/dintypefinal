@@ -44,6 +44,20 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
     }
   }
 
+  // SECONDARY CHECK: Check public.premium_profiles which seems to be used for pro users
+  if (planType === 'free') {
+    const { data: premiumProfile } = await supabase
+      .from('premium_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .filter('expires_at', 'gt', 'now()')
+      .maybeSingle();
+
+    if (premiumProfile) {
+      planType = 'premium';
+    }
+  }
+
   // Get all restrictions for this plan
   const { data: restrictions } = await supabase
     .from('plan_restrictions')
@@ -56,7 +70,7 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
   });
 
   return {
-    planType,
+    planType: planType as 'free' | 'premium',
     status: subscription?.status || 'active',
     currentPeriodEnd: subscription?.current_period_end,
     restrictions: restrictionsMap
@@ -68,7 +82,7 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
   console.log('🔍 Checking message limit for user:', userId);
 
   try {
-    // ADMIN BYPASS: Admins have unlimited messages
+    // 1. ADMIN BYPASS
     const adminPrivileges = await getAdminPrivileges(userId);
     if (adminPrivileges.isAdmin || adminPrivileges.canBypassMessageLimits) {
       return { allowed: true, currentUsage: 0, limit: null };
@@ -77,7 +91,12 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
     const supabase = await createAdminClient();
     if (!supabase) return { allowed: true, currentUsage: 0, limit: null };
 
+    // 2. PREMIUM CHECK: Premium users have NO daily message limits (they pay per token or have a large quota)
     const planInfo = await getUserPlanInfo(userId);
+    if (planInfo.planType === 'premium') {
+      return { allowed: true, currentUsage: 0, limit: null };
+    }
+
     let limit = planInfo?.restrictions?.daily_free_messages || planInfo?.restrictions?.daily_message_limit;
 
     // Default to 3 messages for free plan if not set

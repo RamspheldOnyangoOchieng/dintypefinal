@@ -232,7 +232,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         if (error) throw error;
 
         // Type guard using explicit casting if needed, though with select('*') and schema it should be fine.
-        // If data is implicitly 'never' due to types, we can cast it to 'any' for now to match the existing 'any' usage in the component
         const typedData = data as any;
 
         if (typedData) {
@@ -916,17 +915,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         return;
       }
 
-      // Check for NSFW content if the user is on the free plan
-      if (!user?.isPremium && !user?.isAdmin) {
-        if (containsNSFW(inputValue)) {
-          setPremiumModalFeature("Exklusiva Konversationer")
-          setPremiumModalDescription("Lås upp ocensurerat och intimt innehåll med Premium! 🔥")
-          setPremiumModalMode('upgrade')
-          setIsPremiumModalOpen(true)
-          setInputValue("")
-          return
-        }
-      }
+      // Note: NSFW check and message limits are now handled server-side within sendChatMessageDB
+      // based on the user's real-time plan status from the database.
 
       // Create new user message
       const newMessage: Message = {
@@ -966,15 +956,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         const aiResponse = await sendChatMessageDB(
           character.id,
           newMessage.content,
-          character.systemPrompt,
+          character.system_prompt || character.systemPrompt || "",
           user.id
         )
 
         if (!aiResponse.success) {
-          if (aiResponse.limitReached) {
-            setPremiumModalFeature("Meddelandegräns")
-            setPremiumModalDescription(aiResponse.error || "Dagligen meddelandegräns uppnådd. Uppgradera till premium för att fortsätta chatta obegränsat.")
-            setPremiumModalMode('message-limit')
+          if (aiResponse.limitReached || aiResponse.upgradeRequired) {
+            setPremiumModalFeature(aiResponse.limitReached ? "Meddelandegräns" : "Token-saldo")
+            setPremiumModalDescription(aiResponse.error || "Uppgradera till premium för att fortsätta.")
+            setPremiumModalMode(aiResponse.limitReached ? 'message-limit' : 'upgrade')
             setIsPremiumModalOpen(true)
           } else {
             toast.error(aiResponse.error || "Failed to get AI response")
