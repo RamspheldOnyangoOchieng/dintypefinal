@@ -49,6 +49,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [characterId, setCharacterId] = useState<string | null>(null);
   const { characters, isLoading: charactersLoading, updateCharacter, refreshCharacters } = useCharacters();
   const [character, setCharacter] = useState<any>(null);
+  const [isDirectFetching, setIsDirectFetching] = useState(false);
 
   // Handle params unwrapping for Next.js 15
   useEffect(() => {
@@ -182,7 +183,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       const foundInContext = characters.find((char) => char.id === charId);
       if (foundInContext) {
         console.log("✅ Found character in context:", foundInContext.name);
-        if (isMounted) setCharacter(foundInContext);
+        if (isMounted) {
+          setCharacter(foundInContext);
+          setIsDirectFetching(false);
+        }
         return;
       }
 
@@ -193,7 +197,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           try {
             const customChar = JSON.parse(customCharacterData);
             console.log("✅ Loaded custom character from localStorage:", customChar.name);
-            if (isMounted) setCharacter(customChar);
+            if (isMounted) {
+              setCharacter(customChar);
+              setIsDirectFetching(false);
+            }
             return;
           } catch (error) {
             console.error("❌ Error parsing custom character:", error);
@@ -203,6 +210,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
       // 3. Fallback: Direct database fetch
       console.log("🔎 Character not in context, trying direct fetch...");
+      if (isMounted) setIsDirectFetching(true);
       try {
         const supabase = createClient();
         const { data, error } = await supabase
@@ -214,10 +222,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         if (error) throw error;
 
         if (data) {
-          // Use the snakeToCamel helper logic (simplified here or we can just use the data)
           const char = {
             ...data,
-            // Map snake_case to camelCase for the component
             isNew: data.is_new,
             createdAt: data.created_at,
             systemPrompt: data.system_prompt || data.systemPrompt,
@@ -232,6 +238,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         }
       } catch (err) {
         console.error("❌ Error fetching character directly:", err);
+      } finally {
+        if (isMounted) setIsDirectFetching(false);
       }
     }
 
@@ -1025,7 +1033,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   // Show loading while unwrapping params or loading characters
   const isActuallyMounted = isMounted && characterId !== null;
 
-  if (!isActuallyMounted || (charactersLoading && !character)) {
+  if (!isActuallyMounted || charactersLoading || (isDirectFetching && !character)) {
     return (
       <div className="flex items-center justify-center h-screen bg-background" key="loading-screen">
         <div className="flex flex-col items-center gap-4">
@@ -1037,7 +1045,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   }
 
   // Show "not found" if loading finished and no character exists
-  if (!character && !charactersLoading) {
+  if (!character && !charactersLoading && !isDirectFetching) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-background p-4 text-center">
         <div className="bg-card p-8 rounded-2xl shadow-xl max-w-md w-full border border-border">
