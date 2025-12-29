@@ -1,8 +1,10 @@
 "use server"
 
 import { createClient } from "@/lib/supabase-server"
+import { createAdminClient } from "./supabase-admin"
 import { checkMonthlyBudget, logApiCost } from "./budget-monitor"
 import { isAskingForImage } from "./image-utils"
+import { checkMessageLimit } from "./subscription-limits"
 
 export type Message = {
   id: string
@@ -15,7 +17,7 @@ export type Message = {
 
 /**
  * Send a chat message and get AI response
- * Now with database persistence!
+ * Uses Admin Client to bypass RLS for reliability in server actions
  */
 export async function sendChatMessageDB(
   characterId: string,
@@ -26,88 +28,82 @@ export async function sendChatMessageDB(
   success: boolean
   message?: Message
   error?: string
+  details?: any
   limitReached?: boolean
   upgradeRequired?: boolean
 }> {
+  console.log(`💬 AI Chat Action [ADMIN]: User=${userId}, Character=${characterId}`);
+
   try {
-    const supabase = await createClient()
+    // 0. Use Admin Client to bypass RLS issues
+    const supabase = await createAdminClient() as any
+    if (!supabase) throw new Error("Database admin client initialization failed")
 
-    // Check if user has premium
-    const { data: premiumProfile } = await supabase
-      .from('premium_profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .gte('expires_at', new Date().toISOString())
-      .single()
-
-    const isPremium = !!premiumProfile
-    const messageLimit = isPremium ? 999999 : 100
-
-    // Get today's message count
-    const { data: usageData } = await supabase
-      .from('message_usage_tracking')
-      .select('message_count')
-      .eq('user_id', userId)
-      .eq('date', new Date().toISOString().split('T')[0])
-      .maybeSingle()
-
-    const currentUsage = (usageData as any)?.message_count || 0
-
-    // Check if limit exceeded
-    if (currentUsage >= messageLimit) {
+    // 1. Check message limits
+    const limitCheck = await checkMessageLimit(userId)
+    if (!limitCheck.allowed) {
       return {
         success: false,
-        error: isPremium
-          ? "Daily message limit reached. Please try again tomorrow."
-          : "You've reached your daily message limit (100 messages). Upgrade to premium for unlimited messages!",
+        error: limitCheck.message || "Du har nått din dagliga meddelandegräns.",
         limitReached: true,
-        upgradeRequired: !isPremium
+        upgradeRequired: true
       }
     }
 
-    // Check monthly budget before processing
+    // 2. Check monthly budget
     const budgetStatus = await checkMonthlyBudget()
     if (!budgetStatus.allowed) {
       return {
         success: false,
-        error: "Tjänsten är tillfälligt otillgänglig på grund av budgetgränser. Vänligen kontakta admin."
+        error: "Budgetgräns uppnådd. Kontakta administratören."
       }
     }
 
-    // Save user message to database first
-    const userMessageResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        characterId,
-        content: userMessage,
-        role: 'user',
-        isImage: false
-      })
+    // 3. Get or create conversation session
+    const { data: sessionId, error: sessionError } = await supabase.rpc('get_or_create_conversation_session', {
+      p_user_id: userId,
+      p_character_id: characterId
     })
 
-    if (!userMessageResponse.ok) {
-      const errorData = await userMessageResponse.json()
-      if (userMessageResponse.status === 429) {
-        return {
-          success: false,
-          error: errorData.error || "Message limit reached",
-          limitReached: true,
-          upgradeRequired: errorData.details?.upgradeRequired || false
-        }
+    if (sessionError) {
+      console.error("RPC Session Error:", sessionError);
+      return {
+        success: false,
+        error: `Session Error: ${sessionError.message}`,
+        details: sessionError
       }
-      throw new Error(errorData.error || "Failed to save user message")
     }
 
-    const userMessageData = await userMessageResponse.json()
+    if (!sessionId) {
+      return {
+        success: false,
+        error: "Kunde inte initiera en chattsession."
+      }
+    }
 
-    // Check if user is asking for an image
+    // 4. Save user message
+    const { error: userMsgError } = await supabase
+      .from('messages')
+      .insert({
+        session_id: sessionId,
+        user_id: userId,
+        role: 'user',
+        content: userMessage,
+        is_image: false
+      })
+
+    if (userMsgError) {
+      console.error("User Message Insert Error:", userMsgError);
+      return {
+        success: false,
+        error: `Kunde inte spara meddelande i databasen.`,
+        details: userMsgError
+      }
+    }
+
+    // 5. Handle image requests
     if (isAskingForImage(userMessage)) {
-      // Return placeholder response for image generation
-      const placeholderMessage: Message = {
+      const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
         content: "Jag genererar en bild åt dig. Vänta lite...",
@@ -115,215 +111,149 @@ export async function sendChatMessageDB(
         isImage: true
       }
 
-      // Save placeholder to database
-      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          characterId,
-          content: placeholderMessage.content,
+      await supabase
+        .from('messages')
+        .insert({
+          session_id: sessionId,
+          user_id: userId,
           role: 'assistant',
-          isImage: true
+          content: assistantMessage.content,
+          is_image: true
         })
-      })
 
       return {
         success: true,
-        message: placeholderMessage
+        message: assistantMessage
       }
     }
 
-    // Get conversation history from database
-    const historyResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/messages?characterId=${characterId}&limit=10`
-    )
+    // 6. Get history
+    const { data: historyData } = await supabase
+      .from('messages')
+      .select('role, content')
+      .eq('session_id', sessionId)
+      .order('created_at', { ascending: false })
+      .limit(10)
 
-    let conversationHistory: Message[] = []
-    if (historyResponse.ok) {
-      const historyData = await historyResponse.json()
-      conversationHistory = historyData.messages || []
-    }
+    const conversationHistory = (historyData || []).reverse()
 
-    // Enhance system prompt with Swedish language instructions
-    const enhancedSystemPrompt = `${systemPrompt}
+    // 7. Prompt construction
+    const enhancedSystemPrompt = `${systemPrompt || ""}
 
-VIKTIGT - SPRÅKINSTRUKTIONER:
-- Du MÅSTE alltid svara på svenska
-- Använd naturlig, vardaglig svenska
-- Anpassa dig till svensk kultur och kontext
-- Om någon skriver på engelska, svara ändå på svenska
-- Var vänlig och personlig i din ton
-- Använd svenska uttryck och ordföljd
-- HÅLL SVAREN KORTA - max 1-2 meningar per svar
-- Var koncis och gå rakt på sak
+[Swedish Response Protocol Enabled]
+- Alltid svara på svenska.
+- Korta, koncisa svar (max 2 meningar).`
 
-Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren korta.`
-
-    // Format messages for the API
     const apiMessages = [
       { role: "system", content: enhancedSystemPrompt },
-      ...conversationHistory.slice(-10).map((msg) => ({
+      ...conversationHistory.map((msg: any) => ({
         role: msg.role,
         content: msg.content,
       })),
     ]
 
-    // PRIORITY: Use OPENAI_API_KEY from .env first, then fallback to NOVITA
-    const openaiApiKey = process.env.OPENAI_API_KEY
-    const novitaApiKey = process.env.NOVITA_API_KEY || process.env.NEXT_PUBLIC_NOVITA_API_KEY
-
-    const useOpenAI = !!openaiApiKey
-    let apiKey = openaiApiKey || novitaApiKey
-
+    // 8. API Keys
+    const apiKey = process.env.OPENAI_API_KEY || process.env.NOVITA_API_KEY
     if (!apiKey) {
-      return {
-        success: false,
-        error: "No API key configured - please set OPENAI_API_KEY or NOVITA_API_KEY in .env"
-      }
+      return { success: false, error: "AI-konfiguration saknas (API-nyckel)." }
     }
 
-    console.log("Chat DB API Configuration:", {
-      usingOpenAI: useOpenAI,
-      apiKeyPresent: !!apiKey
-    })
+    const useOpenAI = !!process.env.OPENAI_API_KEY
+    const url = useOpenAI ? "https://api.openai.com/v1/chat/completions" : "https://api.novita.ai/openai/v1/chat/completions"
+    const model = useOpenAI ? "gpt-4o-mini" : "meta-llama/llama-3.1-8b-instruct"
 
+    // 9. Call AI
     const startTime = Date.now()
-
-    let response: Response
-    let modelUsed: string
-
-    if (useOpenAI) {
-      // Use OpenAI API
-      const openaiRequestBody = {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
         messages: apiMessages,
-        model: "gpt-4o-mini",
+        model: model,
         temperature: 0.7,
-        max_tokens: 150,
-      }
-
-      response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(openaiRequestBody),
-      })
-      modelUsed = "gpt-4o-mini"
-    } else {
-      // Use Novita API (fallback)
-      const novitaRequestBody = {
-        messages: apiMessages,
-        model: "meta-llama/llama-3.1-8b-instruct",
-        temperature: 0.7,
-        max_tokens: 800,
-      }
-
-      response = await fetch("https://api.novita.ai/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(novitaRequestBody),
-      })
-      modelUsed = "meta-llama/llama-3.1-8b-instruct"
-    }
+        max_tokens: 200,
+      }),
+    })
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`${useOpenAI ? 'OpenAI' : 'Novita'} API error:`, errorText)
-      return {
-        success: false,
-        error: "Failed to generate AI response"
-      }
+      return { success: false, error: "AI-tjänsten returnerade ett fel.", details: errorText }
     }
 
     const data = await response.json()
-    const aiResponse = data.choices?.[0]?.message?.content
+    const aiResponseContent = data.choices?.[0]?.message?.content
 
-    if (!aiResponse) {
-      return {
-        success: false,
-        error: "No response from AI"
-      }
+    if (!aiResponseContent) {
+      return { success: false, error: "AI returnerade ett tomt svar." }
     }
 
-    const apiLatency = Date.now() - startTime
-
-    // Save AI response to database
-    const aiMessageResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        characterId,
-        content: aiResponse,
+    // 10. Save AI response
+    const { data: savedMsg, error: aiSaveError } = await supabase
+      .from('messages')
+      .insert({
+        session_id: sessionId,
+        user_id: userId,
         role: 'assistant',
-        isImage: false,
-        metadata: {
-          model: modelUsed,
-          api_latency_ms: apiLatency,
-          tokens_estimated: Math.ceil(aiResponse.length / 4) // Rough estimate
-        }
+        content: aiResponseContent,
+        metadata: { model, latency: Date.now() - startTime }
       })
-    })
+      .select()
+      .single()
 
-    if (!aiMessageResponse.ok) {
-      console.error("Failed to save AI response to database")
-    }
-
-    // Log API cost
-    await logApiCost(
-      "chat_message",
-      1, // Token cost (estimated)
-      useOpenAI ? 0.00015 : 0.0001, // API cost (estimated - OpenAI is slightly more expensive)
-      userId
-    )
-
-    const aiMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      content: aiResponse,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    }
+    // 11. Log cost (non-blocking)
+    logApiCost("chat_message", 1, 0.0001, userId).catch(err => console.error("Logging error:", err))
 
     return {
       success: true,
-      message: aiMessage
+      message: {
+        id: savedMsg?.id || crypto.randomUUID(),
+        role: "assistant",
+        content: aiResponseContent,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      }
     }
 
   } catch (error: any) {
-    console.error("Error in sendChatMessageDB:", error)
+    console.error("Fatal sendChatMessageDB error:", error);
     return {
       success: false,
-      error: error.message || "Failed to send message"
+      error: `Ett oväntat fel uppstod: ${error.message || "Okänt fel"}`
     }
   }
 }
 
 /**
- * Load chat history from database
+ * Load chat history from database (Uses Admin Client to see own history reliably)
  */
 export async function loadChatHistory(
   characterId: string,
+  userId: string,
   limit: number = 50
 ): Promise<Message[]> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/messages?characterId=${characterId}&limit=${limit}`
-    )
+    const supabase = await createAdminClient() as any
+    if (!supabase) return []
 
-    if (!response.ok) {
-      console.error("Failed to load chat history")
+    const { data: messages, error } = await supabase
+      .rpc('get_conversation_history', {
+        p_user_id: userId,
+        p_character_id: characterId,
+        p_limit: limit
+      })
+
+    if (error) {
+      console.error("Error loading chat history:", error)
       return []
     }
 
-    const data = await response.json()
-    return data.messages || []
+    return (messages || []).map((m: any) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      isImage: m.is_image,
+      imageUrl: m.image_url
+    }))
 
   } catch (error) {
     console.error("Error loading chat history:", error)
@@ -332,19 +262,21 @@ export async function loadChatHistory(
 }
 
 /**
- * Clear chat history for a character
+ * Clear chat history for a character (archive session)
  */
-export async function clearChatHistory(characterId: string): Promise<boolean> {
+export async function clearChatHistory(characterId: string, userId: string): Promise<boolean> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/messages?characterId=${characterId}`,
-      {
-        method: 'DELETE'
-      }
-    )
+    const supabase = await createAdminClient() as any
+    if (!supabase) return false
 
-    return response.ok
+    const { error } = await supabase
+      .from('conversation_sessions')
+      .update({ is_archived: true, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('character_id', characterId)
+      .eq('is_archived', false)
 
+    return !error
   } catch (error) {
     console.error("Error clearing chat history:", error)
     return false

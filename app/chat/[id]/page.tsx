@@ -29,7 +29,7 @@ import { checkNovitaApiKey } from "@/lib/api-key-utils"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-context"
 import { useAuthModal } from "@/components/auth-modal-context"
-import { sendChatMessageDB, loadChatHistory as loadChatHistoryDB, type Message as DBMessage } from "@/lib/chat-actions-db"
+import { sendChatMessageDB, loadChatHistory as loadChatHistoryDB, clearChatHistory as clearChatHistoryDB, type Message as DBMessage } from "@/lib/chat-actions-db"
 import { ClearChatDialog } from "@/components/clear-chat-dialog"
 import { checkMessageLimit, incrementMessageUsage, getUserPlanInfo } from "@/lib/subscription-limits"
 import { DebugPanel } from "@/components/debug-panel"
@@ -488,7 +488,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     } finally {
       setIsLoadingHistory(false)
     }
-  }, [character, characterId, isMounted])
+  }, [character, characterId, isMounted, user])
 
   // Effect to load chat history when component mounts or character changes
   useEffect(() => {
@@ -956,6 +956,13 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         // 3. Send to AI (which also saves to DB)
         setDebugInfo((prev) => ({ ...prev, lastAction: "sendingToAI" }))
 
+        if (!user?.id) {
+          toast.error("Vänligen logga in för att fortsätta chatta.")
+          openLoginModal()
+          setIsSendingMessage(false)
+          return
+        }
+
         const aiResponse = await sendChatMessageDB(
           character.id,
           newMessage.content,
@@ -1011,13 +1018,18 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     setDebugInfo((prev) => ({ ...prev, lastAction: "clearingChat" }))
 
     try {
-      const success = clearChatHistoryFromLocalStorage(character.id)
+      // 1. Clear local storage
+      const localSuccess = clearChatHistoryFromLocalStorage(character.id)
+
+      // 2. Clear database history (archive session)
+      const dbSuccess = user?.id ? await clearChatHistoryDB(character.id, user.id) : false
+
       setDebugInfo((prev) => ({
         ...prev,
-        lastAction: success ? "chatCleared" : "chatClearFailed",
+        lastAction: (localSuccess || dbSuccess) ? "chatCleared" : "chatClearFailed",
       }))
 
-      if (success) {
+      if (localSuccess || dbSuccess) {
         // Set default welcome message after clearing
         const welcomeMessage: Message = {
           id: `welcome-${characterId}-${Date.now()}`,
@@ -1027,9 +1039,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         }
 
         setMessages([welcomeMessage])
-
-        // Save welcome message to localStorage
         saveMessageToLocalStorage(characterId!, welcomeMessage)
+        toast.success("Chatthistoriken har rensats.")
       }
     } catch (error) {
       console.error("Error clearing chat:", error)
