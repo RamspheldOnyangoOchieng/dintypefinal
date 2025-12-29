@@ -445,44 +445,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-        const authUser = result.data.user
-        if (authUser) {
-          const adminStatus = await isAdmin(authUser.id)
+      const authUser = await getCurrentUser()
+      if (authUser) {
+        const adminStatus = await isAdmin(authUser.id)
 
-          let isPremium = false
-          let isExpired = false
-          let wasPremium = false
-          let tokenBalance = 0
-          let creditBalance = 0
-          try {
-            // Use the more robust check-premium-status endpoint
-            const premiumResponse = await fetch(`/api/check-premium-status`)
-            if (premiumResponse.ok) {
-              const premiumData = await premiumResponse.json()
-              isPremium = premiumData.isPremium
-              isExpired = premiumData.isExpired
-              wasPremium = premiumData.wasPremium
-              tokenBalance = premiumData.tokenBalance || 0
-              creditBalance = premiumData.creditBalance || 0
-            }
-          } catch (e) {
-            console.error("Failed to check premium status during refresh")
+        let isPremium = false
+        let isExpired = false
+        let wasPremium = false
+        let tokenBalance = 0
+        let creditBalance = 0
+        try {
+          // Use the more robust check-premium-status endpoint
+          const premiumResponse = await fetch(`/api/check-premium-status`)
+          if (premiumResponse.ok) {
+            const premiumData = await premiumResponse.json()
+            isPremium = premiumData.isPremium
+            isExpired = premiumData.isExpired
+            wasPremium = premiumData.wasPremium
+            tokenBalance = premiumData.tokenBalance || 0
+            creditBalance = premiumData.creditBalance || 0
           }
-
-          setUser({
-            id: authUser.id,
-            username: authUser.user_metadata?.username || authUser.email?.split("@")[0] || "User",
-            email: authUser.email || "",
-            isAdmin: adminStatus,
-            isPremium: isPremium,
-            isExpired: isExpired,
-            wasPremium: wasPremium,
-            tokenBalance: tokenBalance,
-            creditBalance: creditBalance,
-            createdAt: authUser.created_at || new Date().toISOString(),
-            avatar: authUser.user_metadata?.avatar_url,
-          })
+        } catch (e) {
+          console.error("Failed to check premium status during refresh")
         }
+
+        setUser({
+          id: authUser.id,
+          username: authUser.user_metadata?.username || authUser.email?.split("@")[0] || "User",
+          email: authUser.email || "",
+          isAdmin: adminStatus,
+          isPremium: isPremium,
+          isExpired: isExpired,
+          wasPremium: wasPremium,
+          tokenBalance: tokenBalance,
+          creditBalance: creditBalance,
+          createdAt: authUser.created_at || new Date().toISOString(),
+          avatar: authUser.user_metadata?.avatar_url,
+        })
+      }
     } catch (error) {
       console.error("Error refreshing user:", error)
     }
