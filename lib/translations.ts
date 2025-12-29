@@ -193,6 +193,8 @@ export type TranslationKey =
   | "profile.personality"
   | "chat.searchForProfile"
   | "generate.generate"
+  | "chat.generateQuick"
+  | "chat.generateAdvanced"
   | "general.features"
   | "general.popular"
   | "general.legal"
@@ -463,6 +465,8 @@ export const translations: Record<"en" | "sv", Translations> = {
     "chat.noVideoAvailable": "No video available",
     "chat.profileNotFound": "Character not found",
     "chat.backToConversations": "Back to Conversations",
+    "chat.generateQuick": "Get new selfie",
+    "chat.generateAdvanced": "Custom Character Images",
     "collection.yourImageCollection": "Your Image Collection",
     "collection.noImagesYet": "No images saved yet",
     "collection.noImagesDescription": "Generate some images and save them to see them here!",
@@ -803,6 +807,8 @@ export const translations: Record<"en" | "sv", Translations> = {
     "chat.noVideoAvailable": "Ingen video tillgänglig",
     "chat.profileNotFound": "Karaktären hittades inte",
     "chat.backToConversations": "Tillbaka till konversationer",
+    "chat.generateQuick": "Få ny selfie",
+    "chat.generateAdvanced": "Anpassade karaktärsbilder",
     "collection.yourImageCollection": "Din bildsamling",
     "collection.noImagesYet": "Inga bilder sparade än",
     "collection.noImagesDescription": "Generera några bilder och spara dem för att se dem här!",

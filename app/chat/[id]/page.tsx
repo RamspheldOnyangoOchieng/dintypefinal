@@ -1454,10 +1454,10 @@ return (
               {isGeneratingProfilePhoto ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Genererar...
+                  {t("generate.generating")}
                 </>
               ) : (
-                t("generate.generateImage")
+                t("chat.generateQuick")
               )}
             </Button>
             <Button
@@ -1465,7 +1465,7 @@ return (
               className="w-full bg-[#252525] text-white border-white/10 hover:bg-[#353535] hover:border-primary/50"
               onClick={handleAdvancedGenerate}
             >
-              {t("generate.generate")} fler karaktärsbilder
+              {t("chat.generateAdvanced")}
             </Button>
           </div>
           <h3 className="text-lg font-medium mb-4">{t("chat.aboutMe")}</h3>
