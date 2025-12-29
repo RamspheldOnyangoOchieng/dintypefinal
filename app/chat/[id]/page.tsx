@@ -287,6 +287,29 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   }, [characters, isMounted, messages])
 
   useEffect(() => {
+    if (!isMounted || !user?.id) return
+
+    // Proactively check limits for free users on mount/character change
+    const preCheckLimits = async () => {
+      if (!user.isPremium && !user.isAdmin) {
+        try {
+          const limitCheck = await checkMessageLimit(user.id)
+          if (!limitCheck.allowed) {
+            setPremiumModalFeature("Meddelandegräns")
+            setPremiumModalDescription("Dagligen meddelandegräns uppnådd. Uppgradera till premium för att fortsätta chatta obegränsat.")
+            setPremiumModalMode('message-limit')
+            setIsPremiumModalOpen(true)
+          }
+        } catch (error) {
+          console.error("Fast track limit check failed:", error)
+        }
+      }
+    }
+
+    preCheckLimits()
+  }, [user, characterId, isMounted])
+
+  useEffect(() => {
     if (!isMounted) return
 
     const newLastMessages: Record<string, Message | null> = {}

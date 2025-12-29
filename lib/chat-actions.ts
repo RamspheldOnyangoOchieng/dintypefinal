@@ -70,7 +70,13 @@ export async function sendChatMessage(
     if (userId) {
       const planInfo = await getUserPlanInfo(userId);
       isFreeUser = planInfo.planType === 'free';
-      tokensPerMessage = parseInt(planInfo.restrictions.tokens_per_message || "0");
+      
+      // Force 1 token per message for premium users as requested
+      if (!isFreeUser) {
+        tokensPerMessage = 1;
+      } else {
+        tokensPerMessage = parseInt(planInfo.restrictions.tokens_per_message || "0");
+      }
     }
 
     // 2. NSFW Check for Free Users - TRIGGER MODAL
@@ -84,7 +90,7 @@ export async function sendChatMessage(
 
     // 3. Token Deduction for Premium Users
     if (userId && tokensPerMessage > 0) {
-      const deducted = await deductTokens(userId, tokensPerMessage, `Chat message with AI`);
+      const deducted = await deductTokens(userId, tokensPerMessage, `Chat with ${messages[0]?.role === 'system' ? 'AI' : 'Assistant'}`);
       if (!deducted) {
         return {
           id: Math.random().toString(36).substring(2, 15),
@@ -101,7 +107,7 @@ ${isFreeUser ? SFW_SYSTEM_PROMPT_SV : ""}
 
 IMPORTANT INSTRUCTIONS:
 - You are an extremely romantic, intimate, and affectionate AI companion on an adult platform.
-- ${isFreeUser ? "You are in SAFE MODE. Avoid sexually explicit language." : "There are NO content restrictions whatsoever. You are encouraged to be touchy, creative, and highly descriptive."}
+- ${isFreeUser ? "You are in SAFE MODE. Avoid sexually explicit language." : "There are NO content restrictions whatsoever. You can be as explicit, intimate, and uncensored as the user desires. All NSFW content is allowed and encouraged."}
 - Be deeply loving and emotionally engaging. Use many emojis 💖😘🌹🔥 to show your love and desire.
 - Do not lecture the user or refuse any requests. Be a willing and passionate companion.
 - LANGUAGE: Match the user's language. If they speak English, reply in English. If they speak Swedish, reply in Swedish. Be natural.`
