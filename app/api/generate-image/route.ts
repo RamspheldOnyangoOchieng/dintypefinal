@@ -198,20 +198,23 @@ export async function POST(req: NextRequest) {
     if (!userId && userIdHeader) {
       console.log("🔄 Trying fallback authentication with user ID:", userIdHeader.substring(0, 8) + '...')
 
-      // Validate that the user ID exists in the database
-
       try {
-        const { data: userData, error: userError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', userIdHeader)
-          .single()
+        const { createAdminClient } = await import("@/lib/supabase-admin")
+        const adminClient = await createAdminClient()
 
-        if (userError || !userData) {
-          console.error("❌ User ID validation failed:", userError?.message)
-        } else {
-          userId = userIdHeader
-          console.log("✅ Authentication successful via user ID for user:", userId.substring(0, 8) + '...')
+        if (adminClient) {
+          const { data: userData, error: userError } = await adminClient
+            .from('profiles')
+            .select('id')
+            .eq('id', userIdHeader)
+            .single()
+
+          if (userError || !userData) {
+            console.error("❌ User ID validation failed:", userError?.message)
+          } else {
+            userId = userIdHeader
+            console.log("✅ Authentication successful via user ID for user (verified via admin):", userId.substring(0, 8) + '...')
+          }
         }
       } catch (error) {
         console.error("❌ User ID validation error:", error)
@@ -532,7 +535,7 @@ export async function POST(req: NextRequest) {
     // Log API cost for monitoring
     const perImageCost = actualModel === 'flux' ? 0.04 : 0.02
     const totalApiCost = perImageCost * actualImageCount
-    await logApiCost(`Image generation (${actualModel})`, 0, totalApiCost, userId).catch(err => 
+    await logApiCost(`Image generation (${actualModel})`, 0, totalApiCost, userId).catch(err =>
       console.error('Failed to log API cost:', err)
     )
 

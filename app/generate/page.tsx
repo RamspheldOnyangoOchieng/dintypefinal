@@ -416,6 +416,13 @@ export default function GenerateImagePage() {
             // Fallback to status text
             errorMessage = response.statusText || errorMessage
           }
+
+          if (response.status === 401) {
+            setError("Din session har gått ut. Vänligen logga in igen.")
+            setIsGenerating(false)
+            return
+          }
+
           throw new Error(errorMessage)
         }
 

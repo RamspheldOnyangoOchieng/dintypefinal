@@ -489,10 +489,10 @@ export function ImageGenerationModal({ isOpen, onClose, onImageSelect, trigger }
               </div>
             </div>
           </DialogTitle>
-          <p className="text-gray-400 mt-2">
+          <DialogDescription className="text-gray-400 mt-2">
             Generate high-quality character images using advanced LoRA (Low-Rank Adaptation) models for enhanced style
             control and consistency.
-          </p>
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 p-2">

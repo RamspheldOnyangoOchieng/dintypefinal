@@ -1,9 +1,10 @@
 "use client"
 
 import React from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { X, Crown, MessageCircle, CheckCircle2 } from "lucide-react"
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 
@@ -72,6 +73,10 @@ export function PremiumUpgradeModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[750px] p-0 gap-0 bg-[#0a0a0a] border-zinc-800/50 overflow-hidden text-white shadow-2xl rounded-3xl">
+        <VisuallyHidden.Root>
+          <DialogTitle>{displayBadge}</DialogTitle>
+          <DialogDescription>{displayDescription}</DialogDescription>
+        </VisuallyHidden.Root>
         <button
           onClick={onClose}
           className="absolute right-4 top-4 z-50 rounded-full bg-black/40 p-2 opacity-70 transition-all hover:opacity-100 hover:bg-black/60"

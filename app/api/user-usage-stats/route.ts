@@ -40,21 +40,28 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Method 3: Fallback to User ID header
+  // Method 3: Fallback to User ID header (Use Admin Client for verification)
   if (!userId && userIdHeader) {
     try {
-      const { data: userData, error: userError } = await supabase
-        .from('users_view')
-        .select('id')
-        .eq('id', userIdHeader)
-        .single()
+      const { createAdminClient } = await import("@/lib/supabase-admin")
+      const adminClient = await createAdminClient()
 
-      if (!userError && userData) {
-        userId = userIdHeader
-        console.log("✅ User authenticated via user ID for usage stats")
+      if (adminClient) {
+        const { data: userData, error: userError } = await adminClient
+          .from('profiles') // Changed from users_view to profiles as it's more standard
+          .select('id')
+          .eq('id', userIdHeader)
+          .single()
+
+        if (!userError && userData) {
+          userId = userIdHeader
+          console.log("✅ User authenticated via user ID for usage stats (verified via admin)")
+        } else if (userError) {
+          console.error("❌ User ID validation failed for usage stats:", userError.message)
+        }
       }
     } catch (error) {
-      console.error("❌ User ID validation failed for usage stats:", error)
+      console.error("❌ User ID validation exception for usage stats:", error)
     }
   }
 
@@ -62,9 +69,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
 
+  // Use admin client if we authenticated via User ID, otherwise use regular client
+  // This ensures we can bypass RLS if we've already verified the user's ID
+  const { createAdminClient } = await import("@/lib/supabase-admin")
+  const adminClient = await createAdminClient()
+  const dbSupabase = (userIdHeader && userId === userIdHeader && adminClient) ? adminClient : supabase
+
   try {
     // Get total images generated
-    const { count: imagesGenerated, error: imagesError } = await supabase
+    const { count: imagesGenerated, error: imagesError } = await dbSupabase
       .from("generated_images")
       .select("*", { count: "exact" })
       .eq("user_id", userId)
@@ -74,7 +87,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get total tokens spent
-    const { data: tokensData, error: tokensError } = await supabase
+    const { data: tokensData, error: tokensError } = await dbSupabase
       .from("token_transactions")
       .select("amount")
       .eq("user_id", userId)
@@ -89,7 +102,7 @@ export async function GET(request: NextRequest) {
     const tokensSpent = tokensData?.reduce((total: number, tx: any) => total + Math.abs(tx.amount), 0) || 0
 
     // Get last generation time
-    const { data: lastGeneration, error: lastGenError } = await supabase
+    const { data: lastGeneration, error: lastGenError } = await dbSupabase
       .from("generated_images")
       .select("created_at")
       .eq("user_id", userId)
