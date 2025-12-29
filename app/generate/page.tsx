@@ -23,6 +23,7 @@ import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAuthModal } from "@/components/auth-modal-context"
 import { containsNSFW } from "@/lib/nsfw-filter"
+import { useCharacters } from "@/components/character-context"
 
 // Remove the static imageOptions array and replace with dynamic calculation
 // Get selected option for token calculation - move this logic up and make it dynamic
@@ -52,6 +53,7 @@ function GenerateContent() {
   const router = useRouter()
   const { setIsOpen } = useSidebar()
   const isMobile = useIsMobile()
+  const { refreshCharacters } = useCharacters()
   const searchParams = useSearchParams()
   const promptParam = searchParams.get('prompt') || ""
   const characterId = searchParams.get('characterId') || null
@@ -651,6 +653,10 @@ function GenerateContent() {
     } finally {
       setIsSavingAll(false)
       setSavingImageIndex(-1)
+      // Synchronize character data across the app
+      if (typeof refreshCharacters === 'function') {
+        refreshCharacters()
+      }
     }
   }
 
@@ -724,6 +730,11 @@ function GenerateContent() {
     } finally {
       if (index >= 0 && !isSavingAll) {
         setSavingImageIndex(null)
+      }
+
+      // Synchronize character data across the app if it was a single save
+      if (!isSavingAll && typeof refreshCharacters === 'function') {
+        refreshCharacters()
       }
     }
   }
