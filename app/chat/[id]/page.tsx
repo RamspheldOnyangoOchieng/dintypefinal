@@ -113,6 +113,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [isProfileOpen, setIsProfileOpen] = useState(true)
   const [premiumModalFeature, setPremiumModalFeature] = useState("Meddelandegräns")
   const [premiumModalDescription, setPremiumModalDescription] = useState("Daily message limit reached. Upgrade to premium to continue.")
+  const [premiumModalMode, setPremiumModalMode] = useState<'upgrade' | 'message-limit'>('upgrade')
 
   // Use a ref for the interval to ensure we always have the latest reference
   const imageCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -866,6 +867,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           if (!messageCheck.allowed) {
             setPremiumModalFeature("Meddelandegräns")
             setPremiumModalDescription("Dagligen meddelandegräns uppnådd. Uppgradera till premium för att fortsätta chatta obegränsat.")
+            setPremiumModalMode('message-limit')
             setIsPremiumModalOpen(true)
             setDebugInfo(prev => ({ ...prev, lastAction: "messageLimitReached" }))
             return
@@ -935,6 +937,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         if (aiResponse.content.includes("nått din dagliga meddelandegräns") || aiResponse.content.includes("Vänligen logga in")) {
           setPremiumModalFeature("Meddelandegräns")
           setPremiumModalDescription(aiResponse.content)
+          setPremiumModalMode('message-limit')
           setIsPremiumModalOpen(true)
           setIsSendingMessage(false)
           return
@@ -1474,6 +1477,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       <PremiumUpgradeModal
         isOpen={isPremiumModalOpen}
         onClose={() => setIsPremiumModalOpen(false)}
+        mode={premiumModalMode}
         feature={premiumModalFeature}
         description={premiumModalDescription}
         imageSrc={character?.image || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"}

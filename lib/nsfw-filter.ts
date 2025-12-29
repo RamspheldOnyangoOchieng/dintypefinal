@@ -19,22 +19,22 @@ const SWEDISH_NSFW_KEYWORDS = [
 
 export function containsNSFW(text: string): boolean {
   if (!text) return false;
-  
+
   const normalizedText = text.toLowerCase();
-  
+
   // Check for English keywords
   for (const word of NSFW_KEYWORDS) {
     // Use word boundaries for better accuracy
     const regex = new RegExp(`\\b${word}\\b`, 'i');
     if (regex.test(normalizedText)) return true;
   }
-  
+
   // Check for Swedish keywords
   for (const word of SWEDISH_NSFW_KEYWORDS) {
     const regex = new RegExp(`\\b${word}\\b`, 'i');
     if (regex.test(normalizedText)) return true;
   }
-  
+
   return false;
 }
 

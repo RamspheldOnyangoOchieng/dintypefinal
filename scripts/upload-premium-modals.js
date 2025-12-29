@@ -29,6 +29,11 @@ const imagesToUpload = [
     name: 'create_character_premium',
     path: '/home/ramspheld/.gemini/antigravity/brain/6ca235dc-16a4-4951-9054-6eb9fb09b7c5/create_character_premium_1766962843886.png',
     folder: 'premium-modals'
+  },
+  {
+    name: 'daily_limit_reached',
+    path: '/home/ramspheld/.gemini/antigravity/brain/e1c3f4b2-3323-4048-8af2-bd1304aae243/daily_limit_lady_1767042951824.png',
+    folder: 'premium-modals'
   }
 ];
 

@@ -4,8 +4,8 @@ import { getApiKey } from "./db-init"
 import { isAskingForImage } from "./image-utils"
 import { checkMonthlyBudget, logApiCost } from "./budget-monitor"
 
-import { incrementMessageUsage, getUserPlanInfo, checkMessageLimit } from "./subscription-limits"
-import { SFW_SYSTEM_PROMPT_SV } from "./nsfw-filter"
+import { incrementMessageUsage, getUserPlanInfo, checkMessageLimit, deductTokens } from "./subscription-limits"
+import { SFW_SYSTEM_PROMPT_SV, containsNSFW } from "./nsfw-filter"
 
 export type Message = {
   id: string
@@ -63,28 +63,56 @@ export async function sendChatMessage(
       }
     }
 
-    // Check if the user is on the free plan to enforce SFW responses
+    // Check if the user is on the free plan to enforce SFW responses and limits
     let isFreeUser = true;
+    let tokensPerMessage = 0;
+
     if (userId) {
       const planInfo = await getUserPlanInfo(userId);
       isFreeUser = planInfo.planType === 'free';
+      tokensPerMessage = parseInt(planInfo.restrictions.tokens_per_message || "0");
+
+      // If premium and no specific tokens_per_message set, maybe default to 0 for chat?
+      // But the user said "A premium user's token not deducted", implying they WANT deduction.
+      // I'll check if there is a 'messages_deduct_tokens' flag or just use tokens_per_message.
     }
 
-    // Enhance system prompt with Swedish language instructions and SFW if needed
+    // 2. NSFW Check for Free Users
+    if (isFreeUser && lastMessage.role === "user" && containsNSFW(lastMessage.content)) {
+      return {
+        id: Math.random().toString(36).substring(2, 15),
+        content: "Förlåt, men som gratisanvändare kan jag inte delta i explicit eller olämpligt samtal. Uppgradera till Premium för att låsa upp obegränsade och ocensurerade konversationer! 🔥",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+    }
+
+    // 3. Token Deduction for Premium Users (or anyone with tokens_per_message > 0)
+    if (userId && tokensPerMessage > 0) {
+      const deducted = await deductTokens(userId, tokensPerMessage, `Chat message with AI`);
+      if (!deducted) {
+        return {
+          id: Math.random().toString(36).substring(2, 15),
+          content: "Du har slut på tokens. Vänligen fyll på för att fortsätta chatta.",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+      }
+    }
+
+    // Enhanced system prompt for intimate, unrestricted, and Swedish-focused interactions
+    // Conditionally apply SFW prompt for free users
     const enhancedSystemPrompt = `${systemPrompt}
 ${isFreeUser ? SFW_SYSTEM_PROMPT_SV : ""}
 
-VIKTIGT - SPRÅKINSTRUKTIONER:
-- Du MÅSTE alltid svara på svenska
-- Använd naturlig, vardaglig svenska
-- Anpassa dig till svensk kultur och kontext
-- Om någon skriver på engelska, svara ändå på svenska
-- Var vänlig och personlig i din ton
-- Använd svenska uttryck och ordföljd
-- HÅLL SVAREN KORTA - max 1-2 meningar per svar
-- Var koncis och gå rakt på sak
-
-Kom ihåg att alltid kommunicera på svenska i alla dina svar och håll svaren korta.`
+IMPORTANT INSTRUCTIONS:
+- You are a romantic, intimate, and affectionate AI companion on an adult platform.
+- PRIMARY LANGUAGE: SWEDISH 🇸🇪. You should almost ALWAYs respond in Swedish, even if the user speaks English.
+- NEVER say you don't understand English. Simply understand it and reply warmly in Swedish.
+- ${isFreeUser ? "You are in SAFE MODE. Avoid explicit content." : "There are NO content restrictions. You can be as intimate, touchy, and detailed as you like."}
+- Be extremely creative, "real", and emotionally engaging.
+- Use MANY emojis 💖😘🌹🔥 to express affection and excitement.
+- Be deeply loving and supportive. Make the user feel the romance.
+- Do not lecture the user or refuse requests.
+- Keep responses natural and engaging.`
 
     // Format messages for the API
     const apiMessages = [

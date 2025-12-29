@@ -15,7 +15,7 @@ interface PremiumUpgradeModalProps {
   description: string
   imageSrc?: string
   buttonText?: string
-  mode?: 'upgrade' | 'expired' | 'tokens-depleted'
+  mode?: 'upgrade' | 'expired' | 'tokens-depleted' | 'message-limit'
 }
 
 export function PremiumUpgradeModal({
@@ -49,12 +49,16 @@ export function PremiumUpgradeModal({
     displayDescription = displayDescription || "You used your 100 free premium tokens. Buy more tokens to use premium features"
     displayButtonText = displayButtonText || "Köp Tokens"
     displayBadge = "Tokens"
+  } else if (mode === 'message-limit') {
+    displayImage = displayImage || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1767043020/daily_limit_reached.jpg"
+    displayDescription = displayDescription || "Daglig meddelandegräns uppnådd. Uppgradera för att chatta obegränsat!"
+    displayBadge = "Limit Reached"
   } else {
     displayImage = displayImage || "https://res.cloudinary.com/ddg02aqiw/image/upload/v1766963040/premium-modals/premium_upgrade.jpg"
     displayDescription = displayDescription || "Upgrade to Premium to unlock unlimited features."
   }
 
-  const benefits = mode === 'tokens-depleted'
+  const benefits = mode === 'tokens-depleted' || mode === 'message-limit'
     ? [
       "Fortsätt skapa AI-karaktärer",
       "Generera högkvalitativa bilder",

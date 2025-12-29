@@ -78,16 +78,16 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
       limit = 3;
     }
 
-    // If null/undefined/unlimited, allow (usually for premium)
-    if (!limit || limit === null || limit === 'null' || limit === undefined) {
-      console.log('✅ No message limit set, allowing message');
-      return { allowed: true, currentUsage: 0, limit: null };
-    }
-
     // Parse limit to number
-    const limitNum = parseInt(String(limit), 10);
-    if (isNaN(limitNum) || limitNum <= 0) {
-      console.log('✅ Invalid limit value, allowing message');
+    let limitNum = parseInt(String(limit), 10);
+    
+    // If invalid limit but free user, force 3
+    if ((isNaN(limitNum) || limitNum <= 0) && planInfo.planType === 'free') {
+       console.log('⚠️ Invalid limit for free user, defaulting to 3');
+       limitNum = 3;
+    } else if (!limit || limit === null || limit === 'null' || limit === undefined || (limitNum <= 0 && planInfo.planType !== 'free')) {
+      // If unlimited (usually premium), allow
+      console.log('✅ No message limit set (or unlimited), allowing message');
       return { allowed: true, currentUsage: 0, limit: null };
     }
 
