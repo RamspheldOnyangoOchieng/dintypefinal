@@ -885,14 +885,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       // Check for NSFW content if the user is on the free plan
       if (!user?.isPremium && !user?.isAdmin) {
         if (containsNSFW(inputValue)) {
-          // Block NSFW messages for free users
-          const nsfwWarning: Message = {
-            id: Math.random().toString(36).substring(2, 15),
-            role: "assistant",
-            content: "NSFW-innehåll är blockerat för gratisanvändare. Uppgradera till Premium för att låsa upp obegränsat och ocensurerat innehåll.",
-            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          }
-          setMessages((prev) => [...prev, nsfwWarning])
+          setPremiumModalFeature("Exklusiva Konversationer")
+          setPremiumModalDescription("Lås upp ocensurerat och intimt innehåll med Premium! 🔥")
+          setPremiumModalMode('upgrade')
+          setIsPremiumModalOpen(true)
           setInputValue("")
           return
         }
@@ -933,7 +929,16 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
         if (!isMounted) return
 
-        // Check if the response indicates a limit reached (server-side enforcement)
+        // Check if the response indicates a limit reached or NSFW restriction
+        if (aiResponse.content.includes("UPGRADE_FOR_NSFW:")) {
+          setPremiumModalFeature("Exklusiva Konversationer")
+          setPremiumModalDescription("Lås upp ocensurerat och intimt innehåll med Premium! 🔥")
+          setPremiumModalMode('upgrade')
+          setIsPremiumModalOpen(true)
+          setIsSendingMessage(false)
+          return
+        }
+
         if (aiResponse.content.includes("nått din dagliga meddelandegräns") || aiResponse.content.includes("Vänligen logga in")) {
           setPremiumModalFeature("Meddelandegräns")
           setPremiumModalDescription(aiResponse.content)

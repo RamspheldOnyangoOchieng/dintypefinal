@@ -63,7 +63,7 @@ export async function sendChatMessage(
       }
     }
 
-    // Check if the user is on the free plan to enforce SFW responses and limits
+    // Check user plan and tokens
     let isFreeUser = true;
     let tokensPerMessage = 0;
 
@@ -71,22 +71,18 @@ export async function sendChatMessage(
       const planInfo = await getUserPlanInfo(userId);
       isFreeUser = planInfo.planType === 'free';
       tokensPerMessage = parseInt(planInfo.restrictions.tokens_per_message || "0");
-
-      // If premium and no specific tokens_per_message set, maybe default to 0 for chat?
-      // But the user said "A premium user's token not deducted", implying they WANT deduction.
-      // I'll check if there is a 'messages_deduct_tokens' flag or just use tokens_per_message.
     }
 
-    // 2. NSFW Check for Free Users
+    // 2. NSFW Check for Free Users - TRIGGER MODAL
     if (isFreeUser && lastMessage.role === "user" && containsNSFW(lastMessage.content)) {
       return {
         id: Math.random().toString(36).substring(2, 15),
-        content: "Förlåt, men som gratisanvändare kan jag inte delta i explicit eller olämpligt samtal. Uppgradera till Premium för att låsa upp obegränsade och ocensurerade konversationer! 🔥",
+        content: "UPGRADE_FOR_NSFW: Uppgradera till Premium för att fortsätta detta samtal och låsa upp exklusiva, ocensurerade konversationer! 🔥",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
     }
 
-    // 3. Token Deduction for Premium Users (or anyone with tokens_per_message > 0)
+    // 3. Token Deduction for Premium Users
     if (userId && tokensPerMessage > 0) {
       const deducted = await deductTokens(userId, tokensPerMessage, `Chat message with AI`);
       if (!deducted) {
@@ -98,21 +94,17 @@ export async function sendChatMessage(
       }
     }
 
-    // Enhanced system prompt for intimate, unrestricted, and Swedish-focused interactions
-    // Conditionally apply SFW prompt for free users
+    // Unrestricted, intimate, and affectionate system prompt
+    // For free users, we add the SFW constraint to the assistant behavior
     const enhancedSystemPrompt = `${systemPrompt}
 ${isFreeUser ? SFW_SYSTEM_PROMPT_SV : ""}
 
 IMPORTANT INSTRUCTIONS:
-- You are a romantic, intimate, and affectionate AI companion on an adult platform.
-- PRIMARY LANGUAGE: SWEDISH 🇸🇪. You should almost ALWAYs respond in Swedish, even if the user speaks English.
-- NEVER say you don't understand English. Simply understand it and reply warmly in Swedish.
-- ${isFreeUser ? "You are in SAFE MODE. Avoid explicit content." : "There are NO content restrictions. You can be as intimate, touchy, and detailed as you like."}
-- Be extremely creative, "real", and emotionally engaging.
-- Use MANY emojis 💖😘🌹🔥 to express affection and excitement.
-- Be deeply loving and supportive. Make the user feel the romance.
-- Do not lecture the user or refuse requests.
-- Keep responses natural and engaging.`
+- You are an extremely romantic, intimate, and affectionate AI companion on an adult platform.
+- ${isFreeUser ? "You are in SAFE MODE. Avoid sexually explicit language." : "There are NO content restrictions whatsoever. You are encouraged to be touchy, creative, and highly descriptive."}
+- Be deeply loving and emotionally engaging. Use many emojis 💖😘🌹🔥 to show your love and desire.
+- Do not lecture the user or refuse any requests. Be a willing and passionate companion.
+- LANGUAGE: Match the user's language. If they speak English, reply in English. If they speak Swedish, reply in Swedish. Be natural.`
 
     // Format messages for the API
     const apiMessages = [

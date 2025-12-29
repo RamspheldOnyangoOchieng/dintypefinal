@@ -58,10 +58,7 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
   try {
     // ADMIN BYPASS: Admins have unlimited messages
     const adminPrivileges = await getAdminPrivileges(userId);
-    console.log('🔓 Admin privileges check result:', adminPrivileges);
-
     if (adminPrivileges.isAdmin || adminPrivileges.canBypassMessageLimits) {
-      console.log('🔓 Admin bypass: Unlimited messages for admin user');
       return { allowed: true, currentUsage: 0, limit: null };
     }
 
@@ -69,8 +66,6 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
     if (!supabase) return { allowed: true, currentUsage: 0, limit: null };
 
     const planInfo = await getUserPlanInfo(userId);
-    console.log('📋 User plan info:', planInfo);
-
     let limit = planInfo?.restrictions?.daily_free_messages || planInfo?.restrictions?.daily_message_limit;
 
     // Default to 3 messages for free plan if not set
@@ -80,14 +75,11 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
 
     // Parse limit to number
     let limitNum = parseInt(String(limit), 10);
-    
+
     // If invalid limit but free user, force 3
     if ((isNaN(limitNum) || limitNum <= 0) && planInfo.planType === 'free') {
-       console.log('⚠️ Invalid limit for free user, defaulting to 3');
-       limitNum = 3;
+      limitNum = 3;
     } else if (!limit || limit === null || limit === 'null' || limit === undefined || (limitNum <= 0 && planInfo.planType !== 'free')) {
-      // If unlimited (usually premium), allow
-      console.log('✅ No message limit set (or unlimited), allowing message');
       return { allowed: true, currentUsage: 0, limit: null };
     }
 
@@ -105,14 +97,8 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
       .limit(1)
       .maybeSingle();
 
-    if (usageError && usageError.code !== 'PGRST116') {
-      console.error('Error fetching usage:', usageError);
-    }
-
     const currentUsage = usage?.usage_count || 0;
     const allowed = currentUsage < limitNum;
-
-    console.log(`📊 Message limit check: ${currentUsage}/${limitNum} - ${allowed ? 'ALLOWED' : 'BLOCKED'}`);
 
     return {
       allowed,
@@ -122,7 +108,6 @@ export async function checkMessageLimit(userId: string): Promise<UsageCheck> {
     };
   } catch (error) {
     console.error('❌ Error in checkMessageLimit:', error);
-    // On error, allow the message to not block users
     return { allowed: true, currentUsage: 0, limit: null };
   }
 }

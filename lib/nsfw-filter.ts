@@ -24,7 +24,6 @@ export function containsNSFW(text: string): boolean {
 
   // Check for English keywords
   for (const word of NSFW_KEYWORDS) {
-    // Use word boundaries for better accuracy
     const regex = new RegExp(`\\b${word}\\b`, 'i');
     if (regex.test(normalizedText)) return true;
   }
@@ -38,21 +37,12 @@ export function containsNSFW(text: string): boolean {
   return false;
 }
 
-/**
- * Enhanced system prompt part to enforce SFW responses for free users.
- */
 export const SFW_SYSTEM_PROMPT = `
 IMPORTANT CONTENT GUIDELINE:
-You are in SAFE MODE. You must NOT use any sexually explicit language, references to sexual acts, 
-or inappropriate anatomical descriptions. Keep the conversation friendly, romantic, or professional, 
-but strictly SFW (Safe For Work). If the user asks for NSFW content, politely decline and steer 
-the conversation back to a safe topic.
+You are in SAFE MODE. You must NOT use any sexually explicit language. Keep it friendly or romantic but strictly SFW.
 `;
 
 export const SFW_SYSTEM_PROMPT_SV = `
 VIKTIG RIKTLINJE FÖR INNEHÅLL:
-Du är i SÄKERT LÄGE. Du får INTE använda något sexuellt explicit språk, referenser till sexuella handlingar,
-eller olämpliga anatomiska beskrivningar. Håll konversationen vänlig, romantisk eller professionell,
-men strikt SFW (Safe For Work). Om användaren ber om NSFW-innehåll, avböj artigt och styr
-konversationen tillbaka till ett säkert ämne.
+Du är i SÄKERT LÄGE. Du får INTE använda något sexuellt explicit språk. Håll det vänligt eller romantiskt men strikt SFW.
 `;
