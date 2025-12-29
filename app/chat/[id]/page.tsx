@@ -761,7 +761,23 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       const result = await response.json()
       toast.success("Image saved to your collection and profile!")
 
-      // Refresh character data so the carousel updates
+      // Special handling for custom characters (localStorage)
+      if (characterId.startsWith('custom-') && character) {
+        console.log("💾 Updating custom character in localStorage with new image");
+        const updatedImages = [...(character.images || []), result.permanentUrl || imageUrl];
+        const updatedChar = {
+          ...character,
+          images: updatedImages
+        };
+        
+        // Update localStorage
+        localStorage.setItem(`character-${characterId}`, JSON.stringify(updatedChar));
+        
+        // Update local state to trigger re-render
+        setCharacter(updatedChar);
+      }
+
+      // Refresh global character data so the carousel updates for DB characters
       if (typeof refreshCharacters === 'function') {
         await refreshCharacters()
       }

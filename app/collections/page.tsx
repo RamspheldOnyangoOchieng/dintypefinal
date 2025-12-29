@@ -113,17 +113,19 @@ export default function CollectionsPage() {
     const getUserId = async () => {
       try {
         const { createClient } = await import("@/utils/supabase/client")
+        const { getAnonymousUserId } = await import("@/lib/anonymous-user")
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (user?.id) {
           setUserId(user.id)
         } else {
-          // Fallback to anonymous ID used for non-logged in users
-          setUserId("00000000-0000-0000-0000-000000000000")
+          // Use the random ID from localStorage
+          setUserId(getAnonymousUserId())
         }
       } catch (e) {
         console.error("Error identifying user:", e)
-        setUserId("00000000-0000-0000-0000-000000000000")
+        const { getAnonymousUserId } = await import("@/lib/anonymous-user")
+        setUserId(getAnonymousUserId())
       }
     }
     getUserId()

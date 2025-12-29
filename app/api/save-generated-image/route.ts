@@ -19,14 +19,14 @@ export async function POST(request: NextRequest) {
     // Get user ID (authenticated or anonymous)
     const supabase = await createClient()
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+    } = await supabase.auth.getUser()
 
     let userId: string
 
-    if (session?.user?.id) {
-      console.log("✅ User is authenticated:", session.user.id.substring(0, 8))
-      userId = session.user.id
+    if (user?.id) {
+      console.log("✅ User is authenticated:", user.id.substring(0, 8))
+      userId = user.id
     } else {
       userId = getAnonymousUserId()
       console.log("👤 Using anonymous ID:", userId.substring(0, 8))

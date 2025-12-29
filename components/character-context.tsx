@@ -124,9 +124,9 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
   async function fetchCharacters() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       let query = supabase.from("characters").select("*")
-      
+
       // If not logged in, only fetch public characters
       if (!session) {
         query = query.eq('is_public', true)
@@ -191,15 +191,19 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
         })
       )
 
-      // Avoid unnecessary state updates if nothing changed (shallow compare by id + length)
+      // Avoid unnecessary state updates if nothing changed
       setCharacters(prev => {
-        if (prev.length === normalizedData.length) {
-          const prevIds = new Set(prev.map(c => c.id))
-          const changed = normalizedData.some((c: any) => !prevIds.has(c.id))
-          if (!changed) {
-            return prev // no structural change detected
-          }
+        // If lengths differ, it's definitely different
+        if (prev.length !== normalizedData.length) return normalizedData
+
+        // Check if ANY content in ANY character has changed (using simple string comparison)
+        const isDataIdentical = JSON.stringify(prev) === JSON.stringify(normalizedData)
+
+        if (isDataIdentical) {
+          return prev
         }
+
+        console.log("🔄 Characters data changed, updating context")
         return normalizedData
       })
     } catch (err) {

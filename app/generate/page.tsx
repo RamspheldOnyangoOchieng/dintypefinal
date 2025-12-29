@@ -4,7 +4,7 @@ import { Suspense } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Copy, Wand2, Loader2, Download, Share2, AlertCircle, ChevronLeft, FolderOpen, Clock, Image as ImageIcon, X, Coins, Sparkles, Lock } from "lucide-react"
+import { Copy, Wand2, Loader2, Download, Share2, AlertCircle, ChevronLeft, FolderOpen, Clock, Image as ImageIcon, X, Coins, Sparkles, Lock, Save } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
 import { useToast } from "@/hooks/use-toast"
@@ -83,6 +83,7 @@ function GenerateContent() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [savingImageIndex, setSavingImageIndex] = useState<number | null>(null)
+  const [isSavingAll, setIsSavingAll] = useState(false)
   // const [autoSaving, setAutoSaving] = useState(false)
   const [generationProgress, setGenerationProgress] = useState(0)
   const [timeoutWarning, setTimeoutWarning] = useState(false)
@@ -311,6 +312,7 @@ function GenerateContent() {
         watermark: true,
         selectedCount, // Send the number of images selected
         selectedModel: "stability", // Send the model type for token calculation
+        characterId, // extracted from searchParams
       }
 
       // Create AbortController for timeout handling
@@ -630,6 +632,28 @@ function GenerateContent() {
     }
   }
 
+  const handleSaveAll = async () => {
+    if (generatedImages.length === 0) return
+    setIsSavingAll(true)
+    try {
+      let savedCount = 0
+      for (let i = 0; i < generatedImages.length; i++) {
+        // Use the existing save function but suppress individual toasts
+        const success = await saveImageToCollection(generatedImages[i], i, false)
+        if (success) savedCount++
+      }
+      toast({
+        title: "All images saved",
+        description: `Successfully saved ${savedCount} images to your collection.`,
+      })
+    } catch (error) {
+      console.error("Error saving all images:", error)
+    } finally {
+      setIsSavingAll(false)
+      setSavingImageIndex(-1)
+    }
+  }
+
   const saveImageToCollection = async (imageUrl: string, index: number, showToast = true) => {
     try {
       if (index >= 0) {
@@ -665,7 +689,7 @@ function GenerateContent() {
             description: "This image is already in your collection.",
           })
         }
-        return false
+        return true
       }
 
       if (showToast) {
@@ -694,7 +718,7 @@ function GenerateContent() {
       }
       return false
     } finally {
-      if (index >= 0) {
+      if (index >= 0 && !isSavingAll) {
         setSavingImageIndex(null)
       }
     }
@@ -1022,6 +1046,20 @@ function GenerateContent() {
                     <Button variant="outline" size="sm" onClick={handleDownloadAll} className={isMobile ? 'text-xs px-2 py-1' : ''}>
                       <Download className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
                       {isMobile ? 'Download All' : 'Download All'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSaveAll}
+                      disabled={isSavingAll}
+                      className={isMobile ? 'text-xs px-2 py-1' : ''}
+                    >
+                      {isSavingAll ? (
+                        <Loader2 className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'} animate-spin`} />
+                      ) : (
+                        <Save className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+                      )}
+                      {isMobile ? 'Save All' : 'Save All'}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => router.push("/collections")} className={isMobile ? 'text-xs px-2 py-1' : ''}>
                       <FolderOpen className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />

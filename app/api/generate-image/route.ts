@@ -140,6 +140,7 @@ export async function POST(req: NextRequest) {
       image_num = 1, // Number of images to generate
       selectedCount, // Frontend sends this for number of images
       selectedModel, // Frontend sends this for model type
+      characterId, // extracted from body
     } = body;
 
     // Use frontend parameters if available, otherwise fall back to defaults
@@ -447,6 +448,7 @@ export async function POST(req: NextRequest) {
       status: 'pending',
       tokens_deducted: isAdmin ? 0 : tokenCost,
       task_id: '', // Will be updated after API call
+      character_id: characterId && !characterId.startsWith("custom-") ? characterId : null,
     }
 
     const supabaseAdminForTask = await createAdminClient()
@@ -547,7 +549,7 @@ export async function POST(req: NextRequest) {
     // Increment image usage for free users
     if (!isAdmin && !isPremium) {
       const { incrementImageUsage } = await import("@/lib/subscription-limits")
-      await incrementImageUsage(userId as string).catch(err => 
+      await incrementImageUsage(userId as string).catch(err =>
         console.error('Failed to increment image usage:', err)
       )
     }

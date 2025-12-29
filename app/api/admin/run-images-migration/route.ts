@@ -52,6 +52,9 @@ export async function GET() {
       ALTER TABLE characters ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
       ALTER TABLE characters ADD COLUMN IF NOT EXISTS video_url TEXT;
       ALTER TABLE characters ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+      -- Generation tasks table updates
+      ALTER TABLE generation_tasks ADD COLUMN IF NOT EXISTS character_id UUID;
     `
 
         // Execute the SQL via the pgclient RPC if it exists
