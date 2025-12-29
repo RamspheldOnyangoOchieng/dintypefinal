@@ -73,11 +73,11 @@ export function ImageModal({
         <DialogDescription className="sr-only">View and manage your generated images</DialogDescription>
         <div className="relative">
           <div className="relative aspect-square max-h-[80vh] overflow-hidden rounded-lg">
-            {/* Close button */}
+            {/* Close button - Moved to top-left */}
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-black/80 text-white rounded-full transition-all"
+              className="absolute top-4 left-4 z-50 bg-black/60 hover:bg-black/80 text-white rounded-full transition-all"
               onClick={() => onOpenChange(false)}
             >
               <X className="h-5 w-5" />
@@ -98,7 +98,7 @@ export function ImageModal({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-1/2 left-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                className="absolute top-1/2 left-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white z-40"
                 onClick={handlePrevious}
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -106,7 +106,7 @@ export function ImageModal({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white z-40"
                 onClick={handleNext}
               >
                 <ChevronRight className="h-6 w-6" />
@@ -114,8 +114,34 @@ export function ImageModal({
             </>
           )}
 
+          {/* Thumbnail Carousel */}
+          {images.length > 1 && (
+            <div className="flex justify-center gap-2 p-3 overflow-x-auto bg-black/40 border-t border-[#252525] scrollbar-none">
+              <div className="flex gap-2 mx-auto">
+                {images.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentIndex(index)}
+                    className={`relative w-16 h-24 rounded-md overflow-hidden border-2 transition-all shrink-0 ${currentIndex === index
+                        ? "border-primary scale-105 shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                        : "border-transparent opacity-40 hover:opacity-100"
+                      }`}
+                  >
+                    <Image
+                      src={img}
+                      alt={`Thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Image counter */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-2 py-1 rounded">
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-2 py-1 rounded z-40 font-medium backdrop-blur-sm">
             {currentIndex + 1} / {images.length}
           </div>
         </div>
