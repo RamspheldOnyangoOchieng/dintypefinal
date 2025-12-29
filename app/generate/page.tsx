@@ -10,7 +10,7 @@ import { ImageModal } from "@/components/image-modal"
 import { useAuth } from "@/components/auth-context"
 import { useSidebar } from "@/components/sidebar-context"
 import { createClient } from "@/utils/supabase/client"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   getImageSuggestions,
   getImageSuggestionsByCategory,
@@ -36,12 +36,24 @@ export default function GenerateImagePage() {
   const { user, isLoading, refreshUser } = useAuth()
   const { openLoginModal } = useAuthModal()
   const router = useRouter()
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-  const initialPrompt = searchParams?.get('prompt') || ""
-  const characterId = searchParams?.get('characterId') || null
   const { setIsOpen } = useSidebar()
   const isMobile = useIsMobile()
-  const [prompt, setPrompt] = useState(initialPrompt)
+  const searchParams = useSearchParams()
+  const promptParam = searchParams.get('prompt') || ""
+  const characterId = searchParams.get('characterId') || null
+  const [prompt, setPrompt] = useState(promptParam)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Use useEffect to update prompt when searchParams change, without full remount
+  useEffect(() => {
+    if (promptParam && isMounted) {
+      setPrompt(promptParam)
+    }
+  }, [promptParam, isMounted])
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
   const [negativePrompt, setNegativePrompt] = useState("")
   const [showNegativePrompt, setShowNegativePrompt] = useState(false)
   const [selectedCount, setSelectedCount] = useState("1")
@@ -682,9 +694,17 @@ export default function GenerateImagePage() {
 
 
 
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background" key="generate-loading">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
   return (
     <div 
-      key={`generate-page-${characterId || 'global'}`}
+      key="generate-page-root"
       className={`flex flex-col ${isMobile ? 'min-h-screen' : 'lg:flex-row min-h-screen'} bg-background text-foreground`}
       suppressHydrationWarning
     >

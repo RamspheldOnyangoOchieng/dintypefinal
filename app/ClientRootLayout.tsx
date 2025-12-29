@@ -37,18 +37,23 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
   const showFooter = !noFooterPaths.some((path) => pathname.startsWith(path))
 
   return (
-    <div className="flex bg-background min-h-screen overflow-x-hidden" style={{ position: 'relative', top: 0 }}>
+    <div
+      className="flex bg-background min-h-screen overflow-x-hidden"
+      style={{ position: 'relative', top: 0 }}
+      suppressHydrationWarning
+    >
       <AppSidebar />
       <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden ${isOpen ? "md:ml-64" : "md:ml-16"}`}>
-        {/* <AnalyticsLoader /> */}
-        {showHeader && <SiteHeader />}
-        <div className="flex-1 overflow-x-hidden">
-          <ErrorBoundary>{children}</ErrorBoundary>
+        <div key="layout-main-content" className="flex-1 flex flex-col overflow-x-hidden">
+          {showHeader && <SiteHeader />}
+          <main className="flex-1 overflow-x-hidden relative">
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </main>
         </div>
         {showFooter && <SiteFooter />}
       </div>
 
-      <PremiumUpgradeModal 
+      <PremiumUpgradeModal
         isOpen={showExpiredModal}
         onClose={() => setShowExpiredModal(false)}
         mode="expired"

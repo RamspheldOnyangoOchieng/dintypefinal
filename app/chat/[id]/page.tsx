@@ -43,7 +43,7 @@ import { ImageModal } from "@/components/image-modal"
 import { containsNSFW } from "@/lib/nsfw-filter"
 import { toast } from "sonner"
 
-export default function ChatPage({ params }: { params: { id: string } }) {
+export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const [characterId, setCharacterId] = useState<string | null>(null);
   const { characters, isLoading: charactersLoading, updateCharacter } = useCharacters();
   const [character, setCharacter] = useState<any>(null);
@@ -51,7 +51,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   // Handle params unwrapping for Next.js 15
   useEffect(() => {
     const unwrapParams = async () => {
-      const resolvedParams = await Promise.resolve(params);
+      const resolvedParams = await params;
       setCharacterId(resolvedParams.id);
     };
     unwrapParams();
@@ -963,11 +963,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   }
 
   // Show loading while unwrapping params or loading characters
-  // We also check if the character exists in the current list but hasn't been set to state yet
-  const foundInContext = characterId ? characters.find(c => c.id === characterId) : null;
-  if (!characterId || (charactersLoading && !character) || (foundInContext && !character)) {
+  const isActuallyMounted = isMounted && characterId !== null;
+
+  if (!isActuallyMounted || (charactersLoading && !character)) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
+      <div className="flex items-center justify-center h-screen bg-background" key="loading-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <div className="text-muted-foreground">{t("general.loading")}</div>
@@ -1001,7 +1001,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
   return (
     <div
-      key={`chat-page-${characterId || 'loading'}`}
+      key="chat-page-root"
       className="flex flex-col md:flex-row bg-background h-[100dvh] md:h-screen w-full overflow-hidden"
       style={{ position: 'relative', top: 0 }}
       suppressHydrationWarning
@@ -1179,7 +1179,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             </div>
           ))}
           {isLoading && (
-            <div className="flex justify-start">
+            <div className="flex justify-start" key="ai-thinking-indicator">
               <div className="max-w-[70%] bg-[#252525] text-white rounded-2xl p-3">
                 <div className="flex space-x-2">
                   <div
@@ -1199,7 +1199,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             </div>
           )}
           {isGeneratingImage && (
-            <div className="flex justify-start">
+            <div className="flex justify-start" key="image-generation-indicator">
               <div className="max-w-[70%] bg-[#252525] text-white rounded-2xl p-3">
                 <div className="flex items-center space-x-2">
                   <div className="w-full aspect-square max-w-xs rounded-2xl bg-gray-700 animate-pulse"></div>

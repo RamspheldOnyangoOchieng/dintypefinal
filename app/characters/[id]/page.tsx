@@ -21,10 +21,16 @@ export default function CharacterDetailPage({ params }: CharacterDetailPageProps
   const { characters, isLoading } = useCharacters()
   const [character, setCharacter] = useState<Character | null>(null)
   const [characterId, setCharacterId] = useState<string | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
 
   // Unwrap params for Next.js 15
   useEffect(() => {
-    params.then(p => setCharacterId(p.id))
+    const unwrap = async () => {
+      const p = await params;
+      setCharacterId(p.id);
+      setIsMounted(true)
+    };
+    unwrap();
   }, [params])
 
   // Find character when ID is available
@@ -39,7 +45,7 @@ export default function CharacterDetailPage({ params }: CharacterDetailPageProps
     }
   }, [characterId, characters, isLoading])
 
-  if (isLoading || !characterId) {
+  if (!isMounted || isLoading || !characterId) {
     return (
       <div className="container py-8">
         <div className="flex items-center justify-center min-h-[400px]">
