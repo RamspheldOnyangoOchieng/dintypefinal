@@ -16,7 +16,9 @@ import {
   User,
   X,
   Wand2,
+  AlertCircle,
 } from "lucide-react"
+import { createClient } from "@/utils/supabase/client"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useTranslations } from "@/lib/use-translations"
@@ -52,10 +54,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   useEffect(() => {
     const unwrapParams = async () => {
       const resolvedParams = await params;
-      setCharacterId(resolvedParams.id);
+      const newId = resolvedParams.id;
+      if (newId !== characterId) {
+        setCharacterId(newId);
+        setCharacter(null); // Reset character state when navigating to a new ID
+        setMessages([]); // Reset messages when navigating
+      }
     };
     unwrapParams();
-  }, [params]);
+  }, [params, characterId]);
   const { toggle, setIsOpen } = useSidebar();
   const router = useRouter();
   const { user, isLoading } = useAuth()
@@ -163,21 +170,30 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   }, []);
 
   useEffect(() => {
-    if (!charactersLoading && characterId) {
-      // Check if this is a custom character (ID starts with "custom-")
+    let isMounted = true;
+
+    async function loadCharacter() {
+      if (charactersLoading || !characterId || character) return;
+
       const charId = String(characterId);
-
       console.log('🔍 Looking for character:', charId);
-      console.log('📊 Available characters:', characters.length);
 
+      // 1. Try to find in characters context
+      const foundInContext = characters.find((char) => char.id === charId);
+      if (foundInContext) {
+        console.log("✅ Found character in context:", foundInContext.name);
+        if (isMounted) setCharacter(foundInContext);
+        return;
+      }
+
+      // 2. Check if this is a custom character
       if (charId.startsWith("custom-")) {
-        // Load custom character from localStorage
         const customCharacterData = localStorage.getItem(`character-${charId}`);
         if (customCharacterData) {
           try {
             const customChar = JSON.parse(customCharacterData);
-            console.log("✅ Loaded custom character from localStorage:", customChar);
-            setCharacter(customChar);
+            console.log("✅ Loaded custom character from localStorage:", customChar.name);
+            if (isMounted) setCharacter(customChar);
             return;
           } catch (error) {
             console.error("❌ Error parsing custom character:", error);
@@ -185,22 +201,46 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         }
       }
 
-      // Load regular character from database
-      const foundCharacter = characters.find((char) => char.id === charId);
-      if (foundCharacter) {
-        console.log("✅ Found character in context:", foundCharacter);
-        console.log("   - Name:", foundCharacter.name);
-        console.log("   - Image:", foundCharacter.image);
-        console.log("   - Image URL:", foundCharacter.imageUrl || foundCharacter.image_url);
-        console.log("   - Description:", foundCharacter.description?.substring(0, 100));
-        setCharacter(foundCharacter);
-      } else {
-        // Handle case where character is not found
-        console.error("❌ Character not found in context:", charId);
-        console.log("📋 Available character IDs:", characters.map(c => c.id));
+      // 3. Fallback: Direct database fetch
+      console.log("🔎 Character not in context, trying direct fetch...");
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("characters")
+          .select("*")
+          .eq("id", charId)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (data) {
+          // Use the snakeToCamel helper logic (simplified here or we can just use the data)
+          const char = {
+            ...data,
+            // Map snake_case to camelCase for the component
+            isNew: data.is_new,
+            createdAt: data.created_at,
+            systemPrompt: data.system_prompt || data.systemPrompt,
+            imageUrl: data.image_url || data.image,
+            videoUrl: data.video_url || data.videoUrl,
+            isPublic: data.is_public || data.isPublic,
+          };
+          console.log("✅ Found character via direct fetch:", char.name);
+          if (isMounted) setCharacter(char);
+        } else {
+          console.error("❌ Character not found in database:", charId);
+        }
+      } catch (err) {
+        console.error("❌ Error fetching character directly:", err);
       }
     }
-  }, [characters, charactersLoading, characterId]);
+
+    loadCharacter();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [characters, charactersLoading, characterId, character]);
 
   // Automatically close the sidebar on component mount
   useEffect(() => {

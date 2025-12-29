@@ -73,9 +73,9 @@ export async function getAllImages(options?: {
 
     // Enhance images with is_locked status based on current plan
     const { getUserPlanInfo } = await import("@/lib/subscription-limits")
-    const { isAdmin: checkIsAdmin } = await import("@/lib/admin-privileges")
+    const { isUserAdmin: checkIsAdmin } = await import("@/lib/admin-privileges")
     const planInfo = await getUserPlanInfo(userId)
-    const isAdmin = (await checkIsAdmin(userId)).isAdmin
+    const isAdmin = await checkIsAdmin(userId)
     const isCurrentlyPremium = planInfo.planType === 'premium'
 
     const enhancedImages = (data || []).map(img => {
@@ -124,9 +124,9 @@ export async function getImage(id: string) {
 
     // Calculate is_locked for single image
     const { getUserPlanInfo } = await import("@/lib/subscription-limits")
-    const { isAdmin: checkIsAdmin } = await import("@/lib/admin-privileges")
+    const { isUserAdmin: checkIsAdmin } = await import("@/lib/admin-privileges")
     const planInfo = await getUserPlanInfo(userId)
-    const isAdmin = (await checkIsAdmin(userId)).isAdmin
+    const isAdmin = await checkIsAdmin(userId)
     const isCurrentlyPremium = planInfo.planType === 'premium'
 
     const wasPremiumWhenCreated = (data.metadata as any)?.plan_type === 'premium'
