@@ -21,9 +21,14 @@ interface TokenUsageStatsProps {
 }
 
 export function TokenUsageStats({ userId, initialData }: TokenUsageStatsProps) {
+  const [mounted, setMounted] = useState(false)
   const [timeframe, setTimeframe] = useState("week")
   const [usageData, setUsageData] = useState<UsageData[]>([])
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     async function fetchUsageStats() {
@@ -43,6 +48,8 @@ export function TokenUsageStats({ userId, initialData }: TokenUsageStatsProps) {
       }
     }
 
+    if (!mounted) return
+
     if (initialData) {
       const initialUsageData = [
         {
@@ -56,7 +63,9 @@ export function TokenUsageStats({ userId, initialData }: TokenUsageStatsProps) {
     } else {
       fetchUsageStats()
     }
-  }, [userId, timeframe, initialData])
+  }, [userId, timeframe, initialData, mounted])
+
+  if (!mounted) return null
 
   return (
     <Card>

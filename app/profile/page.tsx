@@ -100,8 +100,10 @@ export default function ProfilePage() {
     }
   }, [user, isLoading, router])
 
+  // Fetch Full Profile on mount or user change
   useEffect(() => {
     const fetchFullProfile = async () => {
+      // Don't fetch if already fetching or if user doesn't exist
       if (!user) return
 
       try {
@@ -141,11 +143,10 @@ export default function ProfilePage() {
       }
     }
 
-    if (user && !profileData.username) {
-      setIsDataLoading(true)
+    if (user && mounted) {
       fetchFullProfile()
     }
-  }, [user?.id])
+  }, [user?.id, mounted])
 
   const handleSaveProfile = async () => {
     if (!user) return
@@ -221,7 +222,7 @@ export default function ProfilePage() {
   // Only show full-page loader on INITIAL load
   if (!mounted || isLoading || (isDataLoading && !profileData.username)) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center bg-background gap-4">
+      <div key="profile-loader" className="min-h-[80vh] flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />
         <p className="text-muted-foreground font-medium animate-pulse">Laddar din profil...</p>
       </div>
@@ -231,7 +232,7 @@ export default function ProfilePage() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
+    <div key="profile-content-container" className="min-h-screen bg-background text-foreground pb-20">
       {/* Dynamic Header */}
       <div className="relative h-64 w-full bg-gradient-to-r from-primary/20 via-primary/5 to-purple-500/10 overflow-hidden border-b border-border/40">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
