@@ -487,10 +487,13 @@ function GenerateContent() {
         setCurrentTaskId(data.task_id);
         startStatusCheck(data.task_id);
 
-        // Refresh auth context user data to update token balance
-        if (typeof refreshUser === 'function') {
-          refreshUser().catch(e => console.error("Failed to refresh user after generation:", e))
-        }
+        // For admins or short-circuit situations, if tokens are deducted, we might want to refresh balance.
+        // We defer this slightly to avoid a render-collision during the generation state transition.
+        setTimeout(() => {
+          if (typeof refreshUser === 'function') {
+            refreshUser().catch(e => console.error("Failed to refresh user after generation:", e))
+          }
+        }, 500)
 
         // Increment free generations count if this was a free one
         if (!isPremium && !user?.isAdmin && selectedCount === "1") {
@@ -1109,14 +1112,14 @@ function GenerateContent() {
                   </p>
 
                   {timeoutWarning && (
-                    <div key="timeout-warning-media" className="mt-6 flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20 animate-in fade-in duration-500" suppressHydrationWarning>
+                    <div key="gen-timeout-warning-wrapper" className="mt-6 flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20" suppressHydrationWarning>
                       <Clock className="h-4 w-4 animate-pulse" />
                       <span className="text-xs font-semibold uppercase tracking-tight">Taking longer than expected...</span>
                     </div>
                   )}
                 </div>
               ) : (generatedImages.length === 0 && !error) ? (
-                <div key="empty-state-media" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
+                <div key="empty-state-media-wrapper" className={`flex flex-col items-center justify-center ${isMobile ? 'h-[50vh]' : 'h-[70vh]'} text-center`}>
                   <div className="w-24 h-24 sm:w-32 sm:h-32 bg-card border border-border rounded-full flex items-center justify-center mb-6">
                     <ImageIcon className="h-10 w-10 sm:h-16 sm:w-16 text-muted-foreground" />
                   </div>
@@ -1126,10 +1129,10 @@ function GenerateContent() {
                   </p>
                 </div>
               ) : generatedImages.length > 0 ? (
-                <div key="result-state-media" className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-4'}`}>
+                <div key="result-state-media-wrapper" className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-4'}`}>
                   {generatedImages.map((image, index) => (
                     <div
-                      key={`gen-img-${index}-${image.substring(0, 10)}`}
+                      key={`generated-image-box-${index}`}
                       className="relative aspect-[512/1024] rounded-xl overflow-hidden group cursor-pointer border border-border shadow-xl hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500"
                       onClick={() => handleImageClick(index)}
                     >
@@ -1178,7 +1181,7 @@ function GenerateContent() {
                   ))}
                 </div>
               ) : (
-                <div key="no-results-final" />
+                <div key="no-results-placeholder" className="h-0 w-0" />
               )}
             </div>
           </div>
