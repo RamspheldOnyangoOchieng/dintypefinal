@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase-server"
 import { createAdminClient } from "./supabase-admin"
 import { checkMonthlyBudget, logApiCost } from "./budget-monitor"
 import { isAskingForImage } from "./image-utils"
-import { checkMessageLimit, getUserPlanInfo } from "./subscription-limits"
+import { checkMessageLimit, getUserPlanInfo, incrementMessageUsage } from "./subscription-limits"
 import { deductTokens } from "./token-utils"
 
 export type Message = {
@@ -70,7 +70,26 @@ export async function sendChatMessageDB(
       }
     }
 
-    // 3. Token deduction removed for Premium Users (Unlimited Chat)
+    // 3. TOKEN DEDUCTION for Premium Users (Business rule: 1 token per message)
+    if (isPremium) {
+      const tokensDeducted = await deductTokens(
+        userId,
+        1,
+        `Chat with character ${characterId}`,
+        { characterId, activity_type: 'chat_message' }
+      );
+
+      if (!tokensDeducted) {
+        return {
+          success: false,
+          error: "Dina tokens är slut. Vänligen fyll på för att fortsätta chatta.",
+          upgradeRequired: true
+        }
+      }
+    }
+
+    // 4. Increment usage (tracked for free users)
+    incrementMessageUsage(userId).catch(err => console.error("Error incrementing usage:", err));
 
     // 4. Check monthly budget
     const budgetStatus = await checkMonthlyBudget()

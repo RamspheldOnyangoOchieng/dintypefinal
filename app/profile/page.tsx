@@ -141,7 +141,10 @@ export default function ProfilePage() {
       }
     }
 
-    if (user) {
+    if (user && !profileData.username) {
+      setIsDataLoading(true)
+      fetchFullProfile()
+    } else if (user) {
       fetchFullProfile()
     }
   }, [user])
@@ -174,13 +177,13 @@ export default function ProfilePage() {
       })
 
       await refreshUser()
+      setIsSaving(false) // Set false BEFORE opening modal to avoid conflicting renders
       setShowSuccessModal(true)
     } catch (error: any) {
       console.error("Error saving profile:", error)
+      setIsSaving(false)
       setErrorMessage(error.message || "Ett oväntat fel uppstod när profilen skulle sparas.")
       setShowErrorModal(true)
-    } finally {
-      setIsSaving(false)
     }
   }
 
@@ -213,7 +216,8 @@ export default function ProfilePage() {
   }
 
   // Prevent rendering until mounted to avoid insertBefore errors and hydration issues
-  if (!mounted || isLoading || isDataLoading) {
+  // Only show full-page loader on INITIAL load
+  if (!mounted || isLoading || (isDataLoading && !profileData.username)) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />
@@ -512,11 +516,11 @@ export default function ProfilePage() {
 
           {/* Activity Tab */}
           <TabsContent value="activity" className="space-y-6">
-             <UnifiedActivityList userId={user.id} />
-             
-             <div className="pt-6">
-                <TokenUsageStats userId={user.id} initialData={null} />
-             </div>
+            <UnifiedActivityList userId={user.id} />
+
+            <div className="pt-6">
+              <TokenUsageStats userId={user.id} initialData={null} />
+            </div>
           </TabsContent>
 
           {/* Security Tab */}
@@ -575,7 +579,7 @@ export default function ProfilePage() {
           </DialogHeader>
           <DialogFooter className="sm:justify-center pb-6">
             <Button className="font-bold px-12 rounded-full" onClick={() => setShowSuccessModal(false)}>
-              FÖRSVARA
+              STÄNG
             </Button>
           </DialogFooter>
         </DialogContent>
