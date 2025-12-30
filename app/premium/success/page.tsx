@@ -59,7 +59,7 @@ export default function SuccessPage() {
   }, [sessionId]); // Remove router from dependencies
 
   return (
-    <div className="container max-w-md py-12">
+    <div className="container max-w-md py-12" translate="no">
       <Card>
         <CardHeader>
           <CardTitle className="text-center">

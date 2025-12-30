@@ -41,6 +41,7 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
       className="flex bg-background min-h-screen overflow-x-hidden"
       style={{ position: 'relative', top: 0 }}
       suppressHydrationWarning
+      translate="no"
     >
       <AppSidebar />
       <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden ${isOpen ? "md:ml-64" : "md:ml-20"}`}>

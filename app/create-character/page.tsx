@@ -620,8 +620,8 @@ export default function CreateCharacterPage() {
                                                     {memoryLevel === 1 ? 'Standard' : memoryLevel === 2 ? 'Förbättrad' : 'Livstid'}
                                                 </span>
                                             </div>
-                                            <Slider 
-                                                value={[memoryLevel]} 
+                                            <Slider
+                                                value={[memoryLevel]}
                                                 onValueChange={(val) => setMemoryLevel(val[0])}
                                                 max={3}
                                                 min={1}
@@ -629,9 +629,9 @@ export default function CreateCharacterPage() {
                                                 className="py-4"
                                             />
                                             <p className="text-[10px] text-white/40 italic leading-relaxed">
-                                                {memoryLevel === 1 ? 'Senaste 20 meddelandena i kontext' : 
-                                                 memoryLevel === 2 ? 'Senaste 100 meddelandena i kontext' : 
-                                                 'Fullständig konversationshistorik (Obegränsad)'}
+                                                {memoryLevel === 1 ? 'Senaste 20 meddelandena i kontext' :
+                                                    memoryLevel === 2 ? 'Senaste 100 meddelandena i kontext' :
+                                                        'Fullständig konversationshistorik (Obegränsad)'}
                                             </p>
                                         </div>
                                     </div>
@@ -1104,7 +1104,7 @@ export default function CreateCharacterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background">
+        <div key="create-char-root-stable" className="min-h-screen bg-background" translate="no">
             <div className="max-w-4xl mx-auto pt-8 sm:pt-12 md:pt-16 px-2 sm:px-4 md:px-6">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 md:mb-10 gap-4">
@@ -1115,7 +1115,7 @@ export default function CreateCharacterPage() {
                         </h1>
                     </div>
                     {user && (
-                        <UserTokenBalance 
+                        <UserTokenBalance
                             className="bg-card/40 backdrop-blur-md border-primary/20"
                         />
                     )}

@@ -175,13 +175,16 @@ export default function ProfilePage() {
         data: { username: profileData.username }
       })
 
-      await refreshUser()
-
-      // Decouple modal opening from the state update 'storm' to prevent DOM conflicts
+      // Decouple refresh and modal opening to prevent DOM update collisions
       setTimeout(() => {
         setIsSaving(false)
         setShowSuccessModal(true)
-      }, 100)
+
+        // Refresh session/user data after UI has settled
+        if (typeof refreshUser === 'function') {
+          refreshUser().catch(console.error)
+        }
+      }, 500)
     } catch (error: any) {
       console.error("Error saving profile:", error)
       setIsSaving(false)
@@ -232,7 +235,7 @@ export default function ProfilePage() {
   if (!user) return null
 
   return (
-    <div key="profile-content-container" className="min-h-screen bg-background text-foreground pb-20">
+    <div key="profile-page-root-stable-v2" className="min-h-screen bg-background text-foreground pb-20" translate="no">
       {/* Dynamic Header */}
       <div className="relative h-64 w-full bg-gradient-to-r from-primary/20 via-primary/5 to-purple-500/10 overflow-hidden border-b border-border/40">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />

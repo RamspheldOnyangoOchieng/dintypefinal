@@ -183,8 +183,12 @@ export default function PremiumPage() {
           toast.success(`Administratör! Du har lagt till ${selectedPackage.tokens} tokens till ditt konto.`)
           setTokenBalance(prev => prev + selectedPackage.tokens)
           setLastGrantedAmount(selectedPackage.tokens)
-          await refreshUser()
           setShowSuccessDialog(true)
+
+          // Refresh user balance after UI has settled
+          if (typeof refreshUser === 'function') {
+            setTimeout(() => refreshUser(), 800)
+          }
         } else {
           throw new Error(data.error || "Misslyckades att lägga till tokens")
         }
@@ -225,7 +229,11 @@ export default function PremiumPage() {
           toast.success(`Framgång! Du har köpt ${selectedPackage.tokens} tokens.`)
           setTokenBalance(prev => prev + selectedPackage.tokens)
           setCreditBalance(prev => prev - selectedPackage.price)
-          await refreshUser()
+
+          // Refresh user balance after UI has settled
+          if (typeof refreshUser === 'function') {
+            setTimeout(() => refreshUser(), 800)
+          }
         } else {
           throw new Error(data.error || "Misslyckades att konvertera krediter")
         }
@@ -248,7 +256,7 @@ export default function PremiumPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-12">
+    <div key="premium-page-root-stable" className="min-h-screen bg-background text-foreground pb-12" translate="no">
       {/* Dynamic Background Effect */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute -top-[5%] -left-[5%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px]" />
