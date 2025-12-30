@@ -61,6 +61,7 @@ export default function CreateCharacterPage() {
     const [isLoadingFemaleImages, setIsLoadingFemaleImages] = useState(false);
     const [showNameDialog, setShowNameDialog] = useState(false);
     const [errorModal, setErrorModal] = useState({ isOpen: false, title: "", message: "" });
+    const [memoryLevel, setMemoryLevel] = useState(1); // 1 = standard, 2 = enhanced, 3 = maximum
 
     const supabase = createClient();
     const router = useRouter();
@@ -606,6 +607,35 @@ export default function CreateCharacterPage() {
                                         className="w-full h-20 sm:h-24 bg-transparent border-none text-white text-xs sm:text-sm focus:ring-0 resize-none p-0 outline-none"
                                     />
                                 </div>
+
+                                {user?.isPremium && (
+                                    <div className="bg-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-white/10">
+                                        <h4 className="text-white/40 text-[8px] sm:text-[10px] uppercase font-bold tracking-widest mb-3 flex items-center gap-1">
+                                            Minnesåterkallning <Sparkles className="w-3 h-3 text-yellow-500" />
+                                        </h4>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-white text-xs sm:text-sm font-medium">Minnesdjup</span>
+                                                <span className="text-primary text-xs font-bold">
+                                                    {memoryLevel === 1 ? 'Standard' : memoryLevel === 2 ? 'Förbättrad' : 'Livstid'}
+                                                </span>
+                                            </div>
+                                            <Slider 
+                                                value={[memoryLevel]} 
+                                                onValueChange={(val) => setMemoryLevel(val[0])}
+                                                max={3}
+                                                min={1}
+                                                step={1}
+                                                className="py-4"
+                                            />
+                                            <p className="text-[10px] text-white/40 italic leading-relaxed">
+                                                {memoryLevel === 1 ? 'Senaste 20 meddelandena i kontext' : 
+                                                 memoryLevel === 2 ? 'Senaste 100 meddelandena i kontext' : 
+                                                 'Fullständig konversationshistorik (Obegränsad)'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -813,6 +843,7 @@ export default function CreateCharacterPage() {
                     enhancedPrompt,
                     gender: gender,
                     isPublic,
+                    memoryLevel,
                 }),
             });
 

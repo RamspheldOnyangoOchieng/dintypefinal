@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         console.log('✅ Authenticated user:', userId.substring(0, 8));
 
         const body = await request.json();
-        const { characterName, imageUrl, characterDetails, gender, description: userDescription, promptTemplate, isPublic = false } = body;
+        const { characterName, imageUrl, characterDetails, gender, description: userDescription, promptTemplate, isPublic = false, memoryLevel = 1 } = body;
 
         if (!characterName || !imageUrl) {
             return NextResponse.json(
@@ -196,7 +196,8 @@ export async function POST(request: NextRequest) {
                 metadata: {
                     created_during_subscription: isPremium || isAdmin,
                     plan_type: planInfo.planType,
-                    characterDetails: characterDetails
+                    characterDetails: characterDetails,
+                    memoryLevel: memoryLevel
                 }
             })
             .select()

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Search, Calendar, DollarSign, Users, TrendingUp, ShieldCheck } from 'lucide-react';
 
 interface Subscription {

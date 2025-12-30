@@ -111,8 +111,17 @@ export async function sendChatMessageDB(
       throw new Error(`Session Error: ${sessionError?.message || "Unknown"}`);
     }
 
+    // Fetch character metadata for memory settings
+    const { data: characterData } = await supabase
+      .from('characters')
+      .select('metadata')
+      .eq('id', characterId)
+      .single();
+    
+    const memoryLevel = characterData?.metadata?.memoryLevel || 1;
+
     // 6. Save user message
-    const { error: userMsgError } = await supabase
+    const { error: userMsgError } = await (supabase as any)
       .from('messages')
       .insert({
         session_id: sessionId,
@@ -137,7 +146,7 @@ export async function sendChatMessageDB(
         isImage: true
       }
 
-      await supabase.from('messages').insert({
+      await (supabase as any).from('messages').insert({
         session_id: sessionId,
         user_id: userId,
         role: 'assistant',
@@ -149,12 +158,21 @@ export async function sendChatMessageDB(
     }
 
     // 8. Get history
-    const { data: historyData } = await supabase
+    let historyLimit = isPremium ? 100 : 20;
+    
+    // Apply character memory level if premium
+    if (isPremium) {
+      if (memoryLevel === 1) historyLimit = 20;
+      else if (memoryLevel === 2) historyLimit = 100;
+      else if (memoryLevel === 3) historyLimit = 400; // Robust lifetime memory
+    }
+
+    const { data: historyData } = await (supabase as any)
       .from('messages')
       .select('role, content')
       .eq('session_id', sessionId)
       .order('created_at', { ascending: false })
-      .limit(20)
+      .limit(historyLimit)
 
     const conversationHistory = (historyData || []).reverse()
 
@@ -259,11 +277,22 @@ export async function loadChatHistory(
     const supabase = await createAdminClient() as any
     if (!supabase) return []
 
+    // Get plan info to determine default limit if not provided
+    let finalLimit = limit;
+    if (finalLimit === 50) { // Only adjust if it's the default
+      try {
+        const planInfo = await getUserPlanInfo(userId);
+        finalLimit = planInfo.planType === 'premium' ? 200 : 50;
+      } catch (e) {
+        console.warn("Failed to get plan info for history limit, using 50", e);
+      }
+    }
+
     const { data: messages, error } = await supabase
       .rpc('get_conversation_history', {
         p_user_id: userId,
         p_character_id: characterId,
-        p_limit: limit
+        p_limit: finalLimit
       })
 
     if (error) return []
