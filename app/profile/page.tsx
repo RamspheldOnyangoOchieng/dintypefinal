@@ -144,10 +144,8 @@ export default function ProfilePage() {
     if (user && !profileData.username) {
       setIsDataLoading(true)
       fetchFullProfile()
-    } else if (user) {
-      fetchFullProfile()
     }
-  }, [user])
+  }, [user?.id])
 
   const handleSaveProfile = async () => {
     if (!user) return
@@ -177,8 +175,12 @@ export default function ProfilePage() {
       })
 
       await refreshUser()
-      setIsSaving(false) // Set false BEFORE opening modal to avoid conflicting renders
-      setShowSuccessModal(true)
+
+      // Decouple modal opening from the state update 'storm' to prevent DOM conflicts
+      setTimeout(() => {
+        setIsSaving(false)
+        setShowSuccessModal(true)
+      }, 100)
     } catch (error: any) {
       console.error("Error saving profile:", error)
       setIsSaving(false)
