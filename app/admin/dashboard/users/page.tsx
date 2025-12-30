@@ -429,13 +429,14 @@ export default function AdminUsersPage() {
       password: "",
       isAdmin: user.isAdmin,
     })
-    setShowEditDialog(true)
+    // Use timeout to prevent Radix UI removeChild conflict
+    setTimeout(() => setShowEditDialog(true), 10)
   }
 
   // Open delete dialog
   const openDeleteDialog = (user: UserWithActions) => {
     setSelectedUser(user)
-    setShowDeleteDialog(true)
+    setTimeout(() => setShowDeleteDialog(true), 10)
   }
 
   // Export users data
@@ -465,18 +466,18 @@ export default function AdminUsersPage() {
     setSelectedUser(user)
     setTokenAmount(0)
     setTokenDescription("")
-    setShowTokenDialog(true)
+    setTimeout(() => setShowTokenDialog(true), 10)
   }
 
   const openActivityDialog = (user: UserWithActions) => {
     setSelectedUser(user)
-    setShowActivityDialog(true)
+    setTimeout(() => setShowActivityDialog(true), 10)
   }
 
   const openSubscriptionDialog = async (user: UserWithActions) => {
     setSelectedUser(user)
     setIsProcessing(true)
-    setShowSubscriptionDialog(true)
+    setTimeout(() => setShowSubscriptionDialog(true), 10)
 
     try {
       // Fetch current subscription status

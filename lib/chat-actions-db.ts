@@ -70,23 +70,7 @@ export async function sendChatMessageDB(
       }
     }
 
-    // 3. TOKEN DEDUCTION for Premium Users
-    if (isPremium) {
-      const tokensDeducted = await deductTokens(
-        userId,
-        1,
-        `Chat with character ${characterId}`,
-        { characterId, activity_type: 'chat_message' }
-      );
-
-      if (!tokensDeducted) {
-        return {
-          success: false,
-          error: "Dina tokens är slut. Vänligen fyll på för att fortsätta chatta.",
-          upgradeRequired: true
-        }
-      }
-    }
+    // 3. Token deduction removed for Premium Users (Unlimited Chat)
 
     // 4. Check monthly budget
     const budgetStatus = await checkMonthlyBudget()

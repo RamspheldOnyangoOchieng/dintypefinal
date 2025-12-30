@@ -1112,7 +1112,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   return (
     <div
       key="chat-page-root"
-      className="flex flex-col md:flex-row bg-background h-[100dvh] md:h-screen w-full overflow-hidden"
+      className="flex flex-col md:flex-row bg-background h-full w-full overflow-hidden"
       style={{ position: 'relative', top: 0 }}
       suppressHydrationWarning
     >
@@ -1132,7 +1132,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             <Input placeholder={t("chat.searchForProfile")} className="pl-9 bg-card border-none" />
           </div>
         </div>
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-800">
           <div className="p-2 space-y-2">
             {/* Chat List Items - Only show characters with chat history */}
             {characters
@@ -1179,7 +1179,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       </div>
 
       {/* Middle - Chat Area */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ height: '100vh' }}>
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Chat Header */}
         <div className="border-b border-border flex items-center px-3 md:px-4 py-3 md:py-4 justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
           <div className="flex items-center min-w-0 flex-1">
@@ -1358,7 +1358,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         "hidden border-l border-border transition-all duration-300 ease-in-out bg-background/50 backdrop-blur-sm",
         isProfileOpen ? "lg:block lg:w-80" : "lg:hidden w-0 overflow-hidden"
       )}>
-        <div className="h-full overflow-auto">
+        <div className="h-full overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-800">
           {/* Profile Images Carousel */}
           <div className="relative aspect-square">
             {showVideo ? (
