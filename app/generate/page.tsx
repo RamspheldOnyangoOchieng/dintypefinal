@@ -487,13 +487,8 @@ function GenerateContent() {
         setCurrentTaskId(data.task_id);
         startStatusCheck(data.task_id);
 
-        // For admins or short-circuit situations, if tokens are deducted, we might want to refresh balance.
-        // We defer this slightly to avoid a render-collision during the generation state transition.
-        setTimeout(() => {
-          if (typeof refreshUser === 'function') {
-            refreshUser().catch(e => console.error("Failed to refresh user after generation:", e))
-          }
-        }, 500)
+        // We no longer refresh user balance immediately on submission to avoid render collisions.
+        // Balance will be updated when status check completes successfully or fails.
 
         // Increment free generations count if this was a free one
         if (!isPremium && !user?.isAdmin && selectedCount === "1") {
@@ -558,6 +553,12 @@ function GenerateContent() {
         setGeneratedImages(result.images || [])
         setGenerationProgress(100)
         setIsGenerating(false)
+
+        // Refresh user balance ONLY when generation is complete and we are no longer in generating state
+        if (typeof refreshUser === 'function') {
+          setTimeout(() => refreshUser(), 1000)
+        }
+
         toast({
           title: "Success!",
           description: `Your image${(result.images?.length || 0) > 1 ? "s have" : " has"} been generated.`,
@@ -566,6 +567,11 @@ function GenerateContent() {
         if (statusCheckInterval.current) clearInterval(statusCheckInterval.current)
         setError(result.reason || "Image generation failed. Please try again.")
         setIsGenerating(false)
+
+        // Also refresh user balance on failure in case of refunds
+        if (typeof refreshUser === 'function') {
+          setTimeout(() => refreshUser(), 1000)
+        }
       } else {
         // Update progress if available
         if (result.progress) {
@@ -752,9 +758,9 @@ function GenerateContent() {
 
   return (
     <div
-      key="generate-page-root"
+      key="generate-page-root-stable"
       className={`flex flex-col bg-background text-foreground ${!isMobile ? 'lg:flex-row' : ''} min-h-screen`}
-      suppressHydrationWarning
+      translate="no"
     >
       {!isMounted ? (
         <div className="flex-1 flex items-center justify-center h-screen w-screen">
