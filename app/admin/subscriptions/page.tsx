@@ -59,10 +59,7 @@ export default function AdminSubscriptionsPage() {
       // 1. Fetch from premium_subscriptions (Stripe-based)
       const { data: stripeData, error: stripeError } = await supabase
         .from('premium_subscriptions')
-        .select(`
-          *,
-          profiles!inner(email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (stripeError) {
@@ -72,14 +69,31 @@ export default function AdminSubscriptionsPage() {
       // 2. Fetch from premium_profiles (Manual/Migrations)
       const { data: profileData, error: profileError } = await supabase
         .from('premium_profiles')
-        .select(`
-          *,
-          profiles!inner(email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (profileError) {
         console.warn('Error fetching premium_profiles:', profileError);
+      }
+
+      // 3. Fetch all profiles to get emails (more robust than joins if FKs are missing)
+      const userIds = [
+        ...(stripeData || []).map(s => s.user_id),
+        ...(profileData || []).map(p => p.user_id)
+      ];
+
+      let profileEmailMap: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .in('id', userIds);
+
+        if (!profilesError && profiles) {
+          profiles.forEach(p => {
+            profileEmailMap[p.id] = p.email;
+          });
+        }
       }
 
       // Consolidate data
@@ -90,7 +104,7 @@ export default function AdminSubscriptionsPage() {
       (stripeData || []).forEach((sub: any) => {
         consolidated.push({
           ...sub,
-          user_email: sub.profiles?.email || 'Unknown',
+          user_email: profileEmailMap[sub.user_id] || 'Unknown',
           source: 'stripe'
         });
         processedUserIds.add(sub.user_id);
@@ -103,7 +117,7 @@ export default function AdminSubscriptionsPage() {
           const isActive = expiresAt > new Date();
 
           consolidated.push({
-            id: prof.id,
+            id: prof.id || prof.user_id, // Fallback to user_id if id is missing in profile data
             user_id: prof.user_id,
             status: isActive ? 'active' : 'expired',
             plan_type: 'premium',
@@ -113,7 +127,7 @@ export default function AdminSubscriptionsPage() {
             current_period_start: prof.created_at,
             current_period_end: prof.expires_at,
             created_at: prof.created_at,
-            user_email: prof.profiles?.email || 'Unknown',
+            user_email: profileEmailMap[prof.user_id] || 'Unknown',
             source: 'manual'
           });
         }
