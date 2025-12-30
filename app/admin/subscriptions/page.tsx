@@ -39,17 +39,22 @@ export default function AdminSubscriptionsPage() {
     newThisMonth: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const supabase = createClient();
 
   useEffect(() => {
+    setMounted(true);
     fetchSubscriptions();
   }, []);
 
   async function fetchSubscriptions() {
     try {
-      setIsLoading(true);
+      // Only show full loader if we don't have subscriptions yet
+      if (subscriptions.length === 0) {
+        setIsLoading(true);
+      }
 
       // 1. Fetch from premium_subscriptions (Stripe-based)
       const { data: stripeData, error: stripeError } = await supabase
@@ -181,12 +186,13 @@ export default function AdminSubscriptionsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  if (isLoading) {
+  // Stabilize hydration and loading states
+  if (!mounted || (isLoading && subscriptions.length === 0)) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[80vh] bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground animate-pulse">Loading subscriptions...</p>
+          <p className="text-muted-foreground animate-pulse">Laddar prenumerationer...</p>
         </div>
       </div>
     );
@@ -313,8 +319,8 @@ export default function AdminSubscriptionsPage() {
                     </td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${sub.status === 'active'
-                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                        : 'bg-red-500/20 text-red-400 border border-red-500/30'
                         }`}>
                         {sub.status}
                       </span>
